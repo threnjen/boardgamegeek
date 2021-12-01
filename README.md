@@ -26,22 +26,22 @@ By: Jen Wadkins
 
 Build a content recommender for BoardGameGeek with a goal of addressing problems that are both common to recommenders in general, and specific to BGG: 
     
-    * Establish content recommender - cost of acquiring and maintaining data
-    * Cold Start problems where new users and items are not a part of the system
-    * Sparse matrix issue where in a system with lots of items, not many are rated by a subset of users, making neighbors difficult to identify
-    * BGG specific problem: Reimplementatons/reskins of games result in separated user profiles when they should be similar
-    * Deal with computational cost/time limitations when issuing recommendations
+   * Establish content recommender - cost of acquiring and maintaining data
+   * Cold Start problems where new users and items are not a part of the system
+   * Sparse matrix issue where in a system with lots of items, not many are rated by a subset of users, making neighbors difficult to identify
+   * BGG specific problem: Reimplementatons/reskins of games result in separated user profiles when they should be similar
+   * Deal with computational cost/time limitations when issuing recommendations
 
 
 #### Questions/Intentions
 
 We will address and solve these problems in building a content recommender for this system:
 
-    * Plan for fast data acquisition and cleaning to allowing frequent system updates
-    * Address Cold Start problem with a specific new user plan
-    * Overcome the sparse matrix problem with synthetic content-based data
-    * Overcome the BGG-specific problem with synthetic content-based data
-    * Deal with computational cost by offering on-the-fly recommendations in addition to daily model update
+   * Plan for fast data acquisition and cleaning to allowing frequent system updates
+   * Address Cold Start problem with a specific new user plan
+   * Overcome the sparse matrix problem with synthetic content-based data
+   * Overcome the BGG-specific problem with synthetic content-based data
+   * Deal with computational cost by offering on-the-fly recommendations in addition to daily model update
 
 ## Methodology
 
@@ -70,16 +70,16 @@ In this notebook, user apis are accessed one-by-one and the user information dum
 
 BGG03 is the scrubbing and cleaning of the various data obtained in notebooks BGG01 and BGG02. The following datasets are cleaned, constructed, or otherwise prepared for EDA and modeling.
 
-    * Games
-    * Mechanics
-    * Subcategories
-    * Designers
-    * Artists
-    * Publishers
-    * Awards
-    * Ratings Distribution
-    * Comments
-    * Ratings Matrix
+   * Games
+   * Mechanics
+   * Subcategories
+   * Designers
+   * Artists
+   * Publishers
+   * Awards
+   * Ratings Distribution
+   * Comments
+   * Ratings Matrix
 
 #### [BGG04_EDA.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG04_EDA.ipynb)
 
