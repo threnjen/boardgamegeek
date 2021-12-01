@@ -58,39 +58,62 @@ We use the OSEMN for Data Science to organize the project.
 
 #### [BGG01_Obtaining_Primary.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG01_Obtaining_Primary.ipynb)
 
-* **Project Overview**
-
-* **Obtaining Our Data**
-
-* **Cleaning Our Data**
-
-* **Visualizing Our Data**
-
-* **Standard Models**
-
-* **Neural Networks**
-
-* **Ensembling**
-    
-* **Analysis**
-
-* **APPENDIX**
+BGG01 involves the acquisition of game data from BoardGameGeek. Largely this is accomplished by XML API call, with some dynamic content scraped. Files are dumped to a "dirty" directory.
 
 #### [BGG02_Obtaining_UserID.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG02_Obtaining_UserID.ipynb)
 
+BGG02 involves the acquisition of user_id information from BoardGameGeek, using their XML API.
+
+In this notebook, user apis are accessed one-by-one and the user information dumped dirty to file.
+
 #### [BGG03_Scrubbing-Cleaning.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG03_Scrubbing-Cleaning.ipynb)
+
+BGG03 is the scrubbing and cleaning of the various data obtained in notebooks BGG01 and BGG02. The following datasets are cleaned, constructed, or otherwise prepared for EDA and modeling.
+
+    * Games
+    * Mechanics
+    * Subcategories
+    * Designers
+    * Artists
+    * Publishers
+    * Awards
+    * Ratings Distribution
+    * Comments
+    * Ratings Matrix
 
 #### [BGG04_EDA.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG04_EDA.ipynb)
 
+BGG05 holds the EDA and visualization for the game data.
+
+Most of this notebook is outside of the scope of the recommendation engine, and serves largely as a visualization and exploration playground to find interesting details about the data.
+
 #### [BGG05_Content_Based.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG05_Content_Based.ipynb)
+
+BGG05 is the building of a content-based item filter. Using category weights, I use my domain expertise to tune an item similarity matrix for all game IDs in the games file.
+
+This content-based filter could be used as-is to find similar games to a user's catalog and predict ratings.
 
 #### [BGG06_Synthetic_Ratings.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG06_Synthetic_Ratings.ipynb)
 
+BGG06 is where synthetic ratings are produced for each user, using the content-based item filter from BGG05.
+
 #### [BGG07_Build_Datasets.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG07_Build_Datasets.ipynb)
+
+In BGG07 we build several large datasets, notably:
+
+* Real Ratings Dictionaries and Longform(melted) Dataframes in both unscaled and scaled versions
+* Synthetic Ratings Dictionaries and Longform Dataframes in both unscaled and scaled versions
+* User Means lookup dictionary
+
+These files are used in the Collaborative Filter (BGG08)
 
 #### [BGG08_Collaborative_Filtering.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG08_Collaborative_Filtering.ipynb)
 
+BGG08 contains the Collaborative Filtering model.
 
+Th CF is tested in both memory and model-based modes, on both the user's real ratings data and the synthesized data sets.
+
+Using testing results, we select the most efficient recommendation system and make our business recommendations.
 
 
 
