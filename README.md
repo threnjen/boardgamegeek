@@ -6,7 +6,7 @@ By: Jen Wadkins
 
 > This notebook series takes us through the entire process of sourcing, cleaning, exploring, and modeling user and game data from BoardGameGeek. The end product is a hybrid recommender system which leverages content-based similarities to support and strengthen a collaborative filtering system. The end system can be presented in one of two ways: For the new user, a cold-start protocol and memory-based collaborative filter are applied in a few seconds, and ratings are produced. For the returning user, model-based collaborative filtering in conjunction with the memory-based filter provide deeper recommendations.
 
-> Content recommenders only work if the data are kept relevant and updated. To that end, I've developed a plan which will allow maintenance of the system at the lowest computational cost, while allowing the system to be available to make recommendations at all times to new users.
+> Content recommenders only work if the data is kept relevant and updated. To that end, I've developed a plan which will allow maintenance of the system at the lowest computational cost, while allowing the system to be available to make recommendations at all times to new users.
 
 
 ## Skills Presented
@@ -26,22 +26,22 @@ By: Jen Wadkins
 
 Build a content recommender for BoardGameGeek with a goal of addressing problems that are both common to recommenders in general, and specific to BGG: 
     
-   * Establish content recommender - cost of acquiring and maintaining data
+   * Cost of acquiring and maintaining data
    * Cold Start problems where new users and items are not a part of the system
    * Sparse matrix issue where in a system with lots of items, not many are rated by a subset of users, making neighbors difficult to identify
    * BGG specific problem: Reimplementatons/reskins of games result in separated user profiles when they should be similar
    * Deal with computational cost/time limitations when issuing recommendations
 
 
-#### Questions/Intentions
+#### Intentions
 
-We will address and solve these problems in building a content recommender for this system:
+We will address and solve these problems for this system:
 
    * Plan for fast data acquisition and cleaning to allowing frequent system updates
    * Address Cold Start problem with a specific new user plan
    * Overcome the sparse matrix problem with synthetic content-based data
    * Overcome the BGG-specific problem with synthetic content-based data
-   * Deal with computational cost by offering on-the-fly recommendations in addition to daily model update
+   * Deal with computational cost by offering on-the-fly recommendations in addition to deeper daily model update
 
 ## Methodology
 
