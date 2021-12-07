@@ -146,11 +146,15 @@ Using testing results, we select the most efficient recommendation system and ma
 
 > We add an additional problem which is unique to board gaming where there are a lot of games that are fundamentally the same but slight reskins. A great example of this is Monopoly, which has hundreds of different versions (and not even counting straight reskins like your local city-opoly). All these minor variations are different game entries even though at its core it is basically the same game. So purple, yellow, and red may all have rated these slightly different versions of Monopoly, but the basic collaborative filtering system cannot perceive those as the same and will not relate those users to each other. This is a domain specific problem because in music, movies, or books, different items are actually different items, no matter how similar they are. In board gaming, different items may be different themes or new editions of the same game.
 
-> We overcome this problem in our data set by pulling in a second recommendation system based on **content-based filtering**. This system is very simple - it takes a user's item rating,  finds similar items to that item, and predicts a rating for each new item based on how similar it is. Other users never enter the picture at all - all that matters is the items that have been rated. This system requires domain-specific knowledge to design and tune.
+> We overcome this problem in our data set by pulling in a second recommendation system based on **content-based filtering**. This system is very simple - it takes a user's item rating,  finds similar items to that item, and predicts a rating for each new item based on how similar it is. Other users never enter the picture at all - all that matters is the items that have been rated. This system requires domain-specific knowledge to design and tune, but can be kickstarted with unsupervised learning.
 
-![Content Filter](images/content_resized.png)
+![Games Map](images/infographics.png)
+
+> In the above image we see the results of unsupervised learning to assist in identifying the important features that determine game similarity. Using various UMAP plots, I was able to identify areas of interest that highly influence a game's similarity to another game. You can see in this graphic the strong groupings for certain game types, as well as game weight/complexity.
 
 > Content-based filtering can be a recommendation system all in itself, but it doesn't perform as well as collaborative filtering. So how are we leveraging it? We use our content-based filter to produce synthetic ratings for users in order to increase their overall number of ratings and provide a fuller ratings matrix.
+
+![Content Filter](images/content_resized.png)
 
 > In doing so we overcome two of our collaborative filtering problems - first, we increase user ratings and **improve sparse ratings matrix**, and second, the **BGG-specific problem** of different item editions is resolved. When we produce synthetic ratings, different item editions are the most similar items, and will inevitably have ratings produced for them.
 
