@@ -163,11 +163,11 @@ Using testing results, we select the most efficient recommendation system and ma
 
 > Now we have a method and have overcome some of our problems - how do we evaluate our recommender?
 
-> First we must define what it means to have a recommendation. A RECOMMENDED item is a game that the user will like more than their average. A user's average is relevant only to themselves. If John is a tough rater and his average is a 6, and Mike is a generous rater and his average is an 8, the numbers don't really matter. What we want to see is games that the user will like more than their personal average. Each user's overall rating bias is mathematically removed from the system, leaving only their differential for a given item above or below their average.
+> First we must define what it means to have a recommendation. A **RECOMMENDED** item is a game that the user will like more than their average. A user's average is relevant only to themselves. If John is a tough rater and his average is a 6, and Mike is a generous rater and his average is an 8, the numbers don't really matter. What we want to see is games that the user will like more than their personal average. Each user's overall rating bias is mathematically removed from the system, leaving only their differential for a given item above or below their average.
 
-> A RELEVANT item is any game that the user actually rates more than their average.
+> A **RELEVANT** item is any game that the user actually rates more than their average.
 
-> We determine if a recommender is successful if it correctly identifies the user's relevant items as recommended items. We want all of the items that the user actually like more than their average, to be predicted by the recommender as more than their average. This is called RECALL. A recall of 100% is preferable, meaning the system succesfully predicted all of the user's games as recommended. However we also want a "reasonable" raw prediction error while we do this.
+> We determine if a recommender is successful if it correctly identifies the user's relevant items as recommended items. We want all of the items that the user actually likes more than their average, to be predicted by the recommender as being more than their average. This is called RECALL. A recall of 100% is preferable, meaning the system succesfully predicted all of the user's relevant games as recommended. However we also want a "reasonable" raw prediction error while we do this.
 
 > Defining "reasonable" here is a little hazy because there quickly becomes a point where a ratings error difference is minutiae. There's a lot of difference between a 6 and an 8 rating, but not a lot of difference between a 7 and a 7.1. This is why once we have an acceptable error, we are MORE interested in whether or not the system can correctly identify the user's relevant items.
 
@@ -175,16 +175,23 @@ Using testing results, we select the most efficient recommendation system and ma
 
 ### The Cold Start Problem
 
-> Address in common fashion with user questionnaire
+> We will address in common fashion with user questionnaire
    * Ask category questions for "What kind of board games do you like to play?”, allow multiple category selections
    * Select favorite mechanics, allow multiple selections
    * Show a set of games in those categories and ask them to rate at least 5
    * Generate synthetic ratings
 
+> There was insufficient time to implement the cold start in this project, and it has become part of Future Work
+
 ### Dealing with computational cost
 
+> Getting recommendations via Model is time consuming, and the user must be part of the system in order to produce recommendations. A plan must be in place to produce recommendations FAST for users.
 
+> Recommendations via statistical methods (Memory Method) are relatively quick. In general, the Memory method should be used for:
+- New Users
+- Users who have updated their profile
 
+> The machine learning model can be compiled and upated daily in about 30 minutes, and will produce recommendations for a user quickly.
 
 ## Future Work
 
@@ -193,7 +200,6 @@ Using testing results, we select the most efficient recommendation system and ma
 * Find the sweet spot of synthetic ratings for recommendation time
 * Set up on-the-fly implementation and daily model deployment
 * Deploy GUI
-
 
 
 ## Presentation
