@@ -119,51 +119,49 @@ Using testing results, we select the most efficient recommendation system and ma
 
 ## Analysis
 
-> First off - What is the data?
-
 >We started with 182,000 users rating the 22,500 most popular board games from BoardGameGeek. Most of the data was via the BGG API, with some scraped directly. After cleaning for users with more than 10 ratings we had 102,000 users remaining
 
+![Collaborative Filtering](images/collab_filter.png)
 ##### The working of a Collaborative Recommender System 
 
-![Collaborative Filtering](images/collab_filter.png)
-
->Our recommendation system uses a method called collaborative filtering. At its core this method finds items to recommend by relating people that like items in a similar way. The important word here is **similarly**, not just that both users actually like the games. In this example that could mean both users hated Wingspan at the top and loved the other three in the middle. The model would conclude from this that blue and yellow are SIMILAR players. In our example the model recommends blue's favorites Nemesis and Rebellion to the yellow meeple, and yellow's favorites Terraforming Mars and Scythe to the blue meeple, after concluding that they have similar tastes in games.
+>Our recommendation system uses a method called collaborative filtering. At its core this method finds items to recommend by relating people that like items in a similar way. The important word here is **similar**, not just that both users actually like the games. In this example that could mean both users hated Wingspan at the top and loved the other three in the middle. The model would conclude from this that blue and yellow are SIMILAR players. In our example the model recommends blue's favorites Nemesis and Rebellion to the yellow meeple, and yellow's favorites Terraforming Mars and Scythe to the blue meeple, after concluding that they have similar tastes in games.
 
 
-##### What challenges do we need to overcome with collaborative filtering?
+### Collaborative Filtering Challenges
 
-> We have a few general collaborative filter challenges to overcome, and the first of which is a low number of user ratings which results in a very sparse ratings matrix.
+> We have a few general collaborative filter challenges to overcome, the first of which is a low number of user ratings which results in a sparse ratings matrix.
 
 ![Users vs Rated](images/usersvsrated.png)
 
->Here we show from our data set the number of users vs the number of games rated. Our median number of games rated is 53 which is not that bad, but our data set is only made of users who have rated 10 or more, so our real-world median is going to be less. Compound on that is a very high number of users in the 10-20 range. In fact 20% of our user set has rated 20 or fewer games. When you spread that out over the 22,500 games in our game list, it becomes  difficult to find those similar users like in the above venn diagram.
+>Here we show from our data set the number of users vs the number of games rated. Our median number of games rated is 53 which is not that bad, but our data set is only made of users who have rated 10 or more, so our real-world median is going to be less. A fairly high number of users are in the 10-20 range; In fact 20% of our user set has rated 20 or fewer games. When this is spread over the 22,500 games in our game list, it becomes difficult to find the similar users like in the above venn diagram.
 
-> Add to that a problem of how to start up a new user who has NO ratings for any items - where do they get recommendations to begin with? It's sensible to require a small amount of startup, but without a lot of ratings, the recommendations may be poor.
+> Add to that a problem of how to start up a new user who has NO ratings for any items - where do they get recommendations to begin with? It's sensible to require a small amount of startup information, but without a lot of ratings, the recommendations may be poor.
 
 > These are two large challenges that our recommender system seeks to overcome.
 
-##### What about the BoardGameGeek specific challenge?
+### BoardGameGeek specific challenge
 
 ![Like Items](images/monopoly_compare.png)
+##### The Monopoly Problem
 
-> We add an additional problem which is unique to board gaming where there are a lot of games that are fundamentally the same but slight reskins. A great example of this is Monopoly which has hundreds of different versions (and not even counting straight reskins like your local city-opoly). All these minor variations are different game entries even though at its core it is basically the same game. So purple, yellow, and red may all have rated these slightly different versions of Monopoly, but the basic collaborative filtering system cannot perceive those as the same and will not relate those users to each other. This is really a domain specific problem because in music, movies, or books, different items are actually different items, no matter how similar they are. In board gaming, different items may be different themes or new editions of the same game.
+> We add an additional problem which is unique to board gaming where there are a lot of games that are fundamentally the same but slight reskins. A great example of this is Monopoly, which has hundreds of different versions (and not even counting straight reskins like your local city-opoly). All these minor variations are different game entries even though at its core it is basically the same game. So purple, yellow, and red may all have rated these slightly different versions of Monopoly, but the basic collaborative filtering system cannot perceive those as the same and will not relate those users to each other. This is a domain specific problem because in music, movies, or books, different items are actually different items, no matter how similar they are. In board gaming, different items may be different themes or new editions of the same game.
 
-> We overcome this problem in our data set by pulling in a second recommendation system based on content-based filtering. This system is very simple - it takes a user's item rating,  finds similar items to that item, and predicts a rating for each new item based on how similar it is. Other users never enter the picture at all - all that matters is the items that have been rated. This system requires domain-specific knowledge to design and tune.
+> We overcome this problem in our data set by pulling in a second recommendation system based on **content-based filtering**. This system is very simple - it takes a user's item rating,  finds similar items to that item, and predicts a rating for each new item based on how similar it is. Other users never enter the picture at all - all that matters is the items that have been rated. This system requires domain-specific knowledge to design and tune.
+
+![Content Filter](images/content_resized.png)
 
 > Content-based filtering can be a recommendation system all in itself, but it doesn't perform as well as collaborative filtering. So how are we leveraging it? We use our content-based filter to produce synthetic ratings for users in order to increase their overall number of ratings and provide a fuller ratings matrix.
 
 > In doing so we overcome two of our collaborative filtering problems - first, we increase user ratings and **improve sparse ratings matrix**, and second, the **BGG-specific problem** of different item editions is resolved. When we produce synthetic ratings, different item editions are the most similar items, and will inevitably have ratings produced for them.
 
-![Content Filter](images/content.png)
-
-> Below is an image of what it looks like in a user's profile when we synthesize ratings. Here we have taken a user who started with only 10 ratings, and we synthesized using like-content until we reached 250 ratings. The ratings are synthesized exponentially and gradually the values will move toward the user's mean, which is the horizontal line, but we get all of our ratings well before this happens. We end up with a lot of quality ratings in the user's profile. This takes 1-2 seconds to produce, so doing this with a new user in the system is reasonably quick.
+> Below is an image of what it looks like in a user's profile when we synthesize ratings. Here we have taken a user who started with only 10 ratings, and we synthesized using like-content until we reached 250 ratings. The ratings are synthesized exponentially, and gradually the values will move toward the user's mean, which is the horizontal line. We get all of our ratings well before this happens. We end up with a lot of quality ratings in the user's profile. This takes 1-2 seconds to produce, so doing this with a new user in the system is reasonably quick.
 
 ![User 250](images/synthetic_from10.png)
 
 
-##### How do we evaluate the quality of the recommender?
+### How do we evaluate the quality of the recommender?
 
-> So now we have a method and have overcome some of our problems - how do we evaluate our recommender?
+> Now we have a method and have overcome some of our problems - how do we evaluate our recommender?
 
 > First we must define what it means to have a recommendation. A RECOMMENDED item is a game that the user will like more than their average. A user's average is relevant only to themselves. If John is a tough rater and his average is a 6, and Mike is a generous rater and his average is an 8, the numbers don't really matter. What we want to see is games that the user will like more than their personal average. Each user's overall rating bias is mathematically removed from the system, leaving only their differential for a given item above or below their average.
 
@@ -175,26 +173,30 @@ Using testing results, we select the most efficient recommendation system and ma
 
 > We're also interested in improving our catalog's coverage, and increasing the total number of recommended items in the system to include less popular items. While improving rating diversity is part of future work, we can still evaluate coverage improvements as we add synthetic ratings.
 
+### The Cold Start Problem
 
+> Address in common fashion with user questionnaire
+   * Ask category questions for "What kind of board games do you like to play?”, allow multiple category selections
+   * Select favorite mechanics, allow multiple selections
+   * Show a set of games in those categories and ask them to rate at least 5
+   * Generate synthetic ratings
+
+### Dealing with computational cost
 
 
 
 
 ## Future Work
 
-* xxx
+* Evaluate diversity in recommendations and retune content recommender to fit goals
+* Next task - implement the cold start questionnaire
+* Find the sweet spot of synthetic ratings for recommendation time
+* Set up on-the-fly implementation and daily model deployment
+* Deploy GUI
 
-
-* xxx
-
-
-* xxx
-
-
-* xxx
 
 
 ## Presentation
-[Video - Data Science Module 4 Project](https://www.youtube.com/watch?v=y9XZ5QLS2dU&ab_channel=JennyWadkins)
+[Video - Data Science Capstone](https://www.youtube.com/watch?v=y9XZ5QLS2dU&ab_channel=JennyWadkins)
 
 [PDF of Presentation](https://github.com/threnjen/austin_housing_prices/blob/main/mod_4_pdf/Austin_Housing_Study.pdf)
