@@ -209,9 +209,10 @@ Using testing results, we select the most efficient recommendation system and ma
 
 ### The Recommender Model
 
-> Our final model uses accepted memory-based statistical methods to evaluate a user's local neighborhood and provide recommendations. Memory-based methods were far superior to Model-based methods in testing and evaluation, and have the added advantage of improved speed and lower computational cost. A model-based recommender built in the Surprise package requires that a user be part of the model training, making it incompatible for a new user to the system. Statistical based methods incorporate new users immediately. User averages are removed from their ratings to remove their personal rating bias and center all ratings around 0 as the user's average.
+> Our final model uses accepted memory-based statistical methods to evaluate a user's local neighborhood and provide recommendations. Memory-based methods were far superior to Model-based methods in testing and evaluation, and have the added advantage of improved speed and lower computational cost. A model-based recommender built in the Surprise package requires that a user be part of the model training, making it incompatible for a new user to the system. Statistical based methods incorporate new users immediately. 
 
 > Our method takes the following steps to produce recommendations:
+- User averages are removed from their own ratings to remove their personal rating bias and center all ratings around 0
 - If the user has fewer than 5 ratings, will implement a Cold Start protocol to obtain baseline information
 - If the user has fewer than 100 ratings, synthesizes ratings to 100 using the content-based similarity filter and the user's existing ratings
 - Defines potential neighbors as other users with at least 5 items in common
