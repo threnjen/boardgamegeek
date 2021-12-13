@@ -214,13 +214,13 @@ Using testing results, we select the most efficient recommendation system, make 
 
 ### Meeting our Objectives
 
-##### Plan for fast data acquisition and cleaning to allowing frequent system updates
+#### Plan for fast data acquisition and cleaning to allowing frequent system updates
 The basic data update can be done in as little as 30 minutes a day via API and can be automated through the acquisition and cleaning steps.
 
-##### Deal with computational cost of recommendation system
+#### Deal with computational cost of recommendation system
 Our end model is purely mathematical and requires no ongoing maintenance or model deployment. It does not use machine learning and instead uses statistical methods, allowing a user to receive a recommendation within seconds.
 
-##### Address Cold Start problem with a specific new user plan
+#### Address Cold Start problem with a specific new user plan
 Address in common fashion with user questionnaire:
 - Ask category questions for "What kind of board games do you like to play?”, allow multiple category selections
 - Select favorite mechanics, allow multiple selections
@@ -230,13 +230,13 @@ Address in common fashion with user questionnaire:
 
 There was insufficient time to implement the cold start in this project, and it has become part of Future Work
 
-##### Overcome catalog coverage challenge using synthetic content-based data
+#### Overcome catalog coverage challenge using synthetic content-based data
 Since synthetic ratings are produced from the content-based filter which does not care about game popularity, we bring additional catalog titles into our system, which are then passed to other users.
 
-##### Overcome the sparse matrix challenge using synthetic content-based data
+#### Overcome the sparse matrix challenge using synthetic content-based data
 In a synthetic system, all users have a minimum n ratings with which to locate neighbors. More matches are made and quality neighbors located.
 
-##### Overcome the BGG-specific challenge using synthetic content-based data
+#### Overcome the BGG-specific challenge using synthetic content-based data
 > Synthetic data accounts for and bridges the gaps of similar-but-different content by adding ratings for these items to a user's profile.
 
 
