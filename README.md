@@ -182,7 +182,7 @@ Using testing results, we select the most efficient recommendation system and ma
 
 > A **RELEVANT** item is any game that the user actually rates more than their average.
 
-> We determine if a recommender is successful if it correctly identifies the user's relevant items as recommended items. We want all of the items that the user actually likes more than their average, to be predicted by the recommender as being more than their average. This is called RECALL. A recall of 100% is preferable, meaning the system succesfully predicted all of the user's relevant games as recommended. However we also want a "reasonable" raw prediction error while we do this.
+> Part of a recommender's success is if it correctly identifies the user's relevant items as recommended items. We want all of the items that the user actually likes more than their average, to be predicted by the recommender as being more than their average. This is called RECALL. A recall of 100% is preferable, meaning the system succesfully predicted all of the user's relevant games as recommended. However we also want a reasonable raw prediction error while we do this.
 
 > Defining "reasonable" here is a little hazy because there quickly becomes a point where a ratings error difference is minutiae. There's a lot of difference between a 6 and an 8 rating, but not a lot of difference between a 7 and a 7.1. This is why once we have an acceptable error, we are interested in whether or not the system can correctly identify the user's relevant items.
 
@@ -192,17 +192,17 @@ Using testing results, we select the most efficient recommendation system and ma
 
 > How does synthetic data improve our recommender? We tried the recommender with real data, and boosting to 100 ratings, and had some interesting results.
 
-> Using our synthetic data, we had an overall large reduction to our user error - MAE and RMSE went down. MAE/RMSE went down only for users under the median, which I would argue are the users that we most want to improve recommendations for. For those users under the median we significantly decreased our error.
+> Using our synthetic data, we had an overall reduction to our user error - MAE and RMSE went down. However MAE/RMSE went down only for users under the median, which I would argue are the users that we most want to improve recommendations for. For these users, the reduction in user error was significant. Our users over the median saw an increae in error.
 
 > **MAE**  ALL Users: ▼ 7.03% Users UNDER median: ▼ 18.07% Users OVER median: ▲ 5.66%
 
 > **RMSE** ALL Users: ▼ 3.13% Users UNDER median: ▼ 13.58% Users OVER median: ▲ 8.51%
 
-> The synthetic data resulted in a slight reduction to our recall, meaning the system's ability to accurately classify a user's relevant items at recommended. This was true for all user groups. This is undesirable.
+> The synthetic data resulted in a slight reduction to our recall, meaning the system's ability to accurately classify a user's relevant items at recommended. This was true for all user groups. This is undesirable, and if we cannot resolve it with further content tuning, it should be considered if the synthetic system is a true improvement.
 
 > **Recall** ALL Users: ▼ 6.22% Users UNDER median: ▼ 5.85% Users OVER median: ▼ 6.56%
 
-> Finally, the system had a large increase in catalog coverage, especially for those users over the median. We achieved a far higher level of recommendation diversity when using the synthetic data, because the content-based recommender doesn't know how popular an item is, and populates the synthetic ratings with more diverse recommendations.
+> Finally, the system had a large increase in catalog coverage, especially for those users over the median. We achieved a far higher level of recommendation diversity when using the synthetic data, because the content-based recommender doesn't know how popular an item is, and populates the synthetic ratings with more diverse recommendations. This overcomes a large challenge to recommender systems, and is a desirable result.
 
 > **Coverage** ALL Users: ▲ 11.16% Users UNDER median: ▲ 10.9% Users OVER median: ▲ 69.5%
 
