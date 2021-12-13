@@ -253,6 +253,6 @@ Synthetic data accounts for and bridges the gaps of similar-but-different conten
 
 
 ## Presentation
-[Video - Data Science Capstone](https://www.youtube.com/watch?v=y9XZ5QLS2dU&ab_channel=JennyWadkins)
+[Video - Data Science Capstone]()
 
-[PDF of Presentation](https://github.com/threnjen/austin_housing_prices/blob/main/mod_4_pdf/Austin_Housing_Study.pdf)
+[PDF of Presentation](https://github.com/threnjen/boardgamegeek/blob/main/BGG.pdf)
