@@ -28,6 +28,7 @@ Build a content recommender for BoardGameGeek with a goal of addressing problems
     
    * Cost of acquiring and maintaining data
    * Cold Start problems where new users and items are not a part of the system
+   * Catalog coverage problems where popularity bias results in items of the catalog that are not in the recommendation system
    * Sparse matrix issue where in a system with lots of items, not many are rated by a subset of users, making neighbors difficult to identify
    * BGG specific problem: Reimplementatons/reskins of games result in separated user profiles when they should be similar
    * Deal with computational cost/time limitations when issuing recommendations
@@ -38,10 +39,12 @@ Build a content recommender for BoardGameGeek with a goal of addressing problems
 We will address and solve these problems for this system:
 
    * Plan for fast data acquisition and cleaning to allowing frequent system updates
+   * Deal with computational cost of recommendation system
    * Address Cold Start problem with a specific new user plan
-   * Overcome the sparse matrix problem with synthetic content-based data
-   * Overcome the BGG-specific problem with synthetic content-based data
-   * Deal with computational cost by offering on-the-fly recommendations in addition to deeper daily model update
+   * Overcome catalog coverage challenge using synthetic content-based data
+   * Overcome the sparse matrix challenge using synthetic content-based data
+   * Overcome the BGG-specific challenge using synthetic content-based data
+   
 
 ## Methodology
 
@@ -119,27 +122,36 @@ Using testing results, we select the most efficient recommendation system and ma
 
 ## Analysis
 
->We started with 182,000 users rating the 22,500 most popular board games from BoardGameGeek. Most of the data was via the BGG API, with some scraped directly. After cleaning for users with more than 10 ratings we had 102,000 users remaining
+>We started with 182,000 users rating the 22,500 most popular board games from BoardGameGeek. Most of the data was via the BGG API, with some scraped directly. After cleaning for users with more than 5 ratings we had 117,000 users remaining
 
 ![Collaborative Filtering](images/collab_filter.png)
 ##### The working of a Collaborative Recommender System 
 
->Our recommendation system uses a method called collaborative filtering. At its core this method finds items to recommend by relating people that like items in a similar way. The important word here is **similar**, not just that both users actually like the games. In this example that could mean both users hated Wingspan at the top and loved the other three in the middle. The model would conclude from this that blue and yellow are SIMILAR players. In our example the model recommends blue's favorites Nemesis and Rebellion to the yellow meeple, and yellow's favorites Terraforming Mars and Scythe to the blue meeple, after concluding that they have similar tastes in games.
+> Our recommendation system uses a method called collaborative filtering. At its core this method finds items to recommend by relating people that like items in a similar way. The important word here is **similar**, not just that both users actually like the games. In this example that could mean both users hated Wingspan at the top and loved the other three in the middle. The model would conclude from this that blue and yellow are SIMILAR players. In our example the model recommends blue's favorites Nemesis and Rebellion to the yellow meeple, and yellow's favorites Terraforming Mars and Scythe to the blue meeple, after concluding that they have similar tastes in games.
 
 
 ### Collaborative Filtering Challenges
 
-> We have a few general collaborative filter challenges to overcome, the first of which is a low number of user ratings which results in a sparse ratings matrix.
+> We have a few general collaborative filter challenges to overcome.
+
+> First is the cost of acquiring and maintaining our data. Our system should be easy to keep updated and clean.
+
+> Next is our computational cost of recommendation, which will be vital if we use machine learning. A collaborative filter using a package such as Surprise requires that a user be present in the system to obtain recommendations, which can be costly, especially from a time standpoint if a user is awaiting recommendations in real-time.
+
+> Then we have a challenge of catalog coverage. Collaborative Filters can often leave out large sections of a catalog and never recommend them due to an overall popularity bias. Our solution explicitly improves catalog coverage.
+
+#### The Sparse Ratings Matrix
+
+> Collaborative Filtering has a significant and common challenge where a low number of user ratings results in a sparse ratings matrix.
 
 ![Users vs Rated](images/usersvsrated.png)
 
->Here we show from our data set the number of users vs the number of games rated. Our median number of games rated is 53 which is not that bad, but our data set is only made of users who have rated 10 or more, so our real-world median is going to be less. A fairly high number of users are in the 10-20 range; In fact 20% of our user set has rated 20 or fewer games. When this is spread over the 22,500 games in our game list, it becomes difficult to find the similar users like in the above venn diagram.
+>Here we show from our data set the number of users vs the number of games rated. Our median number of games rated is 43 which is not that bad, but our data set is only made of users who have rated 5 or more, so our real-world median is going to be less. A fairly high number of users are in the 5-20 range; In fact 29.7% of our user set has rated 20 or fewer games. When this is spread over the 22,500 games in our game list, it becomes difficult to find the similar users like in the above venn diagram.
 
-> Add to that a problem of how to start up a new user who has NO ratings for any items - where do they get recommendations to begin with? It's sensible to require a small amount of startup information, but without a lot of ratings, the recommendations may be poor.
+> Add to that a problem of how to start up a new user who has NO ratings for any items - where do they get recommendations to begin with? It's sensible to require a small amount of startup information, but without a lot of ratings, the recommendations may be poor. We'll be addressing this in a standard fashion with an introductory questionnaire, which I have have allocated to future work, but we'll also be boosting all of these low-ratings users with our customer collaborative filtering solution.
 
-> These are two large challenges that our recommender system seeks to overcome.
 
-### BoardGameGeek specific challenge
+#### BoardGameGeek specific challenge
 
 ![Like Items](images/monopoly_compare.png)
 ##### The Monopoly Problem
@@ -152,15 +164,15 @@ Using testing results, we select the most efficient recommendation system and ma
 
 > In the above image we see the results of unsupervised learning to assist in identifying the important features that determine game similarity. Using various UMAP plots, I was able to identify areas of interest that highly influence a game's similarity to another game. You can see in this graphic the strong groupings for certain game types, as well as game weight/complexity.
 
-> Content-based filtering can be a recommendation system all in itself, but it doesn't perform as well as collaborative filtering. So how are we leveraging it? We use our content-based filter to produce synthetic ratings for users in order to increase their overall number of ratings and provide a fuller ratings matrix.
+> Content-based filtering can be a recommendation system all in itself, but it doesn't perform as well as collaborative filtering. So how are we leveraging it? We use our content-based filter to produce synthetic ratings for users in order to increase their overall number of ratings and provide a fuller ratings matrix, creating a **Synthetic Ratings Collaborative Filter**
 
 ![Content Filter](images/content_resized.png)
 
-> In doing so we overcome two of our collaborative filtering problems - first, we increase user ratings and **improve sparse ratings matrix**, and second, the **BGG-specific problem** of different item editions is resolved. When we produce synthetic ratings, different item editions are the most similar items, and will inevitably have ratings produced for them.
+> In doing so we overcome several of our collaborative filtering problems - first, we increase user ratings and **improve the sparse ratings matrix**. Second, the **BGG-specific problem** of different item editions is resolved. When we produce synthetic ratings, different item editions are the most similar items, and will inevitably have ratings produced for them. Finally, our **Catalog Coverage** significantly improves. Since synthetic ratings are produced from the content-based filter which does not care about game popularity, we bring additional catalog titles into our system, which are then passed to other users.
 
-> Below is an image of what it looks like in a user's profile when we synthesize ratings. Here we have taken a user who started with only 10 ratings, and we synthesized using like-content until we reached 250 ratings. The ratings are synthesized exponentially, and gradually the values will move toward the user's mean, which is the horizontal line. We get all of our ratings well before this happens. We end up with a lot of quality ratings in the user's profile. This takes 1-2 seconds to produce, so doing this with a new user in the system is reasonably quick.
+> Below is an image of what it looks like in a user's profile when we synthesize ratings. Here we have taken a user who started with only 5 ratings, and we synthesized using like-content until we reached 250 ratings. The ratings are synthesized exponentially, and gradually the values will move toward the user's mean, which is the horizontal line. We get all of our ratings well before this happens. We end up with a lot of quality ratings in the user's profile. This takes 1-2 seconds to produce, so doing this with a new user in the system is reasonably quick.
 
-![User 250](images/synthetic_from10.png)
+![User 250](images/synthetic_from05.png)
 
 
 ### How do we evaluate the quality of the recommender?
@@ -177,33 +189,49 @@ Using testing results, we select the most efficient recommendation system and ma
 
 > We're also interested in improving our catalog's coverage, and increasing the total number of recommended items in the system to include less popular items. While improving rating diversity is part of future work, we can still evaluate coverage improvements as we add synthetic ratings.
 
-### The Cold Start Problem
+### The Recommender Model
 
-> We will address in common fashion with user questionnaire
-   * Ask category questions for "What kind of board games do you like to play?”, allow multiple category selections
-   * Select favorite mechanics, allow multiple selections
-   * Show a set of games in those categories and ask them to rate at least 5
-   * Generate synthetic ratings
+> Our final model uses accepted memory-based statistical methods to evaluate a user's local neighborhood and provide recommendations. Memory-based methods were far superior to Model-based methods in testing and evaluation.
+
+
+### Meeting our Objectives
+
+##### Plan for fast data acquisition and cleaning to allowing frequent system updates
+> The basic data update can be done in as little as 30 minutes a day via API and can be automated through the acquisition and cleaning steps.
+
+##### Deal with computational cost of recommendation system
+> Our end model is purely mathematical and requires no ongoing maintenance or model deployment. It does not use machine learning and instead uses statistical methods, allowing a user to receive a recommendation within seconds.
+
+##### Address Cold Start problem with a specific new user plan
+> Address in common fashion with user questionnaire
+- Ask category questions for "What kind of board games do you like to play?”, allow multiple category selections
+- Select favorite mechanics, allow multiple selections
+- Show a set of games in those categories and ask them to rate at least 5
+- Generate synthetic ratings
+- Generate recommendations
 
 > There was insufficient time to implement the cold start in this project, and it has become part of Future Work
 
-### Dealing with computational cost
+##### Overcome catalog coverage challenge using synthetic content-based data
+> Since synthetic ratings are produced from the content-based filter which does not care about game popularity, we bring additional catalog titles into our system, which are then passed to other users.
 
-> Getting recommendations via Model is time consuming, and the user must be part of the system in order to produce recommendations. A plan must be in place to produce recommendations FAST for users.
+##### Overcome the sparse matrix challenge using synthetic content-based data
+> In a synthetic system, all users have a minimum n ratings with which to locate neighbors. More matches are made and quality neighbors located.
 
-> Recommendations via statistical methods (Memory Method) are relatively quick. In general, the Memory method should be used for:
-- New Users
-- Users who have updated their profile
+##### Overcome the BGG-specific challenge using synthetic content-based data
+> Synthetic data accounts for an bridges the gaps of similar-but-different content by adding ratings for these items to a user's profile.
 
-> The machine learning model can be compiled and upated daily in about 30 minutes, and will produce recommendations for a user quickly.
 
 ## Future Work
 
-* Evaluate diversity in recommendations and retune content recommender to fit goals
-* Next task - implement the cold start questionnaire
-* Find the sweet spot of synthetic ratings for recommendation time
-* Set up on-the-fly implementation and daily model deployment
-* Deploy GUI
+- The quality of the synthetic collaborative system is entirely dependent on the hand-tuned quality of the content-based system. Based on the preliminary improvements with the synthetic data, I am confident that with more tuning work on the content-based system I can further improve the quality to where Recall is also improved.
+
+- Then we need to find our sweet spot of synthetic ratings to recommendation time. Users want results fast, so we need to give those results while also having a quality system. In my example I synthesized data to 100 ratings, but we should check timing with 50, 75, etc. Again, this was simply a time issue where I ran out of time for further testing.
+
+- Our next task is to implement the cold start plan to integrate our new users.
+
+- Finally, we will deploy our user GUI and the system will be usable.
+
 
 
 ## Presentation
