@@ -209,7 +209,7 @@ Using testing results, we select the most efficient recommendation system and ma
 
 ### The Recommender Model
 
-> Our final model uses accepted memory-based statistical methods to evaluate a user's local neighborhood and provide recommendations. Memory-based methods were far superior to Model-based methods in testing and evaluation, and have the added advantage of improved speed and lower computational cost. A model-based recommender built in the Surprise package requires that a user be part of the model training, making it incompatible for a new user to the system. Statistical based methods incorporate new users immediately.
+> Our final model uses accepted memory-based statistical methods to evaluate a user's local neighborhood and provide recommendations. Memory-based methods were far superior to Model-based methods in testing and evaluation, and have the added advantage of improved speed and lower computational cost. A model-based recommender built in the Surprise package requires that a user be part of the model training, making it incompatible for a new user to the system. Statistical based methods incorporate new users immediately. User averages are removed from their ratings to remove their personal rating bias and center all ratings around 0 as the user's average.
 
 > Our method takes the following steps to produce recommendations:
 - If the user has fewer than 5 ratings, will implement a Cold Start protocol to obtain baseline information
@@ -217,8 +217,8 @@ Using testing results, we select the most efficient recommendation system and ma
 - Defines potential neighbors as other users with at least 5 items in common
 - Evaluates user's cosine similarity to each potential neighbor. Similarity is calculated on all items rated in common, with the minimum of 5.
 - System defines neighbors over .8 similarity as part of neighborhood (entire potential neighborhood would be valid, but we cut off for computational cost reasons)
-- Any item rated by at least 5 neighbors produces a rating for the user which is weighted by the neighbor's similarity
-- All ratings above the user's mean are served as recommendations
+- Any item rated by at least 5 neighbors produces an item rating for the user, which is weighted by each contributing neighbor's similarity
+- Items rated above 0 are served as recommendations (user mean is added back for presentation)
 
 
 ### Meeting our Objectives
