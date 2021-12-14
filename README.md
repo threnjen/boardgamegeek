@@ -24,14 +24,14 @@ By: Jen Wadkins
 
 #### Business Objective
 
-Build a content recommender for BoardGameGeek with a goal of addressing problems that are both common to recommenders in general, and specific to BGG: 
-    
-   * Cost of acquiring and maintaining data
-   * Cold Start problems where new users and items are not a part of the system
-   * Catalog coverage problems where popularity bias results in items of the catalog that are not in the recommendation system
-   * Sparse matrix issue where a combination of many items, many users, and few ratings results in low user/item crossover for identifying neighbors
-   * BGG specific problem where reimplementatons/reskins of games result in separated user profiles when they should be similar
-   * Computational cost/time limitations when issuing recommendations
+Build a content recommender for BoardGameGeek with a goal of addressing challenges that are both common to recommenders in general, and specific to BGG:
+
+- Cost of acquiring and maintaining data
+- Cold Start problems where new users and items are not a part of the system
+- Catalog coverage problems where popularity bias results in items of the catalog that are not in the recommendation system
+- Sparse matrix issue where a combination of many items, many users, and few ratings results in low user/item crossover for identifying neighbors
+- BGG specific problem where reimplementatons/reskins of games result in separated user profiles when they should be similar
+- Computational cost/time limitations when issuing recommendations
    
 
 ## Methodology
@@ -104,7 +104,7 @@ BGG08 contains the Collaborative Filtering model.
 
 The CF is tested in both memory and model-based modes, on both the user's real ratings data and the synthesized data sets.
 
-Using testing results, we select the most efficient recommendation system, make our business recommendations, and determine the solutions to the challenges.
+Using testing results, we select the most efficient recommendation system, make our business recommendations, and determine the solutions to the collaborative filter challenges.
 
 
 
@@ -115,7 +115,7 @@ Using testing results, we select the most efficient recommendation system, make 
 ![Collaborative Filtering](images/collab_filter.png)
 ##### The working of a Collaborative Recommender System 
 
-> Our recommendation system uses collaborative filtering. At its core this method finds items to recommend by relating people that like items in a similar way. The important word here is **similar**, not just that both users actually like the games. In the above example, this would mean both users hated Wingspan at the top and loved or liked the other three in the middle. The model would conclude that blue and yellow are SIMILAR players. In our example the model recommends blue's favorites Nemesis and Rebellion to the yellow meeple, and yellow's favorites Terraforming Mars and Scythe to the blue meeple, after concluding that they have similar tastes in games.
+> Our recommendation system uses collaborative filtering. At its core this method finds items to recommend by relating people that rate items in a similar way. The important word here is **similar**, not just that both users actually like the games. In the above example, this would mean both users hated Wingspan at the top and loved or liked the other three in the middle. The model would conclude that blue and yellow are SIMILAR players. In our example the model recommends blue's favorites Nemesis and Rebellion to the yellow meeple, and yellow's favorites Terraforming Mars and Scythe to the blue meeple, after concluding that they have similar tastes in games.
 
 
 ### Collaborative Filtering Challenges
@@ -134,7 +134,7 @@ Using testing results, we select the most efficient recommendation system, make 
 
 ![Users vs Rated](images/usersvsrated.png)
 
->Here we show in our data set the number of users vs the number of games rated. Our median number of games rated is 43 which is not terrible, but our data set is only made of users who have rated 5 or more, so our real-world median is going to be less. A fairly high number of users are in the 5-20 range; In fact 29.7% of our user set has rated 20 or fewer games. When this is spread over the 22,500 games in our game list, it becomes difficult to find the similar users like in our above venn diagram.
+>Here we show in our data set the number of users vs the number of games rated.  Our median number of games rated is 43 which is decent. However our data set is only made of users who have rated 5 or more, so our real-world median will be less. A fairly high number of users are in the 5-20 range; in fact 29.7% of our user set has rated 20 or fewer games. When this is spread over the 22,500 games in our game list, it becomes difficult to find the similar users like in our above venn diagram.
 
 > Add to that a problem of how to start up a new user who has NO ratings for any items - where do they get recommendations to begin with? It's sensible to require a small amount of startup information, but without a lot of ratings, the recommendations may be poor. We'll be addressing this "cold-start problem" in a standard fashion with an introductory questionnaire, which I have have allocated to future work, but we'll also be boosting all of these low-ratings users with our custom collaborative filtering solution.
 
@@ -183,6 +183,7 @@ Using testing results, we select the most efficient recommendation system, make 
 > How does synthetic data improve our recommender? We tried the recommender with real data, and boosting to 100 ratings, and had some interesting results.
 
 > Using our synthetic data, we had an overall reduction to our user error - MAE and RMSE went down. However MAE/RMSE went down only for users under the median, which I would argue are the users that we most want to improve recommendations for. For these users, the reduction in user error was significant. Our users over the median saw an increase in error.
+> Overall, the changes to error were very minor. As previously mentioned, there is not a large functional difference between a 7 and a 7.1 rating, and our absolute error decay in users over the mean was only .026. Our overall improvement for all users was only .044.
 
 > **MAE**  
 - ALL Users ▼ 7.66% MAE improvement from .571 to .527
@@ -207,6 +208,8 @@ Using testing results, we select the most efficient recommendation system, make 
 - ALL Users ▲ 9.69% Coverage Improvement from 83.93% to 92.06%
 - Users UNDER median ▲ 9.59% Coverage Improvement from 83.64% to 91.66%
 - Users OVER median ▲ 49.17% Coverage Improvement from 54.89% to 81.88%
+
+> The huge increase to catalog coverage coupled with an increase to error was an interesting result for the users over the median. The much lower base catalog coverage for this group implies that as number of reviews grow, those reviews tend to coalesce around the more popular items.
 
 
 ### The Recommender Model
