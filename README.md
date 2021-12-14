@@ -185,28 +185,28 @@ Using testing results, we select the most efficient recommendation system, make 
 > Using our synthetic data, we had an overall reduction to our user error - MAE and RMSE went down. However MAE/RMSE went down only for users under the median, which I would argue are the users that we most want to improve recommendations for. For these users, the reduction in user error was significant. Our users over the median saw an increase in error.
 
 > **MAE**  
-- ALL Users ▼ 7.03% MAE improvement
-- Users UNDER median ▼ 18.07% MAE improvement
-- Users OVER median ▲ 5.66% MAE deterioration
+- ALL Users ▼ 7.66% MAE improvement from .571 to .527
+- Users UNDER median ▼ 18.39% MAE improvement from .608 to .497
+- Users OVER median ▲ 4.86% MAE deterioration from .533 to .559
 
 > **RMSE** 
-- ALL Users ▼ 3.13% Users RMSE improvement
-- UNDER median ▼ 13.58% RMSE improvement
-- Users OVER median ▲ 8.51% RMSE deterioration
+- ALL Users ▼ 3.79% Users RMSE improvement from .730 to .703
+- UNDER median ▼ 13.98% RMSE improvement from .769 to .661
+- Users OVER median ▲ 7.82% RMSE deterioration from .691 to .745
 
 > The synthetic data resulted in a slight reduction to our recall, meaning the system's ability to accurately classify a user's relevant items at recommended. This was true for all user groups. This is undesirable, and if we cannot resolve it with further content tuning, it should be considered if the synthetic system is a true improvement.
 
 > **Recall** 
-- ALL Users ▼ 6.22% Recall deterioration
-- Users UNDER median ▼ 5.85% Recall deterioration
-- Users OVER median ▼ 6.56% Recall deterioration
+- ALL Users ▼ 5.82% Recall deterioration from 61.75% to 58.15%
+- Users UNDER median ▼ 5.6% Recall deterioration from 59.3% to 56%
+- Users OVER median ▼ 5.96% Recall deterioration from 64.3% to 60.4%
 
 > Finally, the system had a large increase in catalog coverage, especially for those users over the median. We achieved a far higher level of recommendation diversity when using the synthetic data, because the content-based recommender doesn't know how popular an item is, and populates the synthetic ratings with more diverse recommendations. This overcomes a large challenge to recommender systems, and is a desirable result.
 
 > **Catalog Coverage**
-- ALL Users ▲ 11.16% Coverage Improvement
-- Users UNDER median ▲ 10.9% Coverage Improvement
-- Users OVER median ▲ 69.5% Coverage Improvement
+- ALL Users ▲ 9.69% Coverage Improvement from 83.93% to 92.06%
+- Users UNDER median ▲ 9.59% Coverage Improvement from 83.64% to 91.66%
+- Users OVER median ▲ 49.17% Coverage Improvement from 54.89% to 81.88%
 
 
 ### The Recommender Model
