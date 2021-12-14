@@ -265,6 +265,6 @@ Synthetic data accounts for and bridges the gaps of similar-but-different conten
 
 
 ## Presentation
-[Video - Data Science Capstone](https://youtu.be/JqVsJpemchQ)
+[Video - Data Science Capstone](https://youtu.be/D7XPFbMjBAI)
 
 [PDF of Presentation](https://github.com/threnjen/boardgamegeek/blob/main/BGG.pdf)
