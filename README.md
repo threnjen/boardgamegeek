@@ -106,7 +106,9 @@ The CF is tested in both memory and model-based modes, on both the user's real r
 
 Using testing results, we select the most efficient recommendation system, make our business recommendations, and determine the solutions to the collaborative filter challenges.
 
+#### [BGG09_Recommendation_Flow.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG09_Recommendation_Flow.ipynb)
 
+BGG09 has a complete single-user recommendation flow
 
 ## Analysis
 
