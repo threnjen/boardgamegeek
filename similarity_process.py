@@ -64,7 +64,10 @@ def process_block(x):
     
     print("starting block"+str(x))
     start = x
-    end = x+100
+    end = x+4400
+    
+    if end > len(gameids_columnorder):
+      end = len(gameids_columnorder)
     
     #block_start = time.time()
     
@@ -90,28 +93,25 @@ def process_block(x):
 
 def run_pool():
 
-  global_start = time.time()
-
-  values = np.arange(0,300,100)
-  pool = Pool(4)
+  values = np.arange(0,22000,4400)
+  pool = Pool(5)
   results = pool.map(process_block, values)
   
   # save dictionary
-  with open('item_similarities/similarity_storage_real_scaled_multi_test.json', 'w') as convert_file:
+  with open('item_similarities/item_similarity_storage_1000synthetic.json', 'w') as convert_file:
       convert_file.write(json.dumps(results))
   
   pool.close()
   
-  print(time.time()-global_start)
 
-    
+global_start = time.time()
+
 # the basic file required for this work - the full matrix
 
 larger_matrix = pd.read_pickle('synthetic_ratings/users_synthetic_1000_fullmatrix.pkl')
 
 
 gameids_columnorder = list(larger_matrix.columns)
-gameids_columnorder[:10]
 
 
 # convert full matrix to numpy and delete matrix
@@ -130,7 +130,7 @@ games_range = len(all_games[:100])
 if __name__ == '__main__':
   run_pool()
 
-
+print(time.time()-global_start)
 
 
 
