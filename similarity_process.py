@@ -98,7 +98,7 @@ def run_pool():
   results = pool.map(process_block, values)
   
   # save dictionary
-  with open('item_similarities/item_similarity_storage_100synthetic.json', 'w') as convert_file:
+  with open('item_similarities/item_similarity_storage_250synthetic.json', 'w') as convert_file:
       convert_file.write(json.dumps(results))
   
   pool.close()
@@ -108,7 +108,7 @@ global_start = time.time()
 
 # the basic file required for this work - the full matrix
 
-larger_matrix = pd.read_pickle('synthetic_ratings/users_synthetic_100_fullmatrix.pkl')
+larger_matrix = pd.read_pickle('synthetic_ratings/users_synthetic_250_fullmatrix.pkl')
 
 
 gameids_columnorder = list(larger_matrix.columns)
@@ -129,8 +129,9 @@ games_range = len(all_games[:100])
 
 if __name__ == '__main__':
   run_pool()
+  print(time.time()-global_start)
 
-print(time.time()-global_start)
+
 
 
 
