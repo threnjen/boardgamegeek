@@ -4,7 +4,7 @@ import json
 
 class BggSpider(scrapy.Spider):
 
-  name="bgg" 
+  name="bgg_ratings" 
   
   def start_requests(self):
     
