@@ -47,17 +47,11 @@ We use the OSEMN for Data Science to organize the project.
 # Table of Contents
 
 
-#### [BGG01_Obtaining_Primary.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG01_Obtaining_Primary.ipynb)
+#### [BGG01_Data_Pull.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG01_Data_Pull.ipynb)
 
-BGG01 involves the acquisition of game data from BoardGameGeek. Largely this is accomplished by XML API call, with some dynamic content scraped. Files are dumped to a "dirty" directory.
+BGG01 involves the acquisition of game data from BoardGameGeek. Largely this is accomplished by XML API call using Scrapy. Files are dumped to a "dirty" directory and then the XML is processed using BeautifulSoup or lxml.
 
-#### [BGG02_Obtaining_UserID.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG02_Obtaining_UserID.ipynb)
-
-BGG02 involves the acquisition of user_id information from BoardGameGeek, using their XML API.
-
-In this notebook, user apis are accessed one-by-one and the user information dumped dirty to file.
-
-#### [BGG03_Scrubbing-Cleaning.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG03_Scrubbing-Cleaning.ipynb)
+#### [BGG02_Scrubbing-Cleaning.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG02_Scrubbing-Cleaning.ipynb)
 
 BGG03 is the scrubbing and cleaning of the various data obtained in notebooks BGG01 and BGG02. The following datasets are cleaned, constructed, or otherwise prepared for EDA and modeling.
 
@@ -72,23 +66,31 @@ BGG03 is the scrubbing and cleaning of the various data obtained in notebooks BG
    * Comments
    * Ratings Matrix
 
-#### [BGG04_EDA.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG04_EDA.ipynb)
+#### [BGG03_EDA.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG03_EDA.ipynb)
 
 BGG05 holds the EDA and visualization for the game data.
 
 Most of this notebook is outside of the scope of the recommendation engine, and serves largely as a visualization and exploration playground to find interesting details about the data.
 
-#### [BGG05_Content_Based.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG05_Content_Based.ipynb)
+#### [BGG04_Content_Based.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG04_Content_Based.ipynb)
 
 BGG05 is the building of a content-based item filter. Using category weights, I use my domain expertise to tune an item similarity matrix for all game IDs in the games file.
 
 This content-based filter could be used as-is to find similar games to a user's catalog and predict ratings.
 
-#### [BGG06_Synthetic_Ratings.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG06_Synthetic_Ratings.ipynb)
+#### [BGG05_Synthetic_Ratings_Production.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG05_Synthetic_Ratings_Production.ipynb)
 
-BGG06 is where synthetic ratings are produced for each user, using the content-based item filter from BGG05.
+BGG06 is where synthetic ratings are produced for each user, using the content-based item filter from BGG04.
 
-#### [BGG07_Build_Datasets.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG07_Build_Datasets.ipynb)
+#### [BGG06_Similarity_Calculations.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG06_Similarity_Calculations.ipynb)
+
+BGG06 is where similarity calculations are made between items, based on user ratings.
+
+#### [BGG07_Clean_Process_Similarity_Files.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG07_Clean_Process_Similarity_Files.ipynb)
+
+BGG06 is where similarity calculations are made between items, based on user ratings.
+
+#### [BGG08_Build_Datasets.ipynb](https://github.com/threnjen/boardgamegeek/blob/main/BGG08_Build_Datasets.ipynb)
 
 In BGG07 we build several large datasets in preparation for the collaborative filter, notably:
 
@@ -112,7 +114,7 @@ BGG09 has a complete single-user recommendation flow
 
 ## Analysis
 
->We started with 182,000 users rating the 22,500 most popular board games from BoardGameGeek. After cleaning for users with more than 5 ratings there were 117,000 users remaining. Most data was obtained via the BGG API, with some scraped directly. 
+>We started with 182,000 users rating the 22,500 most popular board games from BoardGameGeek. After cleaning for users with more than 5 ratings there were 117,000 users remaining. Most data was obtained via the BGG API, with some scraped directly. A recommender system integrated into the BGG website would allow focused advertising opportunities. If BGG could place advertisers directly on the pages of most relevance to their product, customer clickthrough would increase, benefiting both BGG and the game publisher.
 
 ![Collaborative Filtering](images/collab_filter.png)
 ##### The working of a Collaborative Recommender System 
