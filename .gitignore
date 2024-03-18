@@ -1,0 +1,12 @@
+*.xml
+*.pkl
+*.csv
+*.json
+*.svg
+*.pyc
+*.jpg
+*.mp4
+*.log
+*.png
+*.zip
+.ipynb_checkpoints/*

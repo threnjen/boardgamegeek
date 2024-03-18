@@ -44,7 +44,7 @@ def math_function(game):
             
         common_indices = np.intersect1d(indices, indices2)
         
-        if len(common_indices)<4:
+        if len(common_indices)<=10:
             results.append(0)
             continue      
         
@@ -98,7 +98,7 @@ def run_pool():
   results = pool.map(process_block, values)
   
   # save dictionary
-  with open('item_similarities_raw/synthetic_2000_user_ratings_similarities.json', 'w') as convert_file:
+  with open('item_similarities_raw/synthetic_100_user_ratings_similarities.json', 'w') as convert_file:
       convert_file.write(json.dumps(results))
   
   pool.close()
@@ -108,7 +108,7 @@ global_start = time.time()
 
 # the basic file required for this work - the full matrix
 
-larger_matrix = pd.read_pickle('synthetic_ratings/users_synthetic_2000_fullmatrix.pkl')
+larger_matrix = pd.read_pickle('synthetic_ratings/users_synthetic_100_fullmatrix.pkl')
 
 
 gameids_columnorder = list(larger_matrix.columns)
