@@ -12,6 +12,9 @@ bs4 = "*"
 selenium = "*"
 regex = "*"
 scrapy = "*"
+spacy = "*"
+nltk = "*"
+scikit-learn = "*"
 
 [dev-packages]
 pytest = "*"
