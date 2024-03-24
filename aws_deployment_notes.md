@@ -5,6 +5,7 @@
 - Add GitHub deployment action to this repo
 - Confirm repo pushes up to AWS
 - lambda trigger needs to read URLs json, parse groups, launch ECS on a per-group basis
+- Load up to AWS - boardgames_ranks.csv
 
 ## Preparing code for AWS
 
