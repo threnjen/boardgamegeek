@@ -10,3 +10,4 @@
 *.png
 *.zip
 .ipynb_checkpoints/*
+*.env
