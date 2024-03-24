@@ -22,7 +22,6 @@ class BggSpider(scrapy.Spider):
     filename = f'data_dirty/pulled_games/raw_{timestamp}.xml'
     with open (filename, 'wb') as f:
       f.write(response.body)
-    self.log("saved test file")
-    pass
+
 
   
