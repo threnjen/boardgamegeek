@@ -3,14 +3,10 @@ import numpy as np
 import pandas as pd
 import regex as re
 
-sims_byname = pd.read_pickle(
-    "data_cleaned_new_scraper/game_cosine_similarity_byname.pkl"
-)
+sims_byname = pd.read_pickle("data_cleaned_new_scraper/game_cosine_similarity_byname.pkl")
 
 while True:
-    game = eg.enterbox(
-        "Enter game name here\nCaps and punctuation don't matter.", "Enter Game Here"
-    )
+    game = eg.enterbox("Enter game name here\nCaps and punctuation don't matter.", "Enter Game Here")
 
     if game:
         game = game.lower()
@@ -19,11 +15,7 @@ while True:
 
         try:
             # test specific games here
-            results = pd.DataFrame(
-                data={
-                    "Similarity": sims_byname[game].sort_values(ascending=False)[0:31]
-                }
-            )
+            results = pd.DataFrame(data={"Similarity": sims_byname[game].sort_values(ascending=False)[0:31]})
             results.index = results.index.str.title()
             eg.msgbox(results, "Press OK to enter another game")
         except:

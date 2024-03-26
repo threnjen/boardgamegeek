@@ -45,18 +45,14 @@ def create_thing_of_type(game_page, game_id, find_type_str):
     if find_type_str == "boardgamemechanic":
         # Try Tableau
         try:
-            game_page.find(
-                "link", type="boardgamefamily", value=("Mechanism: Tableau Building")
-            )["value"]
+            game_page.find("link", type="boardgamefamily", value=("Mechanism: Tableau Building"))["value"]
             this_dict["TableauBuilding"] = [1]
         except:
             pass
 
         # Try is Legacy
         try:
-            game_page.find("link", type="boardgamefamily", value=("Mechanism: Legacy"))[
-                "value"
-            ]
+            game_page.find("link", type="boardgamefamily", value=("Mechanism: Legacy"))["value"]
             this_dict["Legacy"] = [1]
         except:
             pass
@@ -105,9 +101,7 @@ def make_all_dataframes_per_file():
             if ".xml" in item:
                 files.append(f"data_dirty/pulled_games/{item}")
     else:
-        all_files = wr.s3.list_objects(
-            f"s3://boardgamegeek-scraper/data_dirty/pulled_games/"
-        )
+        all_files = wr.s3.list_objects(f"s3://boardgamegeek-scraper/data_dirty/pulled_games/")
         for item in all_files:
             files.append(item)
 
@@ -116,7 +110,6 @@ def make_all_dataframes_per_file():
     start = time.time()
 
     for file in files:
-
         games_dfs = []
         designers_dfs = []
         categories_dfs = []
@@ -132,16 +125,12 @@ def make_all_dataframes_per_file():
         file_suffix += 1
 
         if IS_LOCAL:
-            game_page = BeautifulSoup(
-                open(file, encoding="utf8"), "lxml"
-            )  # parse page with beautifulsoup
+            game_page = BeautifulSoup(open(file, encoding="utf8"), "lxml")  # parse page with beautifulsoup
         else:
             # get file from s3
             s3_client = boto3.client("s3")
             bucket = "boardgamegeek-scraper"
-            response = s3_client.get_object(
-                Bucket=bucket, Key=file.replace(f"s3://{bucket}/", "")
-            )
+            response = s3_client.get_object(Bucket=bucket, Key=file.replace(f"s3://{bucket}/", ""))
             response = response["Body"].read().decode("utf-8")
             game_page = BeautifulSoup(response, "lxml")  # parse page with beautifulsoup
 
@@ -153,12 +142,9 @@ def make_all_dataframes_per_file():
         ##### Process Each Game #####
 
         for entry in game_entries:
-
             # check that this game has sufficient user ratings to incluide
             try:
-                user_ratings = int(
-                    entry.find("usersrated")["value"]
-                )  # get the number of user ratings
+                user_ratings = int(entry.find("usersrated")["value"])  # get the number of user ratings
 
                 if user_ratings < 10:  # check if user ratings are under 10
                     continue
@@ -193,25 +179,13 @@ def make_all_dataframes_per_file():
                 maxplayers = None
 
             avg_rating = float(entry.find("average")["value"])  # average rating
-            bayes_avg = float(
-                entry.find("bayesaverage")["value"]
-            )  # bayes average rating
-            std_dev = float(
-                entry.find("stddev")["value"]
-            )  # standard deviation of rating
+            bayes_avg = float(entry.find("bayesaverage")["value"])  # bayes average rating
+            std_dev = float(entry.find("stddev")["value"])  # standard deviation of rating
             num_owned = int(entry.find("owned")["value"])  # num of people own this game
-            num_want = int(
-                entry.find("wanting")["value"]
-            )  # num of people want this game
-            num_wish = int(
-                entry.find("wishing")["value"]
-            )  # num of people with game on wishlist
-            num_weight_votes = int(
-                entry.find("numweights")["value"]
-            )  # num of votes for game weight
-            game_weight = float(
-                entry.find("averageweight")["value"]
-            )  # voted game weight
+            num_want = int(entry.find("wanting")["value"])  # num of people want this game
+            num_wish = int(entry.find("wishing")["value"])  # num of people with game on wishlist
+            num_weight_votes = int(entry.find("numweights")["value"])  # num of votes for game weight
+            game_weight = float(entry.find("averageweight")["value"])  # voted game weight
 
             try:
                 image_path = entry.find("image").text  # path to image
@@ -219,22 +193,16 @@ def make_all_dataframes_per_file():
                 image_path = None
 
             try:
-                mfg_play_time = int(
-                    entry.find("playingtime")["value"]
-                )  # mfg stated playtime
+                mfg_play_time = int(entry.find("playingtime")["value"])  # mfg stated playtime
             except:
                 mfg_play_time = None
             try:
-                comm_min_play = int(
-                    entry.find("minplaytime")["value"]
-                )  # community min playtime
+                comm_min_play = int(entry.find("minplaytime")["value"])  # community min playtime
             except:
                 comm_min_play = None
 
             try:
-                comm_max_play = int(
-                    entry.find("maxplaytime")["value"]
-                )  # community max playtime
+                comm_max_play = int(entry.find("maxplaytime")["value"])  # community max playtime
             except:
                 comm_max_play = None
 
@@ -244,12 +212,8 @@ def make_all_dataframes_per_file():
                 mfg_age = None
 
             # num_comments = int(entry.find('comments')['totalitems']) # num of ratings comments
-            num_alts = len(
-                entry.find_all("name", type="alternate")
-            )  # number alternate versions
-            num_expansions = len(
-                entry.find_all("link", type="boardgameexpansion")
-            )  # number of expansions
+            num_alts = len(entry.find_all("name", type="alternate"))  # number alternate versions
+            num_expansions = len(entry.find_all("link", type="boardgameexpansion"))  # number of expansions
             num_implementations = len(
                 entry.find_all("link", type="boardgameimplementation")
             )  # number of implementations
@@ -279,31 +243,23 @@ def make_all_dataframes_per_file():
                         items += int(item["numvotes"])
 
                     if items > 0:
-                        poll_result = (
-                            total / items
-                        )  # make sure not dividing by 0, get community recommended age
+                        poll_result = total / items  # make sure not dividing by 0, get community recommended age
                     else:
                         poll_result = None  # if no votes, record none
                 except:
                     poll_result = None
                 return poll_result
 
-            comm_age = evaluate_poll(
-                "User Suggested Player Age"
-            )  # community age min poll
+            comm_age = evaluate_poll("User Suggested Player Age")  # community age min poll
             lang_ease = evaluate_poll("Language Dependence")  # Language Ease poll
 
             try:
                 # Best and Good Players
-                players = entry.find(
-                    "poll", title="User Suggested Number of Players"
-                ).find_all(
+                players = entry.find("poll", title="User Suggested Number of Players").find_all(
                     "results"
                 )  # get user players poll
                 player_num_votes = int(
-                    entry.find("poll", title="User Suggested Number of Players")[
-                        "totalvotes"
-                    ]
+                    entry.find("poll", title="User Suggested Number of Players")["totalvotes"]
                 )  # get total votes
 
                 best_players, best_score, good_players = (
@@ -312,14 +268,10 @@ def make_all_dataframes_per_file():
                     [],
                 )  # set up for best players loop
 
-                if (
-                    player_num_votes > 30
-                ):  # evaluate if more than 30 votes for num players
+                if player_num_votes > 30:  # evaluate if more than 30 votes for num players
                     for player in players:
                         best = int(player.find("result", value="Best")["numvotes"])
-                        rec = int(
-                            player.find("result", value="Recommended")["numvotes"]
-                        )
+                        rec = int(player.find("result", value="Recommended")["numvotes"])
                         score = best * 2 + rec * 1
                         positives = best + rec
                         ratio = positives / player_num_votes
@@ -329,9 +281,7 @@ def make_all_dataframes_per_file():
                                 score,
                             )  # put in # players for best score
                         if ratio > 0.5:
-                            good_players.append(
-                                player["numplayers"]
-                            )  # put in good players if over 50% ratio
+                            good_players.append(player["numplayers"])  # put in good players if over 50% ratio
                 else:
                     best_players = None
             except:
@@ -381,9 +331,7 @@ def make_all_dataframes_per_file():
 
             # Try to add components
             try:
-                families = entry.find_all(
-                    "link", type="boardgamefamily", value=re.compile("Component")
-                )
+                families = entry.find_all("link", type="boardgamefamily", value=re.compile("Component"))
                 for item in families:
                     this_game["Components:" + item["name"]] = item["value"]
             except:
@@ -392,9 +340,7 @@ def make_all_dataframes_per_file():
             # Try to add game series/family
             try:
                 family = (
-                    entry.find(
-                        "link", type="boardgamefamily", value=re.compile("Game:")
-                    )["value"]
+                    entry.find("link", type="boardgamefamily", value=re.compile("Game:"))["value"]
                     .strip("Game:")
                     .strip(" ")
                 )
@@ -404,9 +350,7 @@ def make_all_dataframes_per_file():
 
             try:
                 family = (
-                    entry.find(
-                        "link", type="boardgamefamily", value=re.compile("Series:")
-                    )["value"]
+                    entry.find("link", type="boardgamefamily", value=re.compile("Series:"))["value"]
                     .strip("Series:")
                     .strip(" ")
                 )
@@ -416,9 +360,7 @@ def make_all_dataframes_per_file():
 
             try:
                 setting = (
-                    entry.find(
-                        "link", type="boardgamefamily", value=re.compile("Setting:")
-                    )["value"]
+                    entry.find("link", type="boardgamefamily", value=re.compile("Setting:"))["value"]
                     .strip("Setting:")
                     .strip(" ")
                 )
@@ -429,9 +371,7 @@ def make_all_dataframes_per_file():
             # Try to add theme
             try:
                 theme = (
-                    entry.find(
-                        "link", type="boardgamefamily", value=re.compile("Theme:")
-                    )["value"]
+                    entry.find("link", type="boardgamefamily", value=re.compile("Theme:"))["value"]
                     .strip("Theme:")
                     .strip(" ")
                 )
@@ -441,9 +381,7 @@ def make_all_dataframes_per_file():
 
             try:
                 mechanism = (
-                    entry.find(
-                        "link", type="boardgamefamily", value=re.compile("Mechanism:")
-                    )["value"]
+                    entry.find("link", type="boardgamefamily", value=re.compile("Mechanism:"))["value"]
                     .strip("Mechanism:")
                     .strip(" ")
                 )
@@ -454,9 +392,7 @@ def make_all_dataframes_per_file():
             # Try to add game category
             try:
                 category = (
-                    entry.find(
-                        "link", type="boardgamefamily", value=re.compile("Category:")
-                    )["value"]
+                    entry.find("link", type="boardgamefamily", value=re.compile("Category:"))["value"]
                     .strip("Category:")
                     .strip(" ")
                 )
@@ -466,9 +402,7 @@ def make_all_dataframes_per_file():
 
             # Try is Kickstarted
             try:
-                entry.find(
-                    "link", type="boardgamefamily", value=re.compile("Crowdfunding")
-                )["value"]
+                entry.find("link", type="boardgamefamily", value=re.compile("Crowdfunding"))["value"]
                 this_game["Kickstarted"] = int(1)
             except:
                 pass
@@ -478,9 +412,7 @@ def make_all_dataframes_per_file():
             all_subcategories = entry.find_all("link", type="boardgamecategory")
 
             # Create an empty DataFrame with columns
-            categories_hold = pd.DataFrame(
-                columns=["BGGId"] + [item["value"] for item in all_subcategories]
-            )
+            categories_hold = pd.DataFrame(columns=["BGGId"] + [item["value"] for item in all_subcategories])
 
             # Create a dictionary for the new row
             subcategory = {"BGGId": [int(game_id)]}
@@ -491,21 +423,11 @@ def make_all_dataframes_per_file():
             categories_hold = pd.DataFrame(subcategory)
 
             # create specialty dataframes
-            designer = create_thing_of_type(
-                entry, game_id, find_type_str="boardgamedesigner"
-            )
-            category = create_thing_of_type(
-                entry, game_id, find_type_str="boardgamecategory"
-            )
-            mechanic = create_thing_of_type(
-                entry, game_id, find_type_str="boardgamemechanic"
-            )
-            artist = create_thing_of_type(
-                entry, game_id, find_type_str="boardgameartist"
-            )
-            publisher = create_thing_of_type(
-                entry, game_id, find_type_str="boardgamepublisher"
-            )
+            designer = create_thing_of_type(entry, game_id, find_type_str="boardgamedesigner")
+            category = create_thing_of_type(entry, game_id, find_type_str="boardgamecategory")
+            mechanic = create_thing_of_type(entry, game_id, find_type_str="boardgamemechanic")
+            artist = create_thing_of_type(entry, game_id, find_type_str="boardgameartist")
+            publisher = create_thing_of_type(entry, game_id, find_type_str="boardgamepublisher")
 
             games_dfs.append(this_game)
             designers_dfs.append(designer)
@@ -536,9 +458,7 @@ def make_all_dataframes_per_file():
         }
 
         for item in dfs_to_save:
-            dfs_to_save[item].to_pickle(
-                f"data_dirty/pulled_games_processed/{item}{str(file_suffix)}.pkl"
-            )
+            dfs_to_save[item].to_pickle(f"data_dirty/pulled_games_processed/{item}{str(file_suffix)}.pkl")
 
             if not IS_LOCAL:
                 bucket = "boardgamegeek-scraper"
@@ -562,26 +482,13 @@ def make_master_dfs():
     subcategories_dfs = []
 
     for number in range(1, 500):
-
         try:
-            this_games = pd.read_pickle(
-                "data_dirty/pulled_games_processed/games" + str(number) + ".pkl"
-            )
-            this_designers = pd.read_pickle(
-                "data_dirty/pulled_games_processed/designers" + str(number) + ".pkl"
-            )
-            this_categories = pd.read_pickle(
-                "data_dirty/pulled_games_processed/categories" + str(number) + ".pkl"
-            )
-            this_mechanics = pd.read_pickle(
-                "data_dirty/pulled_games_processed/mechanics" + str(number) + ".pkl"
-            )
-            this_artists = pd.read_pickle(
-                "data_dirty/pulled_games_processed/artists" + str(number) + ".pkl"
-            )
-            this_publishers = pd.read_pickle(
-                "data_dirty/pulled_games_processed/publishers" + str(number) + ".pkl"
-            )
+            this_games = pd.read_pickle("data_dirty/pulled_games_processed/games" + str(number) + ".pkl")
+            this_designers = pd.read_pickle("data_dirty/pulled_games_processed/designers" + str(number) + ".pkl")
+            this_categories = pd.read_pickle("data_dirty/pulled_games_processed/categories" + str(number) + ".pkl")
+            this_mechanics = pd.read_pickle("data_dirty/pulled_games_processed/mechanics" + str(number) + ".pkl")
+            this_artists = pd.read_pickle("data_dirty/pulled_games_processed/artists" + str(number) + ".pkl")
+            this_publishers = pd.read_pickle("data_dirty/pulled_games_processed/publishers" + str(number) + ".pkl")
             this_subcategories = pd.read_pickle(
                 "data_dirty/pulled_games_processed/subcategories" + str(number) + ".pkl"
             )

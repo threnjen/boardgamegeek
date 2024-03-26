@@ -94,9 +94,7 @@ def run_pool():
     results = pool.map(process_block, values)
 
     # save dictionary
-    with open(
-        "item_similarities_raw/synthetic_100_user_ratings_similarities.json", "w"
-    ) as convert_file:
+    with open("item_similarities_raw/synthetic_100_user_ratings_similarities.json", "w") as convert_file:
         convert_file.write(json.dumps(results))
 
     pool.close()

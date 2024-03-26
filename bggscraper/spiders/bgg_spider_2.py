@@ -22,9 +22,7 @@ class BggSpider(scrapy.Spider):
             with open("data_dirty/scraper_urls_raw.json") as json_file:
                 scraper_urls_raw = json.load(json_file)
         else:
-            result = s3_client.get_object(
-                Bucket="boardgamegeek-scraper", Key="scraper_urls_raw.json"
-            )
+            result = s3_client.get_object(Bucket="boardgamegeek-scraper", Key="scraper_urls_raw.json")
             scraper_urls_raw = json.load(result["Body"])
 
         print(len(scraper_urls_raw))
