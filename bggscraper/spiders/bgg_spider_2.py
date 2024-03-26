@@ -1,5 +1,6 @@
 import scrapy
 import time
+import boto3
 import json
 from datetime import datetime
 

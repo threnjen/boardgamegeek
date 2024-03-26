@@ -16,6 +16,7 @@ spacy = "*"
 nltk = "*"
 scikit-learn = "*"
 boto3 = "*"
+python-dotenv = "*"
 
 [dev-packages]
 pytest = "*"
