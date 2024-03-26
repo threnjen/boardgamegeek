@@ -17,6 +17,7 @@ nltk = "*"
 scikit-learn = "*"
 boto3 = "*"
 python-dotenv = "*"
+awswrangler = "*"
 
 [dev-packages]
 pytest = "*"
