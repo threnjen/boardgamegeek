@@ -1,4 +1,5 @@
 import sys
+
 from utils.game_data_scraper import scrape_urls_file
 
 if __name__ == "__main__":

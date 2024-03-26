@@ -21,8 +21,9 @@ awswrangler = "*"
 
 [dev-packages]
 pytest = "*"
-black = "*"
+black = {extras = ["jupyter"], version = "*"}
 ipykernel = "*"
+isort = "*"
 
 [requires]
 python_version = "3.10"

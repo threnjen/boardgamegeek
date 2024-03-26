@@ -1,10 +1,10 @@
-import scrapy
-import time
-import boto3
 import json
-from datetime import datetime
-import boto3
 import os
+import time
+from datetime import datetime
+
+import boto3
+import scrapy
 
 IS_LOCAL = os.environ.get("IS_LOCAL", True)
 s3_client = boto3.client("s3")

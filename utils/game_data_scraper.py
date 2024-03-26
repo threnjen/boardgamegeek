@@ -1,23 +1,24 @@
 import pandas as pd
 
 pd.set_option("display.max_columns", None)
-import numpy as np
-from bs4 import BeautifulSoup
-import requests
-import regex as re
-import time
+import gc
 import json
 import os
-import gc
-import scrapy
-import awswrangler as wr
-import boto3
-from lxml import etree
-from datetime import datetime
 import subprocess
+import time
 
 # ignore warnings (gets rid of Pandas copy warnings)
 import warnings
+from datetime import datetime
+
+import awswrangler as wr
+import boto3
+import numpy as np
+import regex as re
+import requests
+import scrapy
+from bs4 import BeautifulSoup
+from lxml import etree
 
 warnings.filterwarnings("ignore")
 
