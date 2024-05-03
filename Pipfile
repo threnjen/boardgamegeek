@@ -20,7 +20,7 @@ python-dotenv = "*"
 
 [dev-packages]
 pytest = "*"
-black = "*"
+black = {extras = ["jupyter"], version = "*"}
 ipykernel = "*"
 
 [requires]
