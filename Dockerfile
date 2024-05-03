@@ -10,5 +10,5 @@ COPY ./ ./
 ARG GROUP
 ENV GROUP=$GROUP
 
-ENTRYPOINT ["pipenv","run","main.py"]
+ENTRYPOINT ["pipenv", "run", "python", "main.py"]
 CMD ["$GROUP"]

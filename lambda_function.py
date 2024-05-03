@@ -34,7 +34,7 @@ def lambda_handler(event, context):
         overrides={
             "containerOverrides": [
                 {
-                    "name": "boardgamegeek-scraper",
+                    "name": task_definition,
                     "environment": [{"name": "GROUP", "value": group}],
                 }
             ]

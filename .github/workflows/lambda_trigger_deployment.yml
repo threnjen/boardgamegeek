@@ -1,25 +1,24 @@
 name: Lambda Trigger CICD Deployment
 
 on:
-    push:
-        branches:
-        - main
+  push:
+    branches:
+      - main
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
-
-        steps:
-        - name: Checkout code
-            uses: actions/checkout@v2
-        - name: Zip function
-            run: |
-                zip -r lambda_function.zip lambda_function.py
-        - name: Lambda deploy
-            uses: appleboy/lambda-action@master
-            with:
-                aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                aws-region: us-west-2
-                function_name: bgg_fargate_trigger
-                zip_file: lambda_function.zip
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Zip function
+        run: |
+          zip -r lambda_function.zip lambda_function.py
+      - name: Lambda deploy
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: us-west-2
+          function_name: bgg_fargate_trigger
+          zip_file: lambda_function.zip
