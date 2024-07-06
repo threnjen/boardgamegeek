@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
@@ -14,11 +17,10 @@ jobs:
       - name: Zip function
         run: |
           zip -r lambda_function.zip lambda_function.py
-      - name: Lambda deploy
-        uses: appleboy/lambda-action@master
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws_region: us-west-2
-          function_name: bgg_fargate_trigger
-          zip_file: lambda_function.zip
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
+          aws-region: us-west-2
+      - run: zip -j lambda2.zip 
+      - run: aws lambda update-function-code --function-name=bgg_fargate_trigger  --zip-
