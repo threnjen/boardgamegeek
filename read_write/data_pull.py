@@ -141,7 +141,7 @@ class BGGSpider(scrapy.Spider):
             f.write(response.body)
 
 
-def generate_raw_urls(game_ids: list[int]):
+def generate_raw_urls(game_ids: list[str]):
     """Generate the raw urls for the scraper"""
 
     return [
@@ -152,7 +152,7 @@ def generate_raw_urls(game_ids: list[int]):
 
 if __name__ == "__main__":
     df = pd.read_csv("read_write/boardgames_ranks.csv", low_memory=False)
-    game_ids = df["id"].astype(int).to_list()
+    game_ids = df["id"].to_list()
     game_block = 3
 
     scraper_urls_raw = generate_raw_urls(game_ids[0:game_block])
