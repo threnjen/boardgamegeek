@@ -1,7 +1,13 @@
+from typing import Optional, Union
+from functools import partial
 import pandas as pd
+import scrapy
+from datetime import datetime
 from bs4 import BeautifulSoup
 import re
 import json
+import os
+from scrapy.crawler import CrawlerProcess
 
 
 def get_game_data_from_page(
@@ -105,7 +111,39 @@ def create_awards(awards_level: BeautifulSoup, game_id: int) -> pd.DataFrame:
 
 def generate_raw_urls(game_ids: list[int]):
     """Generate the raw urls for the scraper"""
-    
+
+    return [
+        f"https://www.boardgamegeek.com/xmlapi2/thing?id={target}&stats=1&type=boardgame"
+        for target in game_ids
+    ]
+
+
+class BGGSpider(scrapy.Spider):
+    def __init__(
+        self, name: str, save_folder: str, scraper_urls_raw: list[str]
+    ):
+        self.name = name
+        super().__init__()
+        self.scraper_urls_raw = scraper_urls_raw
+        self.save_folder = save_folder
+
+    def start_requests(self):
+        for i, url in enumerate(self.scraper_urls_raw):
+            print(f"Starting URL {i}: {url}")
+            save_response_with_index = partial(self._save_response, i=i)
+            yield scrapy.Request(url=url, callback=save_response_with_index)
+
+    def _save_response(self, response: scrapy.http.Response, i: int):
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        os.makedirs(self.save_folder, exist_ok=True)
+        filename = f"{self.save_folder}/raw_bgg_xml_{i}_{timestamp}.xml"
+        with open(filename, "wb") as f:
+            f.write(response.body)
+
+
+def generate_raw_urls(game_ids: list[int]):
+    """Generate the raw urls for the scraper"""
+
     return [
         f"https://www.boardgamegeek.com/xmlapi2/thing?id={target}&stats=1&type=boardgame"
         for target in game_ids
@@ -115,9 +153,24 @@ def generate_raw_urls(game_ids: list[int]):
 if __name__ == "__main__":
     df = pd.read_csv("read_write/boardgames_ranks.csv", low_memory=False)
     game_ids = df["id"].astype(int).to_list()
-    game_block = 500
+    game_block = 3
 
     scraper_urls_raw = generate_raw_urls(game_ids[0:game_block])
 
     with open("data_dirty/scraper_urls_raw.json", "w") as convert_file:
         convert_file.write(json.dumps(scraper_urls_raw))
+    process = CrawlerProcess(
+        settings={
+            "LOG_LEVEL": "DEBUG",
+            # other Scrapy settings if needed
+        }
+    )
+
+    process.crawl(
+        BGGSpider,
+        name="bgg_raw",
+        scraper_urls_raw=scraper_urls_raw,
+        save_folder="data_dirty/pulled_games",
+    )
+    process.start()
+
