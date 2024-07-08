@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 from typing import Optional, ClassVar
 from pydantic import BaseModel
 import re
+import pandas as pd
 
 
 class BGGXMLTag(BaseModel):
@@ -14,49 +15,69 @@ class BGGXMLParser(BaseModel):
     MIN_USER_RATINGS: ClassVar[int] = 10
 
     def parse_xml(
-        self, game_page: Optional[BeautifulSoup], filepath: Optional[str]
+        self, game_page: Optional[BeautifulSoup]=None, filepath: Optional[str]=None
     ) -> BeautifulSoup:
         if game_page is None and filepath is None:
             raise ValueError("No game page or file path provided. Please provide one.")
         if filepath:
-            game_page = BeautifulSoup(open(filepath, encoding="utf8"), "lxml")
+            game_page = BeautifulSoup(open(filepath, encoding="utf8"), features="lxml")
         game_list = game_page.find_all("item")
         if type(game_list) != list:
             game_list = [game_list]
 
         for game in game_list:
-            if self.include_game(game):
-                game_dict = self._parse_individual_game(game)
+            if not self.include_game(game):
+                continue
+            game_dict = BGGXMLParser._parse_individual_game(game)
 
     def include_game(self, game: BeautifulSoup) -> bool:
-        try:
-            user_ratings = int(game.find("usersrated")["value"])
-            if user_ratings < self.MIN_USER_RATINGS:
-                return False
-        except:
+        user_ratings = int(game.get("usersrated")["value"])
+        if user_ratings < self.MIN_USER_RATINGS:
+            print(user_ratings)
             return False
-        return True
+        
+    @staticmethod
+    def create_thing_of_type(
+        game_page: BeautifulSoup, game_id: str, find_type_str: str
+    ) -> pd.DataFrame:
+        """Create DataFrame for things for a specific game id
 
-    def _parse_individual_game(self, game: BeautifulSoup) -> dict:
+        Inputs:
+        game_page: page loaded and read with BeautifulSoup
+        game_id: id for this game
+
+        Outputs:
+        dataframe"""
+
+        # make dictionary for this item
+        this_dict = {
+            item["value"]: [1]
+            for item in game_page.find_all("link", type=find_type_str)
+        }
+        this_dict = {"BGGId": [int(game_id)]}
+        return pd.DataFrame(this_dict)
+
+    @staticmethod
+    def _parse_individual_game(game: BeautifulSoup) -> dict:
         game_dict = {}
-        game_dict["game_id"] = game["id"]
-        game_dict["game_name"] = game.find("name", type="primary")["value"]
-        game_dict["description"] = game.find("description").text
-        game_dict["year_published"] = int(game.find("yearpublished")["value"])
-        game_dict["min_players"] = int(game.find("minplayers")["value"])
-        game_dict["max_players"] = int(game.find("maxplayers")["value"])
-        game_dict["avg_rating"] = float(game.find("average")["value"])
-        game_dict["bayes_avg"] = float(game.find("bayesaverage")["value"])
-        game_dict["std_dev"] = float(game.find("stddev")["value"])
+        game_dict["BGGId"] = game["id"]
+        game_dict["Name"] = game.find("name", type="primary")["value"]
+        game_dict["Description"] = game.find("description").text
+        game_dict["YearPublished"] = int(game.find("yearpublished")["value"])
+        game_dict["MinPlayers"] = int(game.find("minplayers")["value"])
+        game_dict["MaxPlayers"] = int(game.find("maxplayers")["value"])
+        game_dict["AvgRating"] = float(game.find("average")["value"])
+        game_dict["BayesAvgRating"] = float(game.find("bayesaverage")["value"])
+        game_dict["StdDev"] = float(game.find("stddev")["value"])
         game_dict["NumOwned"] = int(game.find("owned")["value"])
         game_dict["NumWant"] = int(game.find("wanting")["value"])
         game_dict["NumWish"] = int(game.find("wishing")["value"])
         game_dict["NumWeightVotes"] = int(game.find("numweights")["value"])
-        game_dict["game_weight"] = float(game.find("averageweight")["value"])
+        game_dict["GameWeight"] = float(game.find("averageweight")["value"])
         game_dict["ImagePath"] = game.find("image").text
         game_dict["MfgPlaytime"] = int(game.find("playingtime")["value"])
-        game_dict["comm_min_play"] = int(game.find("minplaytime")["value"])
-        game_dict["comm_max_play"] = int(game.find("maxplaytime")["value"])
+        game_dict["ComMinPlaytime"] = int(game.find("minplaytime")["value"])
+        game_dict["ComMaxPlaytime"] = int(game.find("maxplaytime")["value"])
         game_dict["MfgAgeRec"] = int(game.find("minage")["value"])
         game_dict["NumUserRatings"] = int(game.find("usersrated")["value"])
         game_dict["num_comments"] = int(game.find("comments")["totalitems"])
@@ -89,7 +110,7 @@ class BGGXMLParser(BaseModel):
         )  # Community Max Playtime poll
         for rank, score in BGGXMLParser.get_rank(game).items():
             game_dict[rank] = score
-        game_dict["Family"] = BGGXMLParser.get_boardgame_family_attribute("Game:")
+        game_dict["Family"] = BGGXMLParser.get_family(game)
         game_dict["Setting"] = BGGXMLParser.get_boardgame_family_attribute("Setting:")
         game_dict["Theme"] = BGGXMLParser.get_boardgame_family_attribute("Theme:")
         game_dict["Mechanism"] = BGGXMLParser.get_boardgame_family_attribute(
@@ -101,7 +122,8 @@ class BGGXMLParser(BaseModel):
         )
         for component, value in BGGXMLParser.get_components(game).items():
             game_dict[component] = value
-
+        for player, value in BGGXMLParser.get_player_counts(game).items():
+            game_dict[player] = value
 
         return game_dict
 
@@ -134,10 +156,110 @@ class BGGXMLParser(BaseModel):
         overall (coded as 'boardgame'), etc.
         """
         return {
-            f"Rank:{ item['name'] }": float(
-                item["value"]) for item in game.find_all("rank")
-            
+            f"Rank:{ item['name'] }": float(item["value"])
+            for item in game.find_all("rank")
         }
+
+    @staticmethod
+    def get_game_data_from_page(
+        game_page: BeautifulSoup, game_id: int, find_type_str: str
+    ) -> pd.DataFrame:
+        """
+        Creates a dataframe to store attributes from a specified game id.
+
+        Parameters:
+        game_page: BeautifulSoup object
+            The BeautifulSoup object containing the game page.
+        game_id: int
+            The id of the game.
+        find_type_str: str
+            The type of attribute to find.
+
+        Returns:
+        pd.DataFrame
+            A dataframe containing the attributes of the specified type
+        """
+
+        # find all of the things on page
+        all_this_type = game_page.find_all("link", type=find_type_str)
+
+        # make dictionary for this item
+        this_dict = {"BGGId": [game_id]}
+
+        # add this item's things to dictionary
+        for item in all_this_type:
+            this_dict[item["value"]] = [1]
+
+        # return dataframe
+        return pd.DataFrame(this_dict)
+
+    @staticmethod
+    def get_game_mechanics(game_page: BeautifulSoup, game_id: int) -> pd.DataFrame:
+        """
+        Creates a dataframe to store the mechanics of a specified game id.  We create customer indicators for the
+        specified mechanices.
+
+        Parameters:
+        game_page: BeautifulSoup object
+            The BeautifulSoup object containing the game page.
+        game_id: int
+            The id of the game.
+
+        Returns:
+        pd.DataFrame
+            A dataframe containing the mechanics of the specified game id
+        """
+
+        specific_mechanics = {
+            "Mechanism: Legacy": "Legacy",
+            "Mechanism: Tableau Building": "TableauBuilding",
+        }
+
+        # find all mechanics on page
+        all_mechanics = game_page.find_all("link", type="boardgamemechanic")
+
+        # make dictionary for this item
+        mechanic = {"BGGId": [int(game_id)]}
+
+        # add this item's mechanics to dictionary
+        for item in all_mechanics:
+            mechanic[item["value"]] = [1]
+
+        # Try Tableau
+        for search_name, indicator in specific_mechanics.items():
+            try:
+                game_page.find("link", type="boardgamefamily", value=(search_name))[
+                    "value"
+                ]
+                mechanic[indicator] = [1]
+            except:
+                continue
+
+        return pd.DataFrame(mechanic)
+
+    @staticmethod
+    def create_awards(awards_level: BeautifulSoup, game_id: int) -> pd.DataFrame:
+        """Create DataFrame for Awards for a specific game id
+
+        Inputs:
+        game_page: page loaded and read with BeautifulSoup
+        game_id: id for this game
+
+        Outputs:
+        dataframe"""
+
+        # find all awards on page
+        all_awards = awards_level.find_all("a", class_="ng-binding")
+
+        # make dictionary for this item
+        award = {"BGGId": [int(game_id)]}
+
+        # add this item's awards to dictionary
+        for item in all_awards:
+            item = re.sub("[0-9]", "", item.text).strip(" ")
+            award[item] = [1]
+
+        return pd.DataFrame(award)
 
     @staticmethod
     def get_boardgame_family_attribute(game: BeautifulSoup, attribute: str) -> str:
@@ -153,23 +275,49 @@ class BGGXMLParser(BaseModel):
             return None
 
     @staticmethod
-    def get_components(game: BeautifulSoup) -> dict:
+    def get_family(game: BeautifulSoup) -> str:
         try:
-            families = game.find_all(
-                "link", type="boardgamefamily", value=re.compile("Component")
+            return (
+                game.find("link", type="boardgamefamily", value=re.compile("Game:"))[
+                    "value"
+                ]
+                .strip("Game:")
+                .strip(" ")
             )
-            return {item["name"]: item["value"] for item in families}
         except:
-            return {}
+            try:
+                return (
+                    game.find(
+                        "link", type="boardgamefamily", value=re.compile("Series:")
+                    )["value"]
+                    .strip("Series:")
+                    .strip(" ")
+                )
+            except:
+                return None
+
+
+    @staticmethod
+    def get_subcategories(game: BeautifulSoup, game_id: str) -> dict[str, int]:
+        all_subcategories = game.find_all("link", type="boardgamecategory")
+
+        # Create a dictionary for the new row
+        subcategory = {"BGGId": [int(game_id)]}
+        for item in all_subcategories:
+            subcategory[item["value"]] = [1]
+        return subcategory
+
+    @staticmethod
+    def get_player_counts(game: BeautifulSoup) -> dict:
         try:
             # Best and Good Players
-            players = entry.find(
+            players = game.find(
                 "poll", title="User Suggested Number of Players"
             ).find_all(
                 "results"
             )  # get user players poll
             player_num_votes = int(
-                entry.find("poll", title="User Suggested Number of Players")[
+                game.find("poll", title="User Suggested Number of Players")[
                     "totalvotes"
                 ]
             )  # get total votes
@@ -200,45 +348,17 @@ class BGGXMLParser(BaseModel):
                 best_players = None
         except:
             best_players = None
+        return {"BestPlayers": best_players, "GoodPlayers": good_players}
 
-        # Try to add game series/family
+    @staticmethod
+    def get_components(game: BeautifulSoup) -> dict:
         try:
-            family = (
-                entry.find("link", type="boardgamefamily", value=re.compile("Game:"))[
-                    "value"
-                ]
-                .strip("Game:")
-                .strip(" ")
+            families = game.find_all(
+                "link", type="boardgamefamily", value=re.compile("Component")
             )
-            this_game["Family"] = family
+            return {item["name"]: item["value"] for item in families}
         except:
-            pass
-
-        try:
-            family = (
-                entry.find("link", type="boardgamefamily", value=re.compile("Series:"))[
-                    "value"
-                ]
-                .strip("Series:")
-                .strip(" ")
-            )
-            this_game["Family"] = family
-        except:
-            pass
-
-        ##### Get subcategories #####
-
-        all_subcategories = entry.find_all("link", type="boardgamecategory")
-
-        # Create an empty DataFrame with columns
-        categories_hold = pd.DataFrame(
-            columns=["BGGId"] + [item["value"] for item in all_subcategories]
-        )
-
-        # Create a dictionary for the new row
-        subcategory = {"BGGId": [int(game_id)]}
-        for item in all_subcategories:
-            subcategory[item["value"]] = [1]
+            return {}
 
         # Append the dictionary as a new row to the DataFrame
         categories_hold = pd.DataFrame(subcategory)
@@ -264,37 +384,35 @@ class BGGXMLParser(BaseModel):
         publishers_dfs.append(publisher)
         subcategories_dfs.append(categories_hold)
 
-    if games_dfs == []:
-        continue
-    games = pd.concat(games_dfs)
-    designers = pd.concat(designers_dfs)
-    categories = pd.concat(categories_dfs)
-    mechanics = pd.concat(mechanics_dfs)
-    artists = pd.concat(artists_dfs)
-    publishers = pd.concat(publishers_dfs)
-    subcategories = pd.concat(subcategories_dfs)
+    # if games_dfs == []:
+    #     continue
+    # games = pd.concat(games_dfs)
+    # designers = pd.concat(designers_dfs)
+    # categories = pd.concat(categories_dfs)
+    # mechanics = pd.concat(mechanics_dfs)
+    # artists = pd.concat(artists_dfs)
+    # publishers = pd.concat(publishers_dfs)
+    # subcategories = pd.concat(subcategories_dfs)
 
-    games.to_pickle(f"data_dirty/pulled_games_processed/games{str(file_suffix)}.pkl")
-    designers.to_pickle(
-        f"data_dirty/pulled_games_processed/designers{str(file_suffix)}.pkl"
-    )
-    categories.to_pickle(
-        f"data_dirty/pulled_games_processed/categories{str(file_suffix)}.pkl"
-    )
-    mechanics.to_pickle(
-        f"data_dirty/pulled_games_processed/mechanics{str(file_suffix)}.pkl"
-    )
-    artists.to_pickle(
-        f"data_dirty/pulled_games_processed/artists{str(file_suffix)}.pkl"
-    )
-    publishers.to_pickle(
-        f"data_dirty/pulled_games_processed/publishers{str(file_suffix)}.pkl"
-    )
-    subcategories.to_pickle(
-        f"data_dirty/pulled_games_processed/subcategories{str(file_suffix)}.pkl"
-    )
+    # games.to_pickle(f"data_dirty/pulled_games_processed/games{str(file_suffix)}.pkl")
+    # designers.to_pickle(
+    #     f"data_dirty/pulled_games_processed/designers{str(file_suffix)}.pkl"
+    # )
+    # categories.to_pickle(
+    #     f"data_dirty/pulled_games_processed/categories{str(file_suffix)}.pkl"
+    # )
+    # mechanics.to_pickle(
+    #     f"data_dirty/pulled_games_processed/mechanics{str(file_suffix)}.pkl"
+    # )
+    # artists.to_pickle(
+    #     f"data_dirty/pulled_games_processed/artists{str(file_suffix)}.pkl"
+    # )
+    # publishers.to_pickle(
+    #     f"data_dirty/pulled_games_processed/publishers{str(file_suffix)}.pkl"
+    # )
+    # subcategories.to_pickle(
+    #     f"data_dirty/pulled_games_processed/subcategories{str(file_suffix)}.pkl"
+    # )
 
-    print("Finished items in this group")
-
-
-print(f"Time: {time.time() - start}\n\n")
+if __name__ == "__main__":
+    BGGXMLParser().parse_xml(filepath="data_dirty/pulled_games/raw_bgg_xml_0_20240707214127.xml")
