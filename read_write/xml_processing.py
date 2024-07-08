@@ -32,6 +32,7 @@ class BGGXMLParser(BaseModel):
         user_ratings = int(game.find("usersrated")["value"])
         if user_ratings < self.MIN_USER_RATINGS:
             return False
+        return True
         
     @staticmethod
     def create_thing_of_type(
@@ -77,7 +78,6 @@ class BGGXMLParser(BaseModel):
         game_dict["ComMaxPlaytime"] = int(game.find("maxplaytime")["value"])
         game_dict["MfgAgeRec"] = int(game.find("minage")["value"])
         game_dict["NumUserRatings"] = int(game.find("usersrated")["value"])
-        game_dict["num_comments"] = int(game.find("comments")["totalitems"])
         game_dict["NumAlternates"] = len(game.find_all("name", type="alternate"))
         game_dict["NumExpansions"] = len(
             game.find_all("link", type="boardgameexpansion")
@@ -90,32 +90,32 @@ class BGGXMLParser(BaseModel):
             if game.find("link", type="boardgameimplementation", inbound="true")
             else 0
         )
-        game_dict["ComAgeRec"] = BGGXMLParser.evaulate_poll(
+        game_dict["ComAgeRec"] = BGGXMLParser.evaulate_poll(game,
             "User Suggested Player Age"
         )  # community age min poll
-        game_dict["LanguageEase"] = BGGXMLParser.evaulate_poll(
+        game_dict["LanguageEase"] = BGGXMLParser.evaulate_poll(game,
             "Language Dependence"
         )  # Language Ease poll
-        game_dict["BestPlayers"] = BGGXMLParser.evaulate_poll(
+        game_dict["BestPlayers"] = BGGXMLParser.evaulate_poll(game,
             "User Suggested Number of Players"
         )  # Best Players poll
-        game_dict["ComMinPlaytime"] = BGGXMLParser.evaulate_poll(
+        game_dict["ComMinPlaytime"] = BGGXMLParser.evaulate_poll(game,
             "User Suggested Play Time"
         )  # Community Min Playtime poll
-        game_dict["ComMaxPlaytime"] = BGGXMLParser.evaulate_poll(
+        game_dict["ComMaxPlaytime"] = BGGXMLParser.evaulate_poll(game,
             "User Suggested Play Time"
         )  # Community Max Playtime poll
         for rank, score in BGGXMLParser.get_rank(game).items():
             game_dict[rank] = score
         game_dict["Family"] = BGGXMLParser.get_family(game)
-        game_dict["Setting"] = BGGXMLParser.get_boardgame_family_attribute("Setting:")
-        game_dict["Theme"] = BGGXMLParser.get_boardgame_family_attribute("Theme:")
-        game_dict["Mechanism"] = BGGXMLParser.get_boardgame_family_attribute(
+        game_dict["Setting"] = BGGXMLParser.get_boardgame_family_attribute(game,"Setting:")
+        game_dict["Theme"] = BGGXMLParser.get_boardgame_family_attribute(game,"Theme:")
+        game_dict["Mechanism"] = BGGXMLParser.get_boardgame_family_attribute(game,
             "Mechanism:"
         )
-        game_dict["Category"] = BGGXMLParser.get_boardgame_family_attribute("Category:")
+        game_dict["Category"] = BGGXMLParser.get_boardgame_family_attribute(game,"Category:")
         game_dict["Kickstarted"] = (
-            1 if BGGXMLParser.get_boardgame_family_attribute("Crowdfunding") else 0
+            1 if BGGXMLParser.get_boardgame_family_attribute(game,"Crowdfunding") else 0
         )
         for component, value in BGGXMLParser.get_components(game).items():
             game_dict[component] = value
@@ -412,4 +412,4 @@ class BGGXMLParser(BaseModel):
     # )
 
 if __name__ == "__main__":
-    BGGXMLParser().parse_xml(filepath="data_dirty/pulled_games/raw_bgg_xml_0_20240707215756.xml")
+    BGGXMLParser().parse_xml(filepath="data_dirty/pulled_games/raw_bgg_xml_0_20240707214127.xml")
