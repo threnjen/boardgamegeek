@@ -20,10 +20,8 @@ class BGGXMLParser(BaseModel):
         if game_page is None and filepath is None:
             raise ValueError("No game page or file path provided. Please provide one.")
         if filepath:
-            game_page = BeautifulSoup(open(filepath, encoding="utf8"), features="lxml")
+            game_page = BeautifulSoup(open(filepath, encoding="utf8"), features="xml")
         game_list = game_page.find_all("item")
-        if type(game_list) != list:
-            game_list = [game_list]
 
         for game in game_list:
             if not self.include_game(game):
@@ -31,9 +29,8 @@ class BGGXMLParser(BaseModel):
             game_dict = BGGXMLParser._parse_individual_game(game)
 
     def include_game(self, game: BeautifulSoup) -> bool:
-        user_ratings = int(game.get("usersrated")["value"])
+        user_ratings = int(game.find("usersrated")["value"])
         if user_ratings < self.MIN_USER_RATINGS:
-            print(user_ratings)
             return False
         
     @staticmethod
@@ -415,4 +412,4 @@ class BGGXMLParser(BaseModel):
     # )
 
 if __name__ == "__main__":
-    BGGXMLParser().parse_xml(filepath="data_dirty/pulled_games/raw_bgg_xml_0_20240707214127.xml")
+    BGGXMLParser().parse_xml(filepath="data_dirty/pulled_games/raw_bgg_xml_0_20240707215756.xml")
