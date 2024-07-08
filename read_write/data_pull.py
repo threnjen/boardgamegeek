@@ -119,9 +119,19 @@ def generate_raw_urls(game_ids: list[int]):
 
 
 class BGGSpider(scrapy.Spider):
-    def __init__(
-        self, name: str, save_folder: str, scraper_urls_raw: list[str]
-    ):
+    """Spider to scrape BGG for game data
+    """
+
+    def __init__(self, name: str, save_folder: str, scraper_urls_raw: list[str]):
+        """
+        Parameters:
+        name: str
+            The name of the spider
+        save_folder: str
+            The folder to save the data to
+        scraper_urls_raw: list[str]
+            The urls to scrape
+        """
         self.name = name
         super().__init__()
         self.scraper_urls_raw = scraper_urls_raw
@@ -130,32 +140,35 @@ class BGGSpider(scrapy.Spider):
     def start_requests(self):
         for i, url in enumerate(self.scraper_urls_raw):
             print(f"Starting URL {i}: {url}")
-            save_response_with_index = partial(self._save_response, i=i)
+            save_response_with_index = partial(self._save_response, response_id=i)
             yield scrapy.Request(url=url, callback=save_response_with_index)
 
-    def _save_response(self, response: scrapy.http.Response, i: int):
+    def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         os.makedirs(self.save_folder, exist_ok=True)
-        filename = f"{self.save_folder}/raw_bgg_xml_{i}_{timestamp}.xml"
+        filename = f"{self.save_folder}/raw_bgg_xml_{response_id}_{timestamp}.xml"
         with open(filename, "wb") as f:
             f.write(response.body)
 
 
-def generate_raw_urls(game_ids: list[str]):
+def generate_raw_urls(game_ids: list[str], block_size: int = 500):
     """Generate the raw urls for the scraper"""
+    targets = [
+        game_ids[i : i + block_size] for i in range(0, len(game_ids), block_size)
+    ]
 
     return [
-        f"https://www.boardgamegeek.com/xmlapi2/thing?id={target}&stats=1&type=boardgame"
-        for target in game_ids
+        f"https://www.boardgamegeek.com/xmlapi2/thing?id={','.join(block)}&stats=1&type=boardgame"
+        for block in targets
     ]
 
 
 if __name__ == "__main__":
     df = pd.read_csv("read_write/boardgames_ranks.csv", low_memory=False)
-    game_ids = df["id"].to_list()
-    game_block = 3
+    game_ids = df["id"].astype(str).to_list()
+    block_size = 5
 
-    scraper_urls_raw = generate_raw_urls(game_ids[0:game_block])
+    scraper_urls_raw = generate_raw_urls(game_ids[:10], block_size)
 
     with open("data_dirty/scraper_urls_raw.json", "w") as convert_file:
         convert_file.write(json.dumps(scraper_urls_raw))
@@ -173,4 +186,3 @@ if __name__ == "__main__":
         save_folder="data_dirty/pulled_games",
     )
     process.start()
-
