@@ -7,8 +7,12 @@ from bs4 import BeautifulSoup
 import re
 import json
 import os
+import sys
+import awswrangler as wr
 from scrapy.crawler import CrawlerProcess
 
+ENV = os.environ.get("ENV", "dev")
+S3_BUCKET = os.environ.get("S3_BUCKET")
 
 def get_game_data_from_page(
     game_page: BeautifulSoup, game_id: int, find_type_str: str
@@ -145,33 +149,24 @@ class BGGSpider(scrapy.Spider):
 
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        os.makedirs(self.save_folder, exist_ok=True)
+        # os.makedirs(self.save_folder, exist_ok=True)
         filename = f"{self.save_folder}/raw_bgg_xml_{response_id}_{timestamp}.xml"
-        with open(filename, "wb") as f:
-            f.write(response.body)
-
-
-def generate_raw_urls(game_ids: list[str], block_size: int = 500):
-    """Generate the raw urls for the scraper"""
-    targets = [
-        game_ids[i : i + block_size] for i in range(0, len(game_ids), block_size)
-    ]
-
-    return [
-        f"https://www.boardgamegeek.com/xmlapi2/thing?id={','.join(block)}&stats=1&type=boardgame"
-        for block in targets
-    ]
+        if ENV == "dev":
+            with open(filename, "wb") as f:
+                f.write(response.body)
+        else:
+            wr.s3.to_file(response.body, f"s3://{S3_BUCKET}/{filename}")
 
 
 if __name__ == "__main__":
-    df = pd.read_csv("read_write/boardgames_ranks.csv", low_memory=False)
-    game_ids = df["id"].astype(str).to_list()
-    block_size = 5
 
-    scraper_urls_raw = generate_raw_urls(game_ids[:10], block_size)
+    file_path = sys.argv[1]
 
-    with open("data_dirty/scraper_urls_raw.json", "w") as convert_file:
-        convert_file.write(json.dumps(scraper_urls_raw))
+    if ENV == "dev":
+        scraper_urls_raw = json.load(open(f"local_files/{file_path}"))
+    else:
+        scraper_urls_raw = wr.s3.read_json(f"s3://{S3_BUCKET}/{file_path}")
+    
     process = CrawlerProcess(
         settings={
             "LOG_LEVEL": "DEBUG",
