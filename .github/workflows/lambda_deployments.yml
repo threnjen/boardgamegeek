@@ -18,13 +18,17 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Zip function
+      - name: Zip functions
         run: |
-          zip -r lambda_function.zip lambda_function.py
+          cd lambda_functions
+          zip -r boardgame_scraper_fargate_trigger.zip boardgame_scraper_fargate_trigger.py
+          zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
           aws-region: us-west-2
-      - run: zip -j lambda1.zip ./lambda_function.py
-      - run: aws lambda update-function-code --function-name=bgg_fargate_trigger  --zip-file=fileb://lambda1.zip
+      - run: |
+          cd lambda_functions
+          aws lambda update-function-code --function-name=bgg_generate_game_urls  --zip-file=fileb://generate_game_urls_lambda.zip
+          aws lambda update-function-code --function-name=boardgame_scraper_fargate_trigger  --zip-file=fileb://boardgame_scraper_fargate_trigger.zip
