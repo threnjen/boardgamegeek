@@ -1,5 +1,3 @@
-# syntax=docker/socerfile:1
-
 FROM python:3.12
 RUN apt-get update && apt-get install -y python3-pip
 
