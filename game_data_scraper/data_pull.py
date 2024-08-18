@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import re
 import json
 import os
+import sys
 from scrapy.crawler import CrawlerProcess
 
 
@@ -164,14 +165,18 @@ def generate_raw_urls(game_ids: list[str], block_size: int = 500):
 
 
 if __name__ == "__main__":
-    df = pd.read_csv("read_write/boardgames_ranks.csv", low_memory=False)
-    game_ids = df["id"].astype(str).to_list()
-    block_size = 5
 
-    scraper_urls_raw = generate_raw_urls(game_ids[:10], block_size)
+    filename = sys.argv[1]
+    
+    # get file from local if dev, else from S3
+    ENV = os.environ.get("ENV", "dev")
+    if ENV == "dev":
+        urls = json.load(open(f"data_store/local_files/scraper_urls_raw/{filename}.json"))
+    else:
+        urls = wr.s3.read_csv(f"s3://{S3_BUCKET}/{filename}")
 
-    with open("data_store/data_dirty/scraper_urls_raw.json", "w") as convert_file:
-        convert_file.write(json.dumps(scraper_urls_raw))
+    print(urls)
+    exit()
     process = CrawlerProcess(
         settings={
             "LOG_LEVEL": "DEBUG",
