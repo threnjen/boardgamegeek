@@ -1,10 +1,6 @@
-from typing import Optional, Union
 from functools import partial
-import pandas as pd
 import scrapy
 from datetime import datetime
-from bs4 import BeautifulSoup
-import re
 import json
 import os
 import sys
@@ -12,6 +8,8 @@ import boto3
 import awswrangler as wr
 from scrapy.crawler import CrawlerProcess
 from config import S3_SCRAPER_BUCKET, JSON_URLS_PREFIX
+from scrapy_settings import SCRAPY_SETTINGS
+
 
 class BGGSpider(scrapy.Spider):
     """Spider to scrape BGG for game data
@@ -31,9 +29,16 @@ class BGGSpider(scrapy.Spider):
         super().__init__()
         self.scraper_urls_raw = scraper_urls_raw
         print("Completed init")
-        
+    
+    @classmethod
+    def update_settings(cls, settings):
+        super().update_settings(settings)
+        for setting in SCRAPY_SETTINGS:
+            settings.set(setting, SCRAPY_SETTINGS[setting], priority="spider")
 
     def start_requests(self):
+        print(f"Existing settings: {self.settings.attributes.items()}")
+        
         for i, url in enumerate(self.scraper_urls_raw):
             print(f"Starting URL {i}: {url}")
             save_response_with_index = partial(self._save_response, response_id=i)
