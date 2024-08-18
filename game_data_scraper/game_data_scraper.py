@@ -11,6 +11,7 @@ from scrapy_settings import SCRAPY_SETTINGS
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 JSON_URLS_PREFIX = os.environ.get("JSON_URLS_PREFIX")
+LOCAL_SCRAPER_PATH = os.environ.get("LOCAL_SCRAPER_PATH",".")
 
 class BGGSpider(scrapy.Spider):
     """Spider to scrape BGG for game data"""
@@ -45,23 +46,21 @@ class BGGSpider(scrapy.Spider):
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-        save_subfolder = "data_dirty/scraped_games"
-        full_local_path = f"data_store/{save_subfolder}/"
+        save_subfolder = f"{LOCAL_SCRAPER_PATH}/scraped_games"
         save_filename = f"raw_bgg_xml_{response_id}_{timestamp}.xml"
+        full_local_path = f"{save_subfolder}/{save_filename}"
+        print(full_local_path)
 
-        os.makedirs(full_local_path, exist_ok=True)
-
-        with open(f"{full_local_path}/{save_filename}", "wb") as f:
+        with open(full_local_path, "wb") as f:
             f.write(response.body)
 
         if ENV == "prod":
             s3_client = boto3.client("s3")
             s3_client.upload_file(
-                f"{full_local_path}/{save_filename}",
+                full_local_path,
                 S3_SCRAPER_BUCKET,
-                f"{save_subfolder}/{save_filename}",
+                f"data_dirty/{save_subfolder}/{save_filename}",
             )
-
 
 if __name__ == "__main__":
 
