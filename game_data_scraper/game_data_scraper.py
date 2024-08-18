@@ -85,7 +85,7 @@ def scrape_urls_file():
 
     scraper_urls_raw = generate_raw_urls(game_ids)
 
-    with open("data_dirty/scraper_urls_raw.json", "w") as convert_file:
+    with open("data_store/data_dirty/scraper_urls_raw.json", "w") as convert_file:
         convert_file.write(json.dumps(scraper_urls_raw))
 
     subprocess.call("scrapy crawl bgg_raw")

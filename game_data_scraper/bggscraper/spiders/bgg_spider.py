@@ -11,7 +11,7 @@ class BggSpider(scrapy.Spider):
         self.url_num = 1
 
     def start_requests(self):
-        with open("data_dirty/scraper_urls_ratings.json") as json_file:
+        with open("data_store/data_dirty/scraper_urls_ratings.json") as json_file:
             scraper_urls_ratings = json.load(json_file)
 
         start_urls = scraper_urls_ratings[self.group]
@@ -28,7 +28,7 @@ class BggSpider(scrapy.Spider):
         page = response.url
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         filename = (
-            f"data_dirty/pulled_ratings/ratings_{str(self.group)}_{self.url_num}.xml"
+            f"data_store/data_dirty/pulled_ratings/ratings_{str(self.group)}_{self.url_num}.xml"
         )
         with open(filename, "wb") as f:
             f.write(response.body)

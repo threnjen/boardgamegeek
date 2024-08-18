@@ -23,7 +23,7 @@ def lambda_handler(event, context):
 
     # Get file from https://boardgamegeek.com/data_dumps/bg_ranks
     if ENV == "dev":
-        df = pd.read_csv("local_files/boardgames_ranks.csv", low_memory=False)
+        df = pd.read_csv("data_store/local_files/boardgames_ranks.csv", low_memory=False)
     else:
         # read the file from S3
         df = wr.s3.read_csv(f"s3://{S3_BUCKET}/boardgames_ranks.csv")
@@ -42,7 +42,7 @@ def lambda_handler(event, context):
     if ENV == "dev":
         for i in range(10):
             print(f"Saving block size {i * block_size} : {(i + 1) * block_size}")
-            with open(f"local_files/scraper_urls_raw/scraper_urls_raw_{i}.json", "w") as convert_file:
+            with open(f"data_store/local_files/scraper_urls_raw/scraper_urls_raw_{i}.json", "w") as convert_file:
                 convert_file.write(json.dumps(scraper_urls_raw[i * block_size : (i + 1) * block_size]))
     else:
         # save the files to S3
