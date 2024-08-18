@@ -47,7 +47,7 @@ def lambda_handler(event, context):
     )
 
     for file in file_prefixes:
-        filename = file.split("/")[-1]
+        filename = file.split("/")[-1].split(".")[0]
         print(filename)
         continue
 
