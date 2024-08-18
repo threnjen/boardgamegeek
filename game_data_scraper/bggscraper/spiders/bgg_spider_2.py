@@ -13,7 +13,7 @@ class BggSpider(scrapy.Spider):
         self.url_num = 1
 
     def start_requests(self):
-        with open("data_dirty/scraper_urls_raw.json") as json_file:
+        with open("data_store/data_dirty/scraper_urls_raw.json") as json_file:
             self.scraper_urls_raw = json.load(json_file)
 
         print(len(self.scraper_urls_raw))
@@ -27,6 +27,6 @@ class BggSpider(scrapy.Spider):
     def parse(self, response):
         page = response.url
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        filename = f"data_dirty/pulled_games/raw_{self.url_num}_{timestamp}.xml"
+        filename = f"data_store/data_dirty/pulled_games/raw_{self.url_num}_{timestamp}.xml"
         with open(filename, "wb") as f:
             f.write(response.body)

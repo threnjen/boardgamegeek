@@ -8,7 +8,7 @@ SCRAPER_TASK_DEFINITION= os.environ.get("SCRAPER_TASK_DEFINITION")
 def get_filenames():
 
     if ENV != "prod":
-        file_prefixes = os.listdir("local_files/scraper_urls_raw")
+        file_prefixes = os.listdir("data_store/local_files/scraper_urls_raw")
     else:
         s3_client = boto3.client("s3")
         raw_files = s3_client.list_objects_v2(Bucket=S3_BUCKET, Prefix=URLS_PREFIX)["Contents"]
