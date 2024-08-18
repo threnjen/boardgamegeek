@@ -3,12 +3,12 @@
 FROM python:3.12
 RUN apt-get update && apt-get install -y python3-pip
 
-ARG ARG_HERE
-ENV ARG_HERE=$ARG_HERE
+ARG FILENAME
+ENV FILENAME=$FILENAME
 
 RUN pip3 install pipenv && pipenv sync
 
 COPY ./ ./
 
-ENTRYPOINT ["pipenv", "run", "python", "main.py"]
-CMD ["--argument", "$ARG_HERE"]
+ENTRYPOINT ["pipenv", "run", "python", "game_data_scraper.py"]
+CMD ["$FILENAME"]
