@@ -7,9 +7,10 @@ import sys
 import boto3
 import awswrangler as wr
 from scrapy.crawler import CrawlerProcess
-from config import S3_SCRAPER_BUCKET, JSON_URLS_PREFIX
 from scrapy_settings import SCRAPY_SETTINGS
 
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+JSON_URLS_PREFIX = os.environ.get("JSON_URLS_PREFIX")
 
 class BGGSpider(scrapy.Spider):
     """Spider to scrape BGG for game data"""
