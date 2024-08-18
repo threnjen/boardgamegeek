@@ -20,6 +20,8 @@ def generate_raw_urls(game_ids: list[str], block_size: int = 500):
 
 
 def lambda_handler(event, context):
+
+    # Get file from https://boardgamegeek.com/data_dumps/bg_ranks
     if ENV == "dev":
         df = pd.read_csv("local_files/boardgames_ranks.csv", low_memory=False)
     else:
@@ -49,11 +51,6 @@ def lambda_handler(event, context):
                 df=pd.DataFrame(scraper_urls_raw[i * block_size : (i + 1) * block_size]),
                 path=f"s3://{S3_BUCKET}/scraper_urls_raw/scraper_urls_raw_{i}.json",
             )
-
-    return
-    if ENV == "dev":
-        with open("local_files/scraper_urls_raw.json", "w") as convert_file:
-            convert_file.write(json.dumps(scraper_urls_raw))
 
 if __name__ == "__main__":
     lambda_handler(None, None)

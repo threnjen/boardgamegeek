@@ -116,7 +116,7 @@ BGG09 has a complete single-user recommendation flow
 
 >We started with 182,000 users rating the 22,500 most popular board games from BoardGameGeek. After cleaning for users with more than 5 ratings there were 117,000 users remaining. Most data was obtained via the BGG API, with some scraped directly. A recommender system integrated into the BGG website would allow focused advertising opportunities. If BGG could place advertisers directly on the pages of most relevance to their product, customer clickthrough would increase, benefiting both BGG and the game publisher.
 
-![Collaborative Filtering](images/collab_filter.png)
+![Collaborative Filtering](deliverables/imagescollab_filter.png)
 ##### The working of a Collaborative Recommender System 
 
 > Our recommendation system uses collaborative filtering. This method recommends items by first finding people that rate items in a similar way. The important word here is **similar**, not just that both users must like the items. In the above example, this would mean both users hated Wingspan at the top and loved or liked the other three in the middle. The model would conclude that blue and yellow are SIMILAR users. Once the recommender identifies similar users, it will recommend each user's favored items to the other user. In our example the model recommends blue's favorites Nemesis and Rebellion to the yellow meeple, and yellow's favorites Terraforming Mars and Scythe to the blue meeple, after concluding that they have similar tastes in games.
@@ -136,7 +136,7 @@ BGG09 has a complete single-user recommendation flow
 
 > Our final common challenge arises where a high number of items and low number of user ratings results in a sparse ratings matrix.
 
-![Users vs Rated](images/usersvsrated.png)
+![Users vs Rated](deliverables/imagesusersvsrated.png)
 
 >Here our data shows the number of users vs the number of games they rated.  The median number of games rated is 43 which is adequate. However our data set is only made of users who have rated 5 or more, so our real-world median will be less. A fairly high number of users are in the 5-20 range; in fact 29.7% of our user set has rated 20 or fewer games. When this is spread over the 22,500 items in our  catalog, it becomes difficult to find the similar users like in our above venn diagram.
 
@@ -145,17 +145,17 @@ BGG09 has a complete single-user recommendation flow
 
 #### Challenge in Detail: BoardGameGeek Specific Problem
 
-![Like Items](images/monopoly_compare.png)
+![Like Items](deliverables/imagesmonopoly_compare.png)
 
 > We have an additional challenge which is unique to board gaming where there are many games that are fundamentally the same but slight reskins. A great example of this is Monopoly, which has hundreds of different versions (and not even counting straight reskins like your local city-opoly). All these minor variations are different game entries even though at its core it is essentially the same game. Purple, yellow, and red may all have rated these slightly different versions of Monopoly, but the basic collaborative filtering system cannot perceive those as the same and will not relate those users to each other. This is a domain specific problem because in music, movies, or books, different items are actually different items, no matter how similar they are. In board gaming, different items may be different themes or new editions of the same game.
 
 > We overcome this problem in our data set by pulling in a second recommendation system based on **content-based filtering**. This method is very simple - it takes a user's item rating,  finds similar items to that item, and predicts a rating for each similar item using the user's original rating and how similar the new item is. Other users never enter the picture at all - all that matters is the items that have been rated. This system requires domain-specific knowledge to design and tune, but can be kickstarted with unsupervised learning.
 
-![Content Filter](images/content_resized.png)
+![Content Filter](deliverables/imagescontent_resized.png)
 
 > In the below image we see the results of unsupervised learning to assist in identifying the important features that determine game similarity. Using various UMAP plots, I was able to identify areas of interest that highly influence a game's similarity to another game. You can see in this graphic the strong groupings for certain game types, as well as game weight/complexity.
 
-![Games Map](images/infographics.png)
+![Games Map](deliverables/imagesinfographics.png)
 
 #### The Custom Recommender System
 
@@ -163,7 +163,7 @@ BGG09 has a complete single-user recommendation flow
 
 > Below is an image of what it looks like in a user's profile when we synthesize ratings. Here we have taken a user who started with only 5 ratings, and we synthesized using like-content until we reached 100 ratings. The ratings are synthesized exponentially, and gradually the values will move toward the user's mean, which is the horizontal line. We get all of our ratings well before this happens. We end up with many quality ratings in the user's profile. This takes less than 1 second to produce up to 100 ratings, so doing this with a new user in the system is reasonably quick.
 
-![User 100](images/synthetic_from_05.png)
+![User 100](deliverables/imagessynthetic_from_05.png)
 
 > With our **Synthetic Ratings Collaborative Filter** we overcome several of our collaborative filtering problems - first, we increase user ratings and **improve the sparse ratings matrix**. Second, the **BGG-specific problem** of different item editions is resolved. When we produce synthetic ratings, different item editions are the most similar items, and will inevitably have ratings produced for them. Finally, our **Catalog Coverage** significantly improves. Since synthetic ratings are produced from the content-based filter which does not care about game popularity, we bring additional catalog titles into our system, which are then passed to other users.
 
