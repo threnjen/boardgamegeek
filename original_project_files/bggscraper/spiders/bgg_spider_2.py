@@ -27,6 +27,8 @@ class BggSpider(scrapy.Spider):
     def parse(self, response):
         page = response.url
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        filename = f"data_store/data_dirty/scraped_games/raw_{self.url_num}_{timestamp}.xml"
+        filename = (
+            f"data_store/data_dirty/scraped_games/raw_{self.url_num}_{timestamp}.xml"
+        )
         with open(filename, "wb") as f:
             f.write(response.body)

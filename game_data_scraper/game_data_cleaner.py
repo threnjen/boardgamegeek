@@ -29,6 +29,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import os
 
+
 def get_game_data_from_page(
     game_page: BeautifulSoup, game_id: int, find_type_str: str
 ) -> pd.DataFrame:
@@ -126,6 +127,7 @@ def create_awards(awards_level: BeautifulSoup, game_id: int) -> pd.DataFrame:
         award[item] = [1]
 
     return pd.DataFrame(award)
+
 
 def create_thing_of_type(game_page, game_id, find_type_str):
     """Create DataFrame for things for a specific game id

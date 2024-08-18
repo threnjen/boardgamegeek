@@ -15,7 +15,7 @@ class BGGXMLParser(BaseModel):
     MIN_USER_RATINGS: ClassVar[int] = 10
 
     def parse_xml(
-        self, game_page: Optional[BeautifulSoup]=None, filepath: Optional[str]=None
+        self, game_page: Optional[BeautifulSoup] = None, filepath: Optional[str] = None
     ) -> BeautifulSoup:
         if game_page is None and filepath is None:
             raise ValueError("No game page or file path provided. Please provide one.")
@@ -33,7 +33,7 @@ class BGGXMLParser(BaseModel):
         if user_ratings < self.MIN_USER_RATINGS:
             return False
         return True
-        
+
     @staticmethod
     def create_thing_of_type(
         game_page: BeautifulSoup, game_id: str, find_type_str: str
@@ -90,32 +90,38 @@ class BGGXMLParser(BaseModel):
             if game.find("link", type="boardgameimplementation", inbound="true")
             else 0
         )
-        game_dict["ComAgeRec"] = BGGXMLParser.evaulate_poll(game,
-            "User Suggested Player Age"
+        game_dict["ComAgeRec"] = BGGXMLParser.evaulate_poll(
+            game, "User Suggested Player Age"
         )  # community age min poll
-        game_dict["LanguageEase"] = BGGXMLParser.evaulate_poll(game,
-            "Language Dependence"
+        game_dict["LanguageEase"] = BGGXMLParser.evaulate_poll(
+            game, "Language Dependence"
         )  # Language Ease poll
-        game_dict["BestPlayers"] = BGGXMLParser.evaulate_poll(game,
-            "User Suggested Number of Players"
+        game_dict["BestPlayers"] = BGGXMLParser.evaulate_poll(
+            game, "User Suggested Number of Players"
         )  # Best Players poll
-        game_dict["ComMinPlaytime"] = BGGXMLParser.evaulate_poll(game,
-            "User Suggested Play Time"
+        game_dict["ComMinPlaytime"] = BGGXMLParser.evaulate_poll(
+            game, "User Suggested Play Time"
         )  # Community Min Playtime poll
-        game_dict["ComMaxPlaytime"] = BGGXMLParser.evaulate_poll(game,
-            "User Suggested Play Time"
+        game_dict["ComMaxPlaytime"] = BGGXMLParser.evaulate_poll(
+            game, "User Suggested Play Time"
         )  # Community Max Playtime poll
         for rank, score in BGGXMLParser.get_rank(game).items():
             game_dict[rank] = score
         game_dict["Family"] = BGGXMLParser.get_family(game)
-        game_dict["Setting"] = BGGXMLParser.get_boardgame_family_attribute(game,"Setting:")
-        game_dict["Theme"] = BGGXMLParser.get_boardgame_family_attribute(game,"Theme:")
-        game_dict["Mechanism"] = BGGXMLParser.get_boardgame_family_attribute(game,
-            "Mechanism:"
+        game_dict["Setting"] = BGGXMLParser.get_boardgame_family_attribute(
+            game, "Setting:"
         )
-        game_dict["Category"] = BGGXMLParser.get_boardgame_family_attribute(game,"Category:")
+        game_dict["Theme"] = BGGXMLParser.get_boardgame_family_attribute(game, "Theme:")
+        game_dict["Mechanism"] = BGGXMLParser.get_boardgame_family_attribute(
+            game, "Mechanism:"
+        )
+        game_dict["Category"] = BGGXMLParser.get_boardgame_family_attribute(
+            game, "Category:"
+        )
         game_dict["Kickstarted"] = (
-            1 if BGGXMLParser.get_boardgame_family_attribute(game,"Crowdfunding") else 0
+            1
+            if BGGXMLParser.get_boardgame_family_attribute(game, "Crowdfunding")
+            else 0
         )
         for component, value in BGGXMLParser.get_components(game).items():
             game_dict[component] = value
@@ -293,7 +299,6 @@ class BGGXMLParser(BaseModel):
             except:
                 return None
 
-
     @staticmethod
     def get_subcategories(game: BeautifulSoup, game_id: str) -> dict[str, int]:
         all_subcategories = game.find_all("link", type="boardgamecategory")
@@ -411,5 +416,8 @@ class BGGXMLParser(BaseModel):
     #     f"data_store/data_dirty/scraped_games_processed/subcategories{str(file_suffix)}.pkl"
     # )
 
+
 if __name__ == "__main__":
-    BGGXMLParser().parse_xml(filepath="data_store/data_dirty/scraped_games/raw_bgg_xml_0_20240707214127.xml")
+    BGGXMLParser().parse_xml(
+        filepath="data_store/data_dirty/scraped_games/raw_bgg_xml_0_20240707214127.xml"
+    )

@@ -11,10 +11,12 @@ JSON_URLS_PREFIX = os.environ.get("JSON_URLS_PREFIX")
 url_block_size = 20
 number_url_files = 100
 
+
 def generate_raw_urls(game_ids: list[str]):
     """Generate the raw urls for the scraper"""
     targets = [
-        game_ids[i : i + url_block_size] for i in range(0, len(game_ids), url_block_size)
+        game_ids[i : i + url_block_size]
+        for i in range(0, len(game_ids), url_block_size)
     ]
     print(f"Generated {len(targets)} URLS with block size {url_block_size}")
 
@@ -28,7 +30,9 @@ def lambda_handler(event, context):
 
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
     if ENV == "dev":
-        df = pd.read_csv("data_store/local_files/boardgames_ranks.csv", low_memory=False)
+        df = pd.read_csv(
+            "data_store/local_files/boardgames_ranks.csv", low_memory=False
+        )
     else:
         # read the file from S3
         df = wr.s3.read_csv(f"s3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv")
@@ -47,15 +51,23 @@ def lambda_handler(event, context):
 
     for i in range(number_url_files):
         print(f"Saving block size {i * url_block_size} : {(i + 1) * url_block_size}")
-        with open(f"data_store/local_files/scraper_urls_raw/scraper_urls_raw_{i}.json", "w") as convert_file:
-            convert_file.write(json.dumps(scraper_urls_raw[i * url_block_size : (i + 1) * url_block_size]))
-        if ENV=="prod":
+        with open(
+            f"data_store/local_files/scraper_urls_raw/scraper_urls_raw_{i}.json", "w"
+        ) as convert_file:
+            convert_file.write(
+                json.dumps(
+                    scraper_urls_raw[i * url_block_size : (i + 1) * url_block_size]
+                )
+            )
+        if ENV == "prod":
             # upload the json to S3 with boto3
             s3_client = boto3.client("s3")
             s3_client.upload_file(
                 f"data_store/local_files/scraper_urls_raw/scraper_urls_raw_{i}.json",
                 S3_SCRAPER_BUCKET,
-                f"{JSON_URLS_PREFIX}/scraper_urls_raw_{i}.json")
+                f"{JSON_URLS_PREFIX}/scraper_urls_raw_{i}.json",
+            )
+
 
 if __name__ == "__main__":
     lambda_handler(None, None)
