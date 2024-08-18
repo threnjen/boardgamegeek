@@ -391,25 +391,25 @@ class BGGXMLParser(BaseModel):
     # publishers = pd.concat(publishers_dfs)
     # subcategories = pd.concat(subcategories_dfs)
 
-    # games.to_pickle(f"data_store/data_dirty/pulled_games_processed/games{str(file_suffix)}.pkl")
+    # games.to_pickle(f"data_store/data_dirty/scraped_games_processed/games{str(file_suffix)}.pkl")
     # designers.to_pickle(
-    #     f"data_store/data_dirty/pulled_games_processed/designers{str(file_suffix)}.pkl"
+    #     f"data_store/data_dirty/scraped_games_processed/designers{str(file_suffix)}.pkl"
     # )
     # categories.to_pickle(
-    #     f"data_store/data_dirty/pulled_games_processed/categories{str(file_suffix)}.pkl"
+    #     f"data_store/data_dirty/scraped_games_processed/categories{str(file_suffix)}.pkl"
     # )
     # mechanics.to_pickle(
-    #     f"data_store/data_dirty/pulled_games_processed/mechanics{str(file_suffix)}.pkl"
+    #     f"data_store/data_dirty/scraped_games_processed/mechanics{str(file_suffix)}.pkl"
     # )
     # artists.to_pickle(
-    #     f"data_store/data_dirty/pulled_games_processed/artists{str(file_suffix)}.pkl"
+    #     f"data_store/data_dirty/scraped_games_processed/artists{str(file_suffix)}.pkl"
     # )
     # publishers.to_pickle(
-    #     f"data_store/data_dirty/pulled_games_processed/publishers{str(file_suffix)}.pkl"
+    #     f"data_store/data_dirty/scraped_games_processed/publishers{str(file_suffix)}.pkl"
     # )
     # subcategories.to_pickle(
-    #     f"data_store/data_dirty/pulled_games_processed/subcategories{str(file_suffix)}.pkl"
+    #     f"data_store/data_dirty/scraped_games_processed/subcategories{str(file_suffix)}.pkl"
     # )
 
 if __name__ == "__main__":
-    BGGXMLParser().parse_xml(filepath="data_store/data_dirty/pulled_games/raw_bgg_xml_0_20240707214127.xml")
+    BGGXMLParser().parse_xml(filepath="data_store/data_dirty/scraped_games/raw_bgg_xml_0_20240707214127.xml")

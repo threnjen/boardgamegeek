@@ -1,0 +1,91 @@
+from typing import Optional, Union
+from functools import partial
+import pandas as pd
+import scrapy
+from datetime import datetime
+from bs4 import BeautifulSoup
+import re
+import json
+import os
+import sys
+import boto3
+import awswrangler as wr
+from scrapy.crawler import CrawlerProcess
+from config import S3_SCRAPER_BUCKET, JSON_URLS_PREFIX
+
+class BGGSpider(scrapy.Spider):
+    """Spider to scrape BGG for game data
+    """
+
+    def __init__(self, name: str, scraper_urls_raw: list[str]):
+        """
+        Parameters:
+        name: str
+            The name of the spider
+        save_folder: str
+            The folder to save the data to
+        scraper_urls_raw: list[str]
+            The urls to scrape
+        """
+        self.name = name
+        super().__init__()
+        self.scraper_urls_raw = scraper_urls_raw
+        print("Completed init")
+        
+
+    def start_requests(self):
+        for i, url in enumerate(self.scraper_urls_raw):
+            print(f"Starting URL {i}: {url}")
+            save_response_with_index = partial(self._save_response, response_id=i)
+            yield scrapy.Request(url=url, callback=save_response_with_index)
+
+    def _save_response(self, response: scrapy.http.Response, response_id: int):
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+
+        save_folder = "data_store/data_dirty/scraped_games"
+
+        os.makedirs(save_folder, exist_ok=True)
+        filename = f"{save_folder}/raw_bgg_xml_{response_id}_{timestamp}.xml"
+        with open(filename, "wb") as f:
+            f.write(response.body)
+
+        if ENV == "prod":
+            s3_client = boto3.client("s3")
+            s3_client.upload_file(
+                filename,
+                S3_SCRAPER_BUCKET,
+                f"data_dirty/scraped_games/raw_bgg_xml_{response_id}_{timestamp}.xml",)
+
+
+if __name__ == "__main__":
+
+    filename = sys.argv[1]
+    local_file=f"data_store/local_files/scraper_urls_raw/{filename}.json"
+    
+    # get file from local if dev, else from S3
+    ENV = os.environ.get("ENV", "dev")
+    if ENV == "dev":
+        scraper_urls_raw = json.load(open(local_file))
+    else:
+        wr.s3.download(
+            path=f"s3://{S3_SCRAPER_BUCKET}/{JSON_URLS_PREFIX}/{filename}.json",
+            local_file=local_file,
+        )
+        scraper_urls_raw = json.load(open(local_file))
+
+    process = CrawlerProcess(
+        settings={
+            "LOG_LEVEL": "DEBUG",
+            # other Scrapy settings if needed
+        }
+    )
+
+    if ENV != "prod":
+        scraper_urls_raw = scraper_urls_raw[:1]
+
+    process.crawl(
+        BGGSpider,
+        name="bgg_raw",
+        scraper_urls_raw=scraper_urls_raw,
+    )
+    process.start()
