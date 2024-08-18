@@ -11,3 +11,4 @@
 *.zip
 .ipynb_checkpoints/*
 *.env
+*.DS_STore
