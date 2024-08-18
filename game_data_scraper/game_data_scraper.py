@@ -12,8 +12,7 @@ from scrapy_settings import SCRAPY_SETTINGS
 
 
 class BGGSpider(scrapy.Spider):
-    """Spider to scrape BGG for game data
-    """
+    """Spider to scrape BGG for game data"""
 
     def __init__(self, name: str, scraper_urls_raw: list[str]):
         """
@@ -29,7 +28,7 @@ class BGGSpider(scrapy.Spider):
         super().__init__()
         self.scraper_urls_raw = scraper_urls_raw
         print("Completed init")
-    
+
     @classmethod
     def update_settings(cls, settings):
         super().update_settings(settings)
@@ -37,8 +36,6 @@ class BGGSpider(scrapy.Spider):
             settings.set(setting, SCRAPY_SETTINGS[setting], priority="spider")
 
     def start_requests(self):
-        print(f"Existing settings: {self.settings.attributes.items()}")
-        
         for i, url in enumerate(self.scraper_urls_raw):
             print(f"Starting URL {i}: {url}")
             save_response_with_index = partial(self._save_response, response_id=i)
@@ -47,26 +44,29 @@ class BGGSpider(scrapy.Spider):
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-        save_folder = "data_store/data_dirty/scraped_games"
+        save_subfolder = "data_dirty/scraped_games"
+        full_local_path = f"data_store/{save_subfolder}/"
+        save_filename = f"raw_bgg_xml_{response_id}_{timestamp}.xml"
 
-        os.makedirs(save_folder, exist_ok=True)
-        filename = f"{save_folder}/raw_bgg_xml_{response_id}_{timestamp}.xml"
-        with open(filename, "wb") as f:
+        os.makedirs(full_local_path, exist_ok=True)
+
+        with open(f"{full_local_path}/{save_filename}", "wb") as f:
             f.write(response.body)
 
         if ENV == "prod":
             s3_client = boto3.client("s3")
             s3_client.upload_file(
-                filename,
+                f"{full_local_path}/{save_filename}",
                 S3_SCRAPER_BUCKET,
-                f"data_dirty/scraped_games/raw_bgg_xml_{response_id}_{timestamp}.xml",)
+                f"{save_subfolder}/{save_filename}",
+            )
 
 
 if __name__ == "__main__":
 
     filename = sys.argv[1]
-    local_file=f"data_store/local_files/scraper_urls_raw/{filename}.json"
-    
+    local_file = f"data_store/local_files/scraper_urls_raw/{filename}.json"
+
     # get file from local if dev, else from S3
     ENV = os.environ.get("ENV", "dev")
     if ENV == "dev":
