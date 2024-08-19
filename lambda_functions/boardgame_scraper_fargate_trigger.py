@@ -46,10 +46,10 @@ def lambda_handler(event, context):
         .get("revision")
     )
 
-    for file in file_prefixes:
+    for file in file_prefixes[:1]:
+        print("TEMPORARILY RUNNING ONLY ONE SCRAPER FILE!!!")
         filename = file.split("/")[-1].split(".")[0]
         print(filename)
-        continue
 
         response = ecs_client.run_task(
             taskDefinition=f"{task_definition}:{latest_version}",
