@@ -1,12 +1,12 @@
 name: DEV deployment to boardgamegeek scraper
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      -main
       
 permissions:
   id-token: write # This is required for requesting the JWT

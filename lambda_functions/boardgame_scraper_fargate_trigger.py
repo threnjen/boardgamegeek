@@ -24,6 +24,9 @@ def get_filenames():
 
 
 def lambda_handler(event, context):
+
+    # TO DO LATER: HAVE THIS TRIGGER OFF OF EACH FILE LANDING AND SPAWN TASKS IN PARALLEL INSTEAD OF READING THE DIRECTORY
+
     file_prefixes = get_filenames()
 
     task_definition = (
@@ -32,13 +35,6 @@ def lambda_handler(event, context):
     print(task_definition)
 
     ecs_client = boto3.client("ecs", region_name="us-west-2")
-
-    # task_arn = (
-    #     ecs_client.describe_task_definition(taskDefinition=task_definition)
-    #     .get("taskDefinition")
-    #     .get("taskDefinitionArn")
-    # )
-    # print(task_arn)
 
     latest_version = (
         ecs_client.describe_task_definition(taskDefinition=task_definition)

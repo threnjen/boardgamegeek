@@ -3,7 +3,7 @@ name: PROD deployment to boardgamegeek scraper
 on:
   push:
     branches:
-      -main
+      - main
 
 permissions:
   id-token: write # This is required for requesting the JWT
