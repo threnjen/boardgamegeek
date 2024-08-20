@@ -12,6 +12,7 @@ from scrapy_settings import SCRAPY_SETTINGS
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 JSON_URLS_PREFIX = os.environ.get("JSON_URLS_PREFIX")
 LOCAL_SCRAPER_PATH = os.environ.get("LOCAL_SCRAPER_PATH",".")
+ENV = os.environ.get("ENV", "dev")
 
 class BGGSpider(scrapy.Spider):
     """Spider to scrape BGG for game data"""
@@ -46,7 +47,7 @@ class BGGSpider(scrapy.Spider):
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-        save_subfolder = f"{LOCAL_SCRAPER_PATH}/scraped_games"
+        save_subfolder = f"{LOCAL_SCRAPER_PATH}/scraped_games" if ENV != "prod" else "scraped_games"
         save_filename = f"raw_bgg_xml_{response_id}_{timestamp}.xml"
         full_local_path = f"{save_subfolder}/{save_filename}"
         print(full_local_path)
@@ -65,18 +66,18 @@ class BGGSpider(scrapy.Spider):
 if __name__ == "__main__":
 
     filename = sys.argv[1]
-    local_file = f"data_store/local_files/scraper_urls_raw/{filename}.json"
+    print(filename)
 
     # get file from local if dev, else from S3
-    ENV = os.environ.get("ENV", "dev")
+    
     if ENV == "dev":
-        scraper_urls_raw = json.load(open(local_file))
+        scraper_urls_raw = json.load(open(f"data_store/local_files/scraper_urls_raw/{filename}.json"))
     else:
         wr.s3.download(
             path=f"s3://{S3_SCRAPER_BUCKET}/{JSON_URLS_PREFIX}/{filename}.json",
-            local_file=local_file,
+            local_file=f"{filename}.json",
         )
-        scraper_urls_raw = json.load(open(local_file))
+        scraper_urls_raw = json.load(open(f"{filename}.json"))
 
     process = CrawlerProcess(
         settings={

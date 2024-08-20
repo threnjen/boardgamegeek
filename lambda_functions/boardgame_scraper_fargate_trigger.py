@@ -67,7 +67,7 @@ def lambda_handler(event, context):
                 "containerOverrides": [
                     {
                         "name": task_definition,
-                        "environment": [{"name": "filename", "value": filename}],
+                        "environment": [{"name": "FILENAME", "value": filename}],
                     }
                 ]
             },
