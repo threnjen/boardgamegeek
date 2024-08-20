@@ -51,13 +51,11 @@ def lambda_handler(event, context):
     # divide the list of scraper_raw_urls into number_url_files parts
     # and save them in separate files
 
-    local_path = "data_store/local_files/scraper_urls_raw" if ENV!="prod" else "/tmp"
+    local_path = "data_store/local_files/scraper_urls_raw" if ENV != "prod" else "/tmp"
 
     for i in range(number_url_files):
         print(f"Saving block size {i * url_block_size} : {(i + 1) * url_block_size}")
-        with open(
-            f"{local_path}/scraper_urls_raw_{i}.json", "w"
-        ) as convert_file:
+        with open(f"{local_path}/scraper_urls_raw_{i}.json", "w") as convert_file:
             convert_file.write(
                 json.dumps(
                     scraper_urls_raw[i * url_block_size : (i + 1) * url_block_size]

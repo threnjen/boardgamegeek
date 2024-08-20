@@ -9,8 +9,8 @@
 
 BOT_NAME = "bggscraper"
 
-SPIDER_MODULES = ["bggscraper.spiders"]
-NEWSPIDER_MODULE = "bggscraper.spiders"
+# SPIDER_MODULES = ["bggscraper.spiders"]
+# NEWSPIDER_MODULE = "bggscraper.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
@@ -86,18 +86,3 @@ AUTOTHROTTLE_DEBUG = True
 # HTTPCACHE_DIR = 'httpcache'
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
-
-# make a dictionary out of all of the settings above
-SCRAPY_SETTINGS = {
-    "BOT_NAME": BOT_NAME,
-    "SPIDER_MODULES": SPIDER_MODULES,
-    "NEWSPIDER_MODULE": NEWSPIDER_MODULE,
-    "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
-    "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
-    "COOKIES_ENABLED": COOKIES_ENABLED,
-    "AUTOTHROTTLE_ENABLED": AUTOTHROTTLE_ENABLED,
-    "AUTOTHROTTLE_START_DELAY": AUTOTHROTTLE_START_DELAY,
-    "AUTOTHROTTLE_MAX_DELAY": AUTOTHROTTLE_MAX_DELAY,
-    "AUTOTHROTTLE_TARGET_CONCURRENCY": AUTOTHROTTLE_TARGET_CONCURRENCY,
-    "AUTOTHROTTLE_DEBUG": AUTOTHROTTLE_DEBUG,
-}
