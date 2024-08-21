@@ -8,14 +8,21 @@ from bs4 import BeautifulSoup
 
 ENV = os.environ.get("ENV", "dev")
 GAME_ATTRIBUTES = json.load(open("find_config.json"))["GAME_ATTRIBUTES"]
-MIN_USER_RATINGS = 10
 
 
 class GameEntryParser:
 
-    def __init__(self, game_entry) -> None:
-        self.game_entry = self.game_entry
+    def __init__(self, game_entry=None) -> None:
+        self.game_entry = game_entry
         self.game_dict = {}
+
+        self.game_entry_df = pd.DataFrame()
+        self.categories_hold_df = pd.DataFrame()
+        self.designer_df = pd.DataFrame()
+        self.category_df = pd.DataFrame()
+        self.mechanic_df = pd.DataFrame()
+        self.artist_df = pd.DataFrame()
+        self.publisher_df = pd.DataFrame()
 
     def parse_individual_game(self) -> dict:
 
@@ -23,13 +30,18 @@ class GameEntryParser:
         self._parse_config_elements()
         self._parse_poll_items()
         self._parse_family_attributes()
+        self.create_special_data_frames()
 
-        for rank, score in self._get_rank(self.game_entry).items():
-            self.game_dict[rank] = score
-        for component, value in self._get_components(self.game_entry).items():
-            self.game_dict[component] = value
-        for player, value in self._get_player_counts(self.game_entry).items():
-            self.game_dict[player] = value
+    def get_all_dfs(self) -> tuple(pd.DataFrame):
+        return (
+            self.game_entry_df,
+            self.categories_hold_df,
+            self.designer_df,
+            self.category_df,
+            self.mechanic_df,
+            self.artist_df,
+            self.publisher_df,
+        )
 
     def _parse_unique_elements(self) -> dict:
 
@@ -53,12 +65,21 @@ class GameEntryParser:
             )
             else 0
         )
+        for rank, score in self._get_rank().items():
+            self.game_dict[rank] = score
+        for component, value in self._get_components().items():
+            self.game_dict[component] = value
+        for player, value in self._get_player_counts().items():
+            self.game_dict[player] = value
 
     def _parse_config_elements(self) -> dict:
         for item in GAME_ATTRIBUTES:
-            self.game_dict[item["df_column"]] = self.game_entry.find(item["find_item"])[
-                "value"
-            ].astype(item["dtype"])
+            self.game_dict[item["df_column"]] = self.find_thing_in_soup(
+                self.game_entry, item["find_item"]
+            )
+
+    def find_thing_in_soup(self, game_entry: BeautifulSoup, find_type_str: str) -> str:
+        return game_entry.find(find_type_str)["value"]
 
     def _parse_poll_items(self) -> dict:
         self.game_dict["ComAgeRec"] = self.evaulate_poll(
@@ -78,7 +99,7 @@ class GameEntryParser:
         )  # Community Max Playtime poll
 
     def _parse_family_attributes(self) -> dict:
-        self.game_dict["Family"] = self.get_family(self.game_entry)
+        self.game_dict["Family"] = self.get_family()
         self.game_dict["Setting"] = self.get_boardgame_family_attribute("Setting:")
         self.game_dict["Theme"] = self.get_boardgame_family_attribute("Theme:")
         self.game_dict["Mechanism"] = self.get_boardgame_family_attribute("Mechanism:")
@@ -200,14 +221,24 @@ class GameEntryParser:
 
     def create_special_data_frames(self):
 
-        categories_hold = self.get_subcategories(game_id)
+        self.game_entry_df = pd.DataFrame(self.game_dict, index=[0])
+
+        game_id = self.game_entry["id"]
+
+        self.categories_hold_df = self.get_subcategories(game_id)
 
         # create specialty dataframes
-        designer = self.create_thing_of_type(game_id, find_type_str="boardgamedesigner")
-        category = self.create_thing_of_type(game_id, find_type_str="boardgamecategory")
-        mechanic = self.get_game_mechanics(game_id)
-        artist = self.create_thing_of_type(game_id, find_type_str="boardgameartist")
-        publisher = self.create_thing_of_type(
+        self.designer_df = self.create_thing_of_type(
+            game_id, find_type_str="boardgamedesigner"
+        )
+        self.category_df = self.create_thing_of_type(
+            game_id, find_type_str="boardgamecategory"
+        )
+        self.mechanic_df = self.get_game_mechanics(game_id)
+        self.artist_df = self.create_thing_of_type(
+            game_id, find_type_str="boardgameartist"
+        )
+        self.publisher_df = self.create_thing_of_type(
             game_id, find_type_str="boardgamepublisher"
         )
 
