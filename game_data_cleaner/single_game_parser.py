@@ -7,9 +7,7 @@ import awswrangler as wr
 from bs4 import BeautifulSoup
 
 ENV = os.environ.get("ENV", "dev")
-GAME_ATTRIBUTES = json.load(open(f"find_config.json"))[
-    "GAME_ATTRIBUTES"
-]
+GAME_ATTRIBUTES = json.load(open(f"find_config.json"))["GAME_ATTRIBUTES"]
 MIN_USER_RATINGS = 10
 
 
@@ -131,17 +129,16 @@ class GameEntryParser:
         Possible types may include family (e.g. thematic, strategygames),
         overall (coded as 'boardgame'), etc.
         """
-        try: 
+        try:
             return {
-            f"Rank:{ item['name'] }": float(item["value"])
-            for item in self.game_entry.find_all("rank")
-        }
-        except: 
+                f"Rank:{ item['name'] }": float(item["value"])
+                for item in self.game_entry.find_all("rank")
+            }
+        except:
             return {
-            f"Rank:{ item['name'] }": 999999.0
-            for item in self.game_entry.find_all("rank")
-        }
-
+                f"Rank:{ item['name'] }": 999999.0
+                for item in self.game_entry.find_all("rank")
+            }
 
     def evaulate_poll(self, poll_title: str):
         NUMVOTES_TAG = "numvotes"

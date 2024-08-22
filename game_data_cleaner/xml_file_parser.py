@@ -16,15 +16,23 @@ class XMLFileParser:
 
     def __init__(self) -> None:
 
-        self.entry_storage = {"games":[], "designers":[], "categories":[], "mechanics":[], "artists":[], "publishers":[], "subcategories":[], "comments":[]}
+        self.entry_storage = {
+            "games": [],
+            "designers": [],
+            "categories": [],
+            "mechanics": [],
+            "artists": [],
+            "publishers": [],
+            "subcategories": [],
+            "comments": [],
+        }
 
     def process_file_list(self):
 
         # list files in data dirty prefix in s3 using awswrangler
         file_list = wr.s3.list_objects(f"s3://{S3_SCRAPER_BUCKET}/{DATA_DIRTY_PREFIX}")
 
-        #download items in file_list to local path
-
+        # download items in file_list to local path
 
         for file in file_list:
             print(file)
@@ -37,9 +45,9 @@ class XMLFileParser:
                 # if ENV=="prod" then download the XML from S3
                 print(f"Downloading {file} from S3")
                 wr.s3.download(
-                        path=file,
-                        local_file=local_file_path,
-                    )
+                    path=file,
+                    local_file=local_file_path,
+                )
                 local_open = open(local_file_path, encoding="utf8")
 
             game_page = BeautifulSoup(local_open, features="xml")
@@ -67,17 +75,18 @@ class XMLFileParser:
                     publisher_df,
                 ) = game_parser.get_one_game_dfs()
 
-                self.entry_storage['games'].append(game_entry_df.dropna(axis=1))
-                self.entry_storage['designers'].append(designer_df.dropna(axis=1))
-                self.entry_storage['categories'].append(categories_hold_df.dropna(axis=1))
-                self.entry_storage['mechanics'].append(mechanic_df.dropna(axis=1))
-                self.entry_storage['artists'].append(artist_df.dropna(axis=1))
-                self.entry_storage['publishers'].append(publisher_df.dropna(axis=1))
-                self.entry_storage['subcategories'].append(category_df.dropna(axis=1))
+                self.entry_storage["games"].append(game_entry_df.dropna(axis=1))
+                self.entry_storage["designers"].append(designer_df.dropna(axis=1))
+                self.entry_storage["categories"].append(
+                    categories_hold_df.dropna(axis=1)
+                )
+                self.entry_storage["mechanics"].append(mechanic_df.dropna(axis=1))
+                self.entry_storage["artists"].append(artist_df.dropna(axis=1))
+                self.entry_storage["publishers"].append(publisher_df.dropna(axis=1))
+                self.entry_storage["subcategories"].append(category_df.dropna(axis=1))
 
-        if not self.entry_storage['games']:
+        if not self.entry_storage["games"]:
             return
-        
 
     def _save_dfs_to_disk_or_s3(self):
         """Save all files as pkl files. Save to local drive in ENV==env, or
@@ -90,7 +99,7 @@ class XMLFileParser:
 
             if not list_of_entries:
                 continue
-            
+
             print(f"Creating table for {table_name}")
             table = pd.concat(list_of_entries).reset_index(drop=True)
 
@@ -102,10 +111,14 @@ class XMLFileParser:
                 table.to_pickle(f"game_dfs_dirty/{table_name}.pkl")
             if ENV == "prod":
                 table.to_pickle(f"{table_name}.pkl")
-                wr.s3.upload(f"{table_name}.pkl", f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/{table_name}.pkl")
+                wr.s3.upload(
+                    f"{table_name}.pkl",
+                    f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/{table_name}.pkl",
+                )
 
             del table
             gc.collect()
+
 
 if __name__ == "__main__":
 

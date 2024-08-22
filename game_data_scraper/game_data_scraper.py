@@ -70,9 +70,7 @@ if __name__ == "__main__":
     # get file from local if dev, else from S3
 
     if ENV == "dev":
-        scraper_urls_raw = json.load(
-            open(f"scraper_urls_raw/{filename}.json")
-        )
+        scraper_urls_raw = json.load(open(f"scraper_urls_raw/{filename}.json"))
     else:
         wr.s3.download(
             path=f"s3://{S3_SCRAPER_BUCKET}/{JSON_URLS_PREFIX}/{filename}.json",

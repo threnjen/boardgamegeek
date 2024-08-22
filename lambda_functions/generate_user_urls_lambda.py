@@ -31,16 +31,17 @@ def lambda_handler(event, context):
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
     if ENV == "dev":
         print("Reading the file locally")
-        df = pd.read_pickle(
-            "game_data_cleaner/game_dfs_dirty/games.pkl", low_memory=False
-        )
+        df = pd.read_pickle("game_data_cleaner/game_dfs_dirty/games.pkl")
     else:
         print("Reading the file from S3")
         # download the pickle file from S3
-        wr.s3.download(path=f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/games.pkl", local_file="games.pkl")
-        df = pd.read_pickle(
-            "games.pkl"
+        wr.s3.download(
+            path=f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/games.pkl",
+            local_file="games.pkl",
         )
+        df = pd.read_pickle("games.pkl")
+
+    return
 
     game_ids = df["id"].astype(str).to_list()
     print(f"Number of game ids: {len(game_ids)}")
