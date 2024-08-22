@@ -7,13 +7,17 @@ import awswrangler as wr
 from bs4 import BeautifulSoup
 
 ENV = os.environ.get("ENV", "dev")
-GAME_ATTRIBUTES = json.load(open("find_config.json"))["GAME_ATTRIBUTES"]
-
+LOCAL_FILE_PATH = "game_data_cleaner" if ENV == "dev" else "."
+GAME_ATTRIBUTES = json.load(open(f"{LOCAL_FILE_PATH}/find_config.json"))[
+    "GAME_ATTRIBUTES"
+]
+MIN_USER_RATINGS = 10
 
 class GameEntryParser:
 
-    def __init__(self, game_entry=None) -> None:
+    def __init__(self, game_entry:BeautifulSoup=None) -> None:
         self.game_entry = game_entry
+
         self.game_dict = {}
 
         self.game_entry_df = pd.DataFrame()
@@ -24,15 +28,22 @@ class GameEntryParser:
         self.artist_df = pd.DataFrame()
         self.publisher_df = pd.DataFrame()
 
+    def check_rating_count_threshold(self, ) -> bool:
+        user_ratings = int(self.find_thing_in_soup("usersrated"))
+
+        if user_ratings < MIN_USER_RATINGS:
+            return False
+        return True
+    
     def parse_individual_game(self) -> dict:
 
         self._parse_unique_elements()
         self._parse_config_elements()
         self._parse_poll_items()
         self._parse_family_attributes()
-        self.create_special_data_frames()
+        self._create_special_data_frames()
 
-    def get_all_dfs(self) -> tuple(pd.DataFrame):
+    def get_one_game_dfs(self) -> tuple:
         return (
             self.game_entry_df,
             self.categories_hold_df,
@@ -73,13 +84,14 @@ class GameEntryParser:
             self.game_dict[player] = value
 
     def _parse_config_elements(self) -> dict:
-        for item in GAME_ATTRIBUTES:
-            self.game_dict[item["df_column"]] = self.find_thing_in_soup(
-                self.game_entry, item["find_item"]
+        for key,attributes in GAME_ATTRIBUTES.items():
+
+            self.game_dict[key] = self.find_thing_in_soup(
+                attributes["find_item"]
             )
 
-    def find_thing_in_soup(self, game_entry: BeautifulSoup, find_type_str: str) -> str:
-        return game_entry.find(find_type_str)["value"]
+    def find_thing_in_soup(self, find_type_str: str) -> str:
+        return self.game_entry.find(find_type_str)["value"]
 
     def _parse_poll_items(self) -> dict:
         self.game_dict["ComAgeRec"] = self.evaulate_poll(
@@ -219,9 +231,9 @@ class GameEntryParser:
         except:
             return {}
 
-    def create_special_data_frames(self):
+    def _create_special_data_frames(self):
 
-        self.game_entry_df = pd.DataFrame(self.game_dict, index=[0])
+        self.game_entry_df = pd.DataFrame([self.game_dict])
 
         game_id = self.game_entry["id"]
 
@@ -253,11 +265,10 @@ class GameEntryParser:
         dataframe"""
 
         # make dictionary for this item
-        this_dict = {
-            item["value"]: [1]
-            for item in self.game_entry.find_all("link", type=find_type_str)
-        }
-        this_dict = {"BGGId": [int(game_id)]}
+        this_dict = {}
+        this_dict["BGGId"]=int(game_id)
+        for item in self.game_entry.find_all("link", type=find_type_str):
+            this_dict[item["value"]] = [1]
         return pd.DataFrame(this_dict)
 
     def get_game_mechanics(self, game_id: int) -> pd.DataFrame:

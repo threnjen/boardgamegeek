@@ -1,15 +1,12 @@
 from bs4 import BeautifulSoup
-import re
-import json
 import pandas as pd
 import os
 import awswrangler as wr
 from bs4 import BeautifulSoup
-from typing import Optional
 from game_data_cleaner.single_game_parser import GameEntryParser
 
 ENV = os.environ.get("ENV", "dev")
-MIN_USER_RATINGS = 10
+
 
 
 class XMLFileParser:
@@ -24,26 +21,19 @@ class XMLFileParser:
         self.subcategories_dfs = []
         self.comments_dfs = []
 
-    def process_file_list(self):
-
-        file_list = [
-            x
-            for x in os.listdir("game_data_scraper/scraped_games")
-            if x.endswith(".xml")
-        ]
+    def process_file_list(self, file_list):
 
         for file in file_list:
+
             file_path = (
-                f"game_data_scraper/scraped_games/{filename}"
-                if ENV == "dev"
-                else filename
+                f"game_data_scraper/scraped_games/{file}" if ENV == "dev" else file
             )
 
             # if ENV=="prod" then download the XML from S3
             if ENV == "prod":
                 wr.s3.download(
                     path="s3://bucket/key",
-                    local_file=f"game_data_scraper/scraped_games/{filename}",
+                    local_file=f"game_data_scraper/scraped_games/{file}",
                 )
 
             game_page = BeautifulSoup(open(file_path, encoding="utf8"), features="xml")
@@ -53,9 +43,13 @@ class XMLFileParser:
             print(f"Number of game entries in this file: {len(game_entries)}")
 
             for game_entry in game_entries:
-                if not self.check_rating_count_threshold(game_entry):
-                    continue
                 game_parser = GameEntryParser(game_entry=game_entry)
+
+                if not game_parser.check_rating_count_threshold():
+                    print("Skipping game with low user ratings")
+                    continue
+                print(f"Processing game with ID: {game_entry['id']}")
+
                 game_parser.parse_individual_game()
                 (
                     game_entry_df,
@@ -65,7 +59,7 @@ class XMLFileParser:
                     mechanic_df,
                     artist_df,
                     publisher_df,
-                ) = game_parser.get_all_dfs()
+                ) = game_parser.get_one_game_dfs()
 
                 self.games_dfs.append(game_entry_df)
                 self.designers_dfs.append(designer_df)
@@ -78,21 +72,28 @@ class XMLFileParser:
         if self.games_dfs == []:
             return
 
-        self.games = pd.concat(self.games_dfs)
-        self.designers = pd.concat(self.designers_dfs)
-        self.categories = pd.concat(self.categories_dfs)
-        self.mechanics = pd.concat(self.mechanics_dfs)
-        self.artists = pd.concat(self.artists_dfs)
-        self.publishers = pd.concat(self.publishers_dfs)
-        self.subcategories = pd.concat(self.subcategories_dfs)
+        games = pd.concat(self.games_dfs)
+        designers = pd.concat(self.designers_dfs)
+        categories = pd.concat(self.categories_dfs)
+        mechanics = pd.concat(self.mechanics_dfs)
+        artists = pd.concat(self.artists_dfs)
+        publishers = pd.concat(self.publishers_dfs)
+        subcategories = pd.concat(self.subcategories_dfs)
 
-    def check_rating_count_threshold(self, game: BeautifulSoup) -> bool:
-        user_ratings = int(GameEntryParser().find_thing_in_soup(game, "usersrated"))
-
-        if user_ratings < MIN_USER_RATINGS:
-            return False
-        return True
+        print(games.head())
+        print(designers.head())
+        print(categories.head())
+        print(mechanics.head())
+        print(artists.head())
+        print(publishers.head())
+        print(subcategories.head())
+    
 
 
 if __name__ == "__main__":
-    XMLFileParser().process_file_list()
+
+    file_list = [
+        x for x in os.listdir("game_data_scraper/scraped_games") if x.endswith(".xml")
+    ]
+
+    XMLFileParser().process_file_list(file_list)
