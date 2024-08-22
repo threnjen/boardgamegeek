@@ -9,7 +9,7 @@ ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 JSON_URLS_PREFIX = os.environ.get("JSON_URLS_PREFIX")
 url_block_size = 20
-number_url_files = 100
+number_url_files = 30
 
 
 def generate_raw_urls(game_ids: list[str]):

@@ -7,8 +7,7 @@ import awswrangler as wr
 from bs4 import BeautifulSoup
 
 ENV = os.environ.get("ENV", "dev")
-LOCAL_FILE_PATH = "game_data_cleaner" if ENV == "dev" else "."
-GAME_ATTRIBUTES = json.load(open(f"{LOCAL_FILE_PATH}/find_config.json"))[
+GAME_ATTRIBUTES = json.load(open(f"find_config.json"))[
     "GAME_ATTRIBUTES"
 ]
 MIN_USER_RATINGS = 10
@@ -126,10 +125,17 @@ class GameEntryParser:
         Possible types may include family (e.g. thematic, strategygames),
         overall (coded as 'boardgame'), etc.
         """
-        return {
+        try: 
+            return {
             f"Rank:{ item['name'] }": float(item["value"])
             for item in self.game_entry.find_all("rank")
         }
+        except: 
+            return {
+            f"Rank:{ item['name'] }": 999999.0
+            for item in self.game_entry.find_all("rank")
+        }
+
 
     def evaulate_poll(self, poll_title: str):
         NUMVOTES_TAG = "numvotes"
@@ -270,7 +276,7 @@ class GameEntryParser:
         this_dict["BGGId"] = int(game_id)
         for item in self.game_entry.find_all("link", type=find_type_str):
             this_dict[item["value"]] = [1]
-        return pd.DataFrame(this_dict)
+        return pd.DataFrame([this_dict])
 
     def get_game_mechanics(self, game_id: int) -> pd.DataFrame:
         """

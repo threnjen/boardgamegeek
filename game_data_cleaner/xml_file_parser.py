@@ -4,10 +4,11 @@ import os
 import awswrangler as wr
 import boto3
 from bs4 import BeautifulSoup
-from game_data_cleaner.single_game_parser import GameEntryParser
+from single_game_parser import GameEntryParser
 
 ENV = os.environ.get("ENV", "dev")
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET", "bucket")
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+DATA_DIRTY_PREFIX = os.environ.get("DATA_DIRTY_PREFIX")
 
 
 class XMLFileParser:
@@ -24,22 +25,31 @@ class XMLFileParser:
 
         self.overall_dfs = {}
 
-    def process_file_list(self, file_list):
+    def process_file_list(self):
+
+        # list files in data dirty prefix in s3 using awswrangler
+        file_list = wr.s3.list_objects(f"s3://{S3_SCRAPER_BUCKET}/{DATA_DIRTY_PREFIX}")
+
+        #download items in file_list to local path
+
 
         for file in file_list:
+            print(file)
+            local_file_path = f"./raw_bgg_xml/{file.split("/")[-1]}"
 
-            file_path = (
-                f"game_data_scraper/scraped_games/{file}" if ENV == "dev" else file
-            )
-
-            # if ENV=="prod" then download the XML from S3
-            if ENV == "prod":
+            try:
+                # open from local_pile_path
+                local_open = open(local_file_path, encoding="utf8")
+            except FileNotFoundError:
+                # if ENV=="prod" then download the XML from S3
+                print(f"Downloading {file} from S3")
                 wr.s3.download(
-                    path="s3://bucket/key",
-                    local_file=f"game_data_scraper/scraped_games/{file}",
-                )
+                        path=file,
+                        local_file=local_file_path,
+                    )
+                local_open = open(local_file_path, encoding="utf8")
 
-            game_page = BeautifulSoup(open(file_path, encoding="utf8"), features="xml")
+            game_page = BeautifulSoup(local_open, features="xml")
 
             # make entry for each game item on page
             game_entries = game_page.find_all("item")
@@ -64,16 +74,24 @@ class XMLFileParser:
                     publisher_df,
                 ) = game_parser.get_one_game_dfs()
 
-                self.games_dfs.append(game_entry_df)
-                self.designers_dfs.append(designer_df)
-                self.categories_dfs.append(categories_hold_df)
-                self.mechanics_dfs.append(mechanic_df)
-                self.artists_dfs.append(artist_df)
-                self.publishers_dfs.append(publisher_df)
-                self.subcategories_dfs.append(category_df)
+                self.games_dfs.append(game_entry_df.dropna(axis=1))
+                self.designers_dfs.append(designer_df.dropna(axis=1))
+                self.categories_dfs.append(categories_hold_df.dropna(axis=1))
+                self.mechanics_dfs.append(mechanic_df.dropna(axis=1))
+                self.artists_dfs.append(artist_df.dropna(axis=1))
+                self.publishers_dfs.append(publisher_df.dropna(axis=1))
+                self.subcategories_dfs.append(category_df.dropna(axis=1))
 
         if self.games_dfs == []:
             return
+        
+        print(f"Len of games_dfs: {len(self.games_dfs)}\n\
+              Len of designers_dfs: {len(self.designers_dfs)}\n\
+                Len of categories_dfs: {len(self.categories_dfs)}\n\
+                    Len of mechanics_dfs: {len(self.mechanics_dfs)}\n\
+                        Len of artists_dfs: {len(self.artists_dfs)}\n\
+                            Len of publishers_dfs: {len(self.publishers_dfs)}\n\
+                                Len of subcategories_dfs: {len(self.subcategories_dfs)}")
 
         self.overall_dfs = {
             "games": pd.concat(self.games_dfs).reset_index(drop=True),
@@ -90,15 +108,14 @@ class XMLFileParser:
         copy pkl to s3 if ENV==prod"""
 
         for table_name, table in self.overall_dfs.items():
-            table.to_pickle(f"game_data_cleaner/processed_data/{table_name}.pkl")
+            if ENV == "dev":
+                table.to_pickle(f"game_dfs_dirty/{table_name}.pkl")
             if ENV == "prod":
                 table.to_pickle(f"{table_name}.pkl")
-                wr.s3.upload(f"{table_name}.pkl", f"s3://{S3_SCRAPER_BUCKET}/data_dirty/{table_name}.pkl")
+                wr.s3.upload(f"{table_name}.pkl", f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/{table_name}.pkl")
 
 if __name__ == "__main__":
 
-    file_list = [
-        x for x in os.listdir("game_data_scraper/scraped_games") if x.endswith(".xml")
-    ]
-
-    XMLFileParser().process_file_list(file_list)
+    file_parser = XMLFileParser()
+    file_parser.process_file_list()
+    file_parser._save_dfs_to_disk_or_s3()
