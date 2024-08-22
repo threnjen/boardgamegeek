@@ -2,11 +2,12 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import os
 import awswrangler as wr
+import boto3
 from bs4 import BeautifulSoup
 from game_data_cleaner.single_game_parser import GameEntryParser
 
 ENV = os.environ.get("ENV", "dev")
-
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET", "bucket")
 
 
 class XMLFileParser:
@@ -20,6 +21,8 @@ class XMLFileParser:
         self.publishers_dfs = []
         self.subcategories_dfs = []
         self.comments_dfs = []
+
+        self.overall_dfs = {}
 
     def process_file_list(self, file_list):
 
@@ -72,23 +75,25 @@ class XMLFileParser:
         if self.games_dfs == []:
             return
 
-        games = pd.concat(self.games_dfs)
-        designers = pd.concat(self.designers_dfs)
-        categories = pd.concat(self.categories_dfs)
-        mechanics = pd.concat(self.mechanics_dfs)
-        artists = pd.concat(self.artists_dfs)
-        publishers = pd.concat(self.publishers_dfs)
-        subcategories = pd.concat(self.subcategories_dfs)
+        self.overall_dfs = {
+            "games": pd.concat(self.games_dfs).reset_index(drop=True),
+            "designers": pd.concat(self.designers_dfs).reset_index(drop=True),
+            "categories": pd.concat(self.categories_dfs).reset_index(drop=True),
+            "mechanics": pd.concat(self.mechanics_dfs).reset_index(drop=True),
+            "artists": pd.concat(self.artists_dfs).reset_index(drop=True),
+            "publishers": pd.concat(self.publishers_dfs).reset_index(drop=True),
+            "subcategories": pd.concat(self.subcategories_dfs).reset_index(drop=True),
+        }
 
-        print(games.head())
-        print(designers.head())
-        print(categories.head())
-        print(mechanics.head())
-        print(artists.head())
-        print(publishers.head())
-        print(subcategories.head())
-    
+    def _save_dfs_to_disk_or_s3(self):
+        """Save all files as pkl files. Save to local drive in ENV==env, or
+        copy pkl to s3 if ENV==prod"""
 
+        for table_name, table in self.overall_dfs.items():
+            table.to_pickle(f"game_data_cleaner/processed_data/{table_name}.pkl")
+            if ENV == "prod":
+                table.to_pickle(f"{table_name}.pkl")
+                wr.s3.upload(f"{table_name}.pkl", f"s3://{S3_SCRAPER_BUCKET}/data_dirty/{table_name}.pkl")
 
 if __name__ == "__main__":
 

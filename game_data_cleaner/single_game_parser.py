@@ -13,9 +13,10 @@ GAME_ATTRIBUTES = json.load(open(f"{LOCAL_FILE_PATH}/find_config.json"))[
 ]
 MIN_USER_RATINGS = 10
 
+
 class GameEntryParser:
 
-    def __init__(self, game_entry:BeautifulSoup=None) -> None:
+    def __init__(self, game_entry: BeautifulSoup = None) -> None:
         self.game_entry = game_entry
 
         self.game_dict = {}
@@ -28,13 +29,15 @@ class GameEntryParser:
         self.artist_df = pd.DataFrame()
         self.publisher_df = pd.DataFrame()
 
-    def check_rating_count_threshold(self, ) -> bool:
+    def check_rating_count_threshold(
+        self,
+    ) -> bool:
         user_ratings = int(self.find_thing_in_soup("usersrated"))
 
         if user_ratings < MIN_USER_RATINGS:
             return False
         return True
-    
+
     def parse_individual_game(self) -> dict:
 
         self._parse_unique_elements()
@@ -84,11 +87,9 @@ class GameEntryParser:
             self.game_dict[player] = value
 
     def _parse_config_elements(self) -> dict:
-        for key,attributes in GAME_ATTRIBUTES.items():
+        for key, attributes in GAME_ATTRIBUTES.items():
 
-            self.game_dict[key] = self.find_thing_in_soup(
-                attributes["find_item"]
-            )
+            self.game_dict[key] = self.find_thing_in_soup(attributes["find_item"])
 
     def find_thing_in_soup(self, find_type_str: str) -> str:
         return self.game_entry.find(find_type_str)["value"]
@@ -266,7 +267,7 @@ class GameEntryParser:
 
         # make dictionary for this item
         this_dict = {}
-        this_dict["BGGId"]=int(game_id)
+        this_dict["BGGId"] = int(game_id)
         for item in self.game_entry.find_all("link", type=find_type_str):
             this_dict[item["value"]] = [1]
         return pd.DataFrame(this_dict)
