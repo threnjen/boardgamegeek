@@ -3,6 +3,7 @@ import pandas as pd
 import os
 import awswrangler as wr
 import boto3
+import gc
 from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
 
@@ -14,16 +15,8 @@ DATA_DIRTY_PREFIX = os.environ.get("DATA_DIRTY_PREFIX")
 class XMLFileParser:
 
     def __init__(self) -> None:
-        self.games_dfs = []
-        self.designers_dfs = []
-        self.categories_dfs = []
-        self.mechanics_dfs = []
-        self.artists_dfs = []
-        self.publishers_dfs = []
-        self.subcategories_dfs = []
-        self.comments_dfs = []
 
-        self.overall_dfs = {}
+        self.entry_storage = {"games":[], "designers":[], "categories":[], "mechanics":[], "artists":[], "publishers":[], "subcategories":[], "comments":[]}
 
     def process_file_list(self):
 
@@ -74,45 +67,45 @@ class XMLFileParser:
                     publisher_df,
                 ) = game_parser.get_one_game_dfs()
 
-                self.games_dfs.append(game_entry_df.dropna(axis=1))
-                self.designers_dfs.append(designer_df.dropna(axis=1))
-                self.categories_dfs.append(categories_hold_df.dropna(axis=1))
-                self.mechanics_dfs.append(mechanic_df.dropna(axis=1))
-                self.artists_dfs.append(artist_df.dropna(axis=1))
-                self.publishers_dfs.append(publisher_df.dropna(axis=1))
-                self.subcategories_dfs.append(category_df.dropna(axis=1))
+                self.entry_storage['games'].append(game_entry_df.dropna(axis=1))
+                self.entry_storage['designers'].append(designer_df.dropna(axis=1))
+                self.entry_storage['categories'].append(categories_hold_df.dropna(axis=1))
+                self.entry_storage['mechanics'].append(mechanic_df.dropna(axis=1))
+                self.entry_storage['artists'].append(artist_df.dropna(axis=1))
+                self.entry_storage['publishers'].append(publisher_df.dropna(axis=1))
+                self.entry_storage['subcategories'].append(category_df.dropna(axis=1))
 
-        if self.games_dfs == []:
+        if not self.entry_storage['games']:
             return
         
-        print(f"Len of games_dfs: {len(self.games_dfs)}\n\
-              Len of designers_dfs: {len(self.designers_dfs)}\n\
-                Len of categories_dfs: {len(self.categories_dfs)}\n\
-                    Len of mechanics_dfs: {len(self.mechanics_dfs)}\n\
-                        Len of artists_dfs: {len(self.artists_dfs)}\n\
-                            Len of publishers_dfs: {len(self.publishers_dfs)}\n\
-                                Len of subcategories_dfs: {len(self.subcategories_dfs)}")
-
-        self.overall_dfs = {
-            "games": pd.concat(self.games_dfs).reset_index(drop=True),
-            "designers": pd.concat(self.designers_dfs).reset_index(drop=True),
-            "categories": pd.concat(self.categories_dfs).reset_index(drop=True),
-            "mechanics": pd.concat(self.mechanics_dfs).reset_index(drop=True),
-            "artists": pd.concat(self.artists_dfs).reset_index(drop=True),
-            "publishers": pd.concat(self.publishers_dfs).reset_index(drop=True),
-            "subcategories": pd.concat(self.subcategories_dfs).reset_index(drop=True),
-        }
 
     def _save_dfs_to_disk_or_s3(self):
         """Save all files as pkl files. Save to local drive in ENV==env, or
         copy pkl to s3 if ENV==prod"""
 
-        for table_name, table in self.overall_dfs.items():
+        print("Crafting data frames")
+
+        for table_name, list_of_entries in self.entry_storage.items():
+            print(f"Len of {table_name}: {len(list_of_entries)}")
+
+            if not list_of_entries:
+                continue
+            
+            print(f"Creating table for {table_name}")
+            table = pd.concat(list_of_entries).reset_index(drop=True)
+
+            print(f"Deleting {table_name} from memory")
+            del list_of_entries
+
+            print(f"Saving {table_name} to disk and uploading to S3")
             if ENV == "dev":
                 table.to_pickle(f"game_dfs_dirty/{table_name}.pkl")
             if ENV == "prod":
                 table.to_pickle(f"{table_name}.pkl")
                 wr.s3.upload(f"{table_name}.pkl", f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/{table_name}.pkl")
+
+            del table
+            gc.collect()
 
 if __name__ == "__main__":
 

@@ -61,7 +61,13 @@ class GameEntryParser:
         self.game_dict["BGGId"] = self.game_entry["id"]
         self.game_dict["Name"] = self.game_entry.find("name", type="primary")["value"]
         self.game_dict["Description"] = self.game_entry.find("description").text
-        self.game_dict["ImagePath"] = self.game_entry.find("image").text
+
+        # evaluate self.game_entry.find("image").text if it exists, otherwise set to "None"
+        if self.game_entry.find("image") is None:
+            self.game_dict["ImagePath"] = "None"
+        else:
+            self.game_dict["ImagePath"] = self.game_entry.find("image").text
+
         self.game_dict["NumAlternates"] = len(
             self.game_entry.find_all("name", type="alternate")
         )
