@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     if ENV == "dev":
         scraper_urls_raw = json.load(
-            open(f"data_store/local_files/scraper_urls_raw/{filename}.json")
+            open(f"scraper_urls_raw/{filename}.json")
         )
     else:
         wr.s3.download(

@@ -42,8 +42,7 @@ def lambda_handler(event, context):
         .get("revision")
     )
 
-    for file in file_prefixes[:1]:
-        print("TEMPORARILY RUNNING ONLY ONE SCRAPER FILE!!!")
+    for file in file_prefixes:
         filename = file.split("/")[-1].split(".")[0]
         print(filename)
 
