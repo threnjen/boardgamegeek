@@ -2,14 +2,15 @@ import os
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from tempfile import mkdtemp
+import awswrangler as wr
 
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
 ENV = os.environ.get("ENV", "dev")
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
 def initialize_driver():
@@ -46,7 +47,6 @@ def initialize_driver():
     return driver
 
 def lambda_handler(event, context):
-    # driver = webdriver.Chrome()
     driver = initialize_driver()
 
     driver.get('https://boardgamegeek.com/login')
@@ -63,35 +63,15 @@ def lambda_handler(event, context):
 
     driver.get("https://boardgamegeek.com/data_dumps/bg_ranks")
 
-    input()
+    download_element = driver.find_element(By.LINK_TEXT, 'Click to Download').get_attribute('href')
 
-    print(help(webdriver.Chrome))
+    print(f'The main content is: {download_element}')
 
-    element = driver.find_elements(By.XPATH, 'Click to Download')
-    href = element.get_attribute('href')
-
-    print(f'The href link is: {href}')
-    input()
-
-    # save the download_link to local file
     local_file_path = "." if ENV == "dev" else "/tmp"
-    with open(f"{local_file_path}/bgg_games.csv", "w") as f:
-        f.write(download_link)
+    with open(f"{local_file_path}/boardgames_ranks.csv", "w") as f:
+        f.write(download_element)
 
-    
-    
-
-    # text_box = driver.find_element(by=By.NAME, value="my-text")
-    # submit_button = driver.find_element(by=By.CSS_SELECTOR, value="button")
-
-    # text_box.send_keys("Selenium")
-    # submit_button.click()
-
-    # message = driver.find_element(by=By.ID, value="message")
-    # text = message.text
-    # print(text)
-
-    # driver.quit()
+    wr.s3.upload(local_file=f"{local_file_path}/boardgames_ranks.csv", path=f's3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv')
 
 if __name__=="__main__":
     lambda_handler(None, None)
