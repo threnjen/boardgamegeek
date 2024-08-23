@@ -303,7 +303,6 @@ class GameEntryParser:
 
         # find all mechanics on page
         all_mechanics = self.game_entry.find_all("link", type="boardgamemechanic")
-
         specific_mechanics = {
             "Mechanism: Legacy": "Legacy",
             "Mechanism: Tableau Building": "TableauBuilding",
@@ -315,7 +314,7 @@ class GameEntryParser:
         for search_name, indicator in specific_mechanics.items():
             element = self.game_entry.find(
                 "link", type="boardgamefamily", value=(search_name)
-            )["value"]
+            )
             if element:
                 all_mechanics.append(indicator)
 

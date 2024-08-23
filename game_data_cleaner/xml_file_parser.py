@@ -55,15 +55,15 @@ class XMLFileParser:
 
             # make entry for each game item on page
             game_entries = game_page.find_all("item")
-            print(f"Number of game entries in this file: {len(game_entries)}")
+            # print(f"Number of game entries in this file: {len(game_entries)}")
 
             for game_entry in game_entries:
                 game_parser = GameEntryParser(game_entry=game_entry)
 
                 if not game_parser.check_rating_count_threshold():
-                    print("Skipping game with low user ratings")
+                    # print("Skipping game with low user ratings")
                     continue
-                print(f"Processing game with ID: {game_entry['id']}")
+                # print(f"Processing game with ID: {game_entry['id']}")
 
                 game_parser.parse_individual_game()
                 (
@@ -106,7 +106,10 @@ class XMLFileParser:
                     for key, value in d.items():
                         combined_entries[key].extend(value)
                 list_of_entries = dict(combined_entries)
-            table = pd.concat(list_of_entries).reset_index(drop=True)
+                table = pd.DataFrame.from_dict(list_of_entries)
+            else:
+                table = pd.concat(list_of_entries, ignore_index=True)
+
 
             print(f"Deleting {table_name} from memory")
             del list_of_entries
