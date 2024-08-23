@@ -6,6 +6,7 @@ import boto3
 import gc
 from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
+from collections import defaultdict
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
@@ -66,24 +67,22 @@ class XMLFileParser:
 
                 game_parser.parse_individual_game()
                 (
-                    game_entry_df,
-                    categories_hold_df,
-                    designer_df,
-                    category_df,
-                    mechanic_df,
-                    artist_df,
-                    publisher_df,
-                ) = game_parser.get_one_game_dfs()
+                    game,
+                    subcategories,
+                    designers,
+                    categories,
+                    mechanics,
+                    artists,
+                    publishers,
+                ) = game_parser.get_single_game_attributes()
 
-                self.entry_storage["games"].append(game_entry_df.dropna(axis=1))
-                self.entry_storage["designers"].append(designer_df.dropna(axis=1))
-                self.entry_storage["categories"].append(
-                    categories_hold_df.dropna(axis=1)
-                )
-                self.entry_storage["mechanics"].append(mechanic_df.dropna(axis=1))
-                self.entry_storage["artists"].append(artist_df.dropna(axis=1))
-                self.entry_storage["publishers"].append(publisher_df.dropna(axis=1))
-                self.entry_storage["subcategories"].append(category_df.dropna(axis=1))
+                self.entry_storage['games'].append(game.dropna(axis=1))
+                self.entry_storage['designers'].append(designers)
+                self.entry_storage['categories'].append(subcategories)
+                self.entry_storage['mechanics'].append(mechanics)
+                self.entry_storage['artists'].append(artists)
+                self.entry_storage['publishers'].append(publishers)
+                self.entry_storage['subcategories'].append(categories)
 
         if not self.entry_storage["games"]:
             return
@@ -101,6 +100,12 @@ class XMLFileParser:
                 continue
 
             print(f"Creating table for {table_name}")
+            if table_name != "games":
+                combined_entries = defaultdict(list)
+                for d in list_of_entries:
+                    for key, value in d.items():
+                        combined_entries[key].extend(value)
+                list_of_entries = dict(combined_entries)
             table = pd.concat(list_of_entries).reset_index(drop=True)
 
             print(f"Deleting {table_name} from memory")
