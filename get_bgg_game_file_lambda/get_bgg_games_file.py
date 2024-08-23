@@ -7,6 +7,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from tempfile import mkdtemp
 
+BGG_USERNAME = os.environ.get("BGG_USERNAME")
+BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
+ENV = os.environ.get("ENV", "dev")
 
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
 def initialize_driver():
@@ -46,15 +49,37 @@ def lambda_handler(event, context):
     # driver = webdriver.Chrome()
     driver = initialize_driver()
 
-    # driver.get("https://www.selenium.dev/selenium/web/web-form.html")
-    # driver.get("https://boardgamegeek.com/data_dumps/bg_ranks")
     driver.get('https://boardgamegeek.com/login')
 
     title = driver.title
     print(title)
 
-    driver.implicitly_wait(0.5)
+    driver.find_element(by='id',value="inputUsername").send_keys(BGG_USERNAME)
+    driver.find_element(by='id',value="inputPassword").send_keys(BGG_PASSWORD)
+
+    driver.find_element(by='css selector',value="button[type='submit']").click()
+
+    time.sleep(3)
+
+    driver.get("https://boardgamegeek.com/data_dumps/bg_ranks")
+
     input()
+
+    print(help(webdriver.Chrome))
+
+    element = driver.find_elements(By.XPATH, 'Click to Download')
+    href = element.get_attribute('href')
+
+    print(f'The href link is: {href}')
+    input()
+
+    # save the download_link to local file
+    local_file_path = "." if ENV == "dev" else "/tmp"
+    with open(f"{local_file_path}/bgg_games.csv", "w") as f:
+        f.write(download_link)
+
+    
+    
 
     # text_box = driver.find_element(by=By.NAME, value="my-text")
     # submit_button = driver.find_element(by=By.CSS_SELECTOR, value="button")
