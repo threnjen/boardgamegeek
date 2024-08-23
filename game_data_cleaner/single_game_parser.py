@@ -38,7 +38,7 @@ class GameEntryParser:
         self._parse_config_elements()
         self._parse_poll_items()
         self._parse_family_attributes()
-        self._create_special_datasets()
+        self._create_game_data()
 
     def get_single_game_attributes(self) -> tuple:
         return (
@@ -248,7 +248,12 @@ class GameEntryParser:
         except:
             return {}
 
-    def _create_special_datasets(self):
+    def _create_game_data(self):
+        """
+        Creates a dataframe to store the game data of a specified game id.
+        Also creates ancillary datasets (as dictionaries) for the non-core game data.
+        """
+
         self.game_entry_df = pd.DataFrame([self.game_base_attributes])
 
         game_id = self.game_entry["id"]
@@ -271,14 +276,20 @@ class GameEntryParser:
         )
 
     def create_thing_of_type(self, game_id: str, find_type_str: str) -> dict[str, list]:
-        """Create DataFrame for things for a specific game id
-
-        Inputs:
-        self.game_entry: page loaded and read with BeautifulSoup
-        game_id: id for this game
-
-        Outputs:
-        dataframe"""
+        """Create DataFrame for things for a specific game id.
+        The user can pass a find_type_str to get the specific type of thing they want.
+        The function will search for that as a link type in the game_entry.
+        
+        Parameters:
+        game_id: str
+            The id of the game.
+        find_type_str: str
+            The type of thing to search for in the game_entry.
+            
+        Returns:
+        dict[str, list]
+            A dictionary containing the things of the specified game id.  The id is repeated for each thing.
+            """
         items = self.game_entry.find_all("link", type=find_type_str)
         return {
             "BGGId": [int(game_id) for _ in range(len(items))],
@@ -297,8 +308,8 @@ class GameEntryParser:
             The id of the game.
 
         Returns:
-        pd.DataFrame
-            A dataframe containing the mechanics of the specified game id
+        dict[str, list]
+            A dictionary containing the mechanics of the specified game id.  The id is repeated for each mechanic.
         """
 
         # find all mechanics on page
@@ -326,14 +337,19 @@ class GameEntryParser:
     def create_awards(
         self, awards_level: BeautifulSoup, game_id: int
     ) -> dict[str, list]:
-        """Create DataFrame for Awards for a specific game id
+        """
+        Creates a dataframe to store the awards of a specified game id.
 
-        Inputs:
-        self.game_entry: page loaded and read with BeautifulSoup
-        game_id: id for this game
+        Parameters:
+        awards_level: BeautifulSoup object
+            The BeautifulSoup object containing the awards page.
+        game_id: int
+            The id of the game.
 
-        Outputs:
-        dataframe"""
+        Returns:
+        dict[str, list]
+            A dictionary containing the awards of the specified game id.  The id is repeated for each award.
+        """
 
         # find all awards on page
         all_awards = awards_level.find_all("a", class_="ng-binding")
