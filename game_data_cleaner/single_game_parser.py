@@ -138,16 +138,10 @@ class GameEntryParser:
         Possible types may include family (e.g. thematic, strategygames),
         overall (coded as 'boardgame'), etc.
         """
-        try:
-            return {
-                f"Rank:{ item['name'] }": float(item["value"])
-                for item in self.game_entry.find_all("rank")
-            }
-        except:
-            return {
-                f"Rank:{ item['name'] }": 999999.0
-                for item in self.game_entry.find_all("rank")
-            }
+        return {
+            f"Rank:{ item['name'] }": item.get("value", 999999.0)
+            for item in self.game_entry.find_all("rank")
+        }
 
     def evaulate_poll(self, poll_title: str):
         NUMVOTES_TAG = "numvotes"
@@ -167,7 +161,10 @@ class GameEntryParser:
         return poll_result
 
     def get_family(self) -> str:
-        try:
+        family = self.game_entry.find(
+            "link", type="boardgamefamily", value=re.compile("Game:")
+        )
+        if family is not None:
             return (
                 self.game_entry.find(
                     "link", type="boardgamefamily", value=re.compile("Game:")
@@ -175,78 +172,77 @@ class GameEntryParser:
                 .strip("Game:")
                 .strip(" ")
             )
-        except:
-            try:
-                return (
-                    self.game_entry.find(
-                        "link", type="boardgamefamily", value=re.compile("Series:")
-                    )["value"]
-                    .strip("Series:")
-                    .strip(" ")
-                )
-            except:
-                return None
-
-    def get_boardgame_family_attribute(self, attribute: str) -> str:
-        try:
+        family_series = self.game_entry.find(
+            "link", type="boardgamefamily", value=re.compile("Series:")
+        )
+        if family_series is not None:
             return (
                 self.game_entry.find(
-                    "link", type="boardgamefamily", value=re.compile(attribute)
+                    "link", type="boardgamefamily", value=re.compile("Series:")
                 )["value"]
-                .strip(attribute)
+                .strip("Series:")
                 .strip(" ")
             )
-        except:
+        return None
+
+    def get_boardgame_family_attribute(self, attribute: str) -> str:
+        
+        found_attribute = self.game_entry.find(
+                "link", type="boardgamefamily", value=re.compile(attribute)
+            )
+        if found_attribute is None:
             return None
+        return (
+            found_attribute["value"]
+            .strip(attribute)
+            .strip(" ")
+        )
 
     def _get_player_counts(self) -> dict:
-        try:
-            # Best and Good Players
-            players = self.game_entry.find(
-                "poll", title="User Suggested Number of Players"
-            ).find_all("results")  # get user players poll
-            player_num_votes = int(
-                self.game_entry.find("poll", title="User Suggested Number of Players")[
-                    "totalvotes"
-                ]
-            )  # get total votes
+        # Best and Good Players
+        players = self.game_entry.find(
+            "poll", title="User Suggested Number of Players"
+        ).find_all("results")  # get user players poll
+        player_num_votes = int(
+            self.game_entry.find("poll", title="User Suggested Number of Players")[
+                "totalvotes"
+            ]
+        )  # get total votes
 
-            best_players, best_score, good_players = (
-                0,
-                0,
-                [],
-            )  # set up for best players loop
+        best_players, best_score, good_players = (
+            0,
+            0,
+            [],
+        )  # set up for best players loop
 
-            if player_num_votes > 30:  # evaluate if more than 30 votes for num players
-                for player in players:
-                    best = int(player.find("result", value="Best")["numvotes"])
-                    rec = int(player.find("result", value="Recommended")["numvotes"])
-                    score = best * 2 + rec * 1
-                    positives = best + rec
-                    ratio = positives / player_num_votes
-                    if score > best_score:
-                        best_players, best_score = (
-                            player["numplayers"],
-                            score,
-                        )  # put in # players for best score
-                    if ratio > 0.5:
-                        good_players.append(
-                            player["numplayers"]
-                        )  # put in good players if over 50% ratio
-            else:
-                best_players = None
-        except:
+        if player_num_votes > 30:  # evaluate if more than 30 votes for num players
+            for player in players:
+                best = int(player.find("result", value="Best")["numvotes"])
+                rec = int(player.find("result", value="Recommended")["numvotes"])
+                score = best * 2 + rec * 1
+                positives = best + rec
+                ratio = positives / player_num_votes
+                if score > best_score:
+                    best_players, best_score = (
+                        player["numplayers"],
+                        score,
+                    )  # put in # players for best score
+                if ratio > 0.5:
+                    good_players.append(
+                        player["numplayers"]
+                    )  # put in good players if over 50% ratio
+        else:
             best_players = None
         return {"BestPlayers": best_players, "GoodPlayers": good_players}
 
     def _get_components(self) -> dict:
-        try:
-            families = self.game_entry.find_all(
-                "link", type="boardgamefamily", value=re.compile("Component")
-            )
-            return {item["name"]: item["value"] for item in families}
-        except:
+        families = self.game_entry.find_all(
+            "link", type="boardgamefamily", value=re.compile("Component")
+        )
+        if families is None:
             return {}
+        
+        return {item.get("name",None): item.get("value") for item in families}
 
     def _create_game_data(self):
         """
@@ -279,17 +275,17 @@ class GameEntryParser:
         """Create DataFrame for things for a specific game id.
         The user can pass a find_type_str to get the specific type of thing they want.
         The function will search for that as a link type in the game_entry.
-        
+
         Parameters:
         game_id: str
             The id of the game.
         find_type_str: str
             The type of thing to search for in the game_entry.
-            
+
         Returns:
         dict[str, list]
             A dictionary containing the things of the specified game id.  The id is repeated for each thing.
-            """
+        """
         items = self.game_entry.find_all("link", type=find_type_str)
         return {
             "BGGId": [int(game_id) for _ in range(len(items))],
