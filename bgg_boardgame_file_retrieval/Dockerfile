@@ -12,6 +12,7 @@ RUN ./chrome-installer.sh
 RUN rm ./chrome-installer.sh
 
 RUN pip install selenium
+RUN pip install awswrangler
 
 COPY get_bgg_games_file.py ./
 
