@@ -41,6 +41,8 @@ def lambda_handler(event, context):
         )
         df = pd.read_pickle("games.pkl")
 
+    print(len(df))
+
     return
 
     game_ids = df["id"].astype(str).to_list()
