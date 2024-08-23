@@ -116,7 +116,7 @@ class XMLFileParser:
 
             print(f"Saving {table_name} to disk and uploading to S3")
             if ENV == "dev":
-                table.to_pickle(f"game_dfs_dirty/{table_name}.pkl")
+                table.to_pickle(f"game_dfs_dirty copy/{table_name}.pkl")
             if ENV == "prod":
                 table.to_pickle(f"{table_name}.pkl")
                 wr.s3.upload(
