@@ -76,13 +76,13 @@ class XMLFileParser:
                     publishers,
                 ) = game_parser.get_single_game_attributes()
 
-                self.entry_storage['games'].append(game.dropna(axis=1))
-                self.entry_storage['designers'].append(designers)
-                self.entry_storage['categories'].append(subcategories)
-                self.entry_storage['mechanics'].append(mechanics)
-                self.entry_storage['artists'].append(artists)
-                self.entry_storage['publishers'].append(publishers)
-                self.entry_storage['subcategories'].append(categories)
+                self.entry_storage["games"].append(game.dropna(axis=1))
+                self.entry_storage["designers"].append(designers)
+                self.entry_storage["categories"].append(subcategories)
+                self.entry_storage["mechanics"].append(mechanics)
+                self.entry_storage["artists"].append(artists)
+                self.entry_storage["publishers"].append(publishers)
+                self.entry_storage["subcategories"].append(categories)
 
         if not self.entry_storage["games"]:
             return
@@ -109,7 +109,6 @@ class XMLFileParser:
                 table = pd.DataFrame.from_dict(list_of_entries)
             else:
                 table = pd.concat(list_of_entries, ignore_index=True)
-
 
             print(f"Deleting {table_name} from memory")
             del list_of_entries
