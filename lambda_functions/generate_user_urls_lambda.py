@@ -3,12 +3,14 @@ import json
 import os
 import awswrangler as wr
 import numpy as np
+import boto3
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+USER_JSON_URLS_PREFIX = os.environ.get("USER_JSON_URLS_PREFIX")
 url_block_size = 20
 number_url_files = 30
-NUMBER_PROCESSES = 50
+NUMBER_PROCESSES = 30
 
 
 def generate_ratings_urls(game_entries):
@@ -20,12 +22,11 @@ def generate_ratings_urls(game_entries):
         current_bgg_id = bgg_ids[i]
         max_page_number = ratings_pages[i]
         page_numbers = range(1, max_page_number + 1)
-        print(f"{current_bgg_id} - {max_page_number} pages")
+        # print(f"{current_bgg_id} - {max_page_number} pages")
 
         for page_number in page_numbers:
             path = f"https://www.boardgamegeek.com/xmlapi2/thing?id={current_bgg_id}&ratingcomments=1&page={str(page_number)}&pagesize=100"
             urls_list.append(path)
-    print("\n")
 
     return urls_list
 
@@ -34,10 +35,10 @@ def lambda_handler(event, context):
 
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
     if ENV == "dev":
-        print("Reading the file locally")
-        games = pd.read_pickle("../game_data_cleaner/game_dfs_dirty/games.pkl")
+        print("Reading the games.pkl file locally")
+        games = pd.read_pickle("game_data_cleaner/game_dfs_dirty/games.pkl")
     else:
-        print("Reading the file from S3")
+        print("Reading the games.pkl file from S3")
         # download the pickle file from S3
         wr.s3.download(
             path=f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/games.pkl",
@@ -46,19 +47,33 @@ def lambda_handler(event, context):
         games = pd.read_pickle("games.pkl")
 
     ratings_totals = pd.DataFrame(games["BGGId"])
-    ratings_totals["RatingsPages"] = np.ceil(games["NumUserRatings"].astype(int) / 100).astype("int")
+
+    game_ids = ratings_totals["BGGId"].astype(str).to_list()
+    print(f"\nNumber of game ids: {len(game_ids)}\n")
+
+    ratings_totals["RatingsPages"] = np.ceil(
+        games["NumUserRatings"].astype(int) / 100
+    ).astype("int")
+
+    total_ratings = ratings_totals["RatingsPages"].sum()
+    print(f"Total pages of ratings: {total_ratings}\n")
+
+    print(f"Number of games with no ratings: {len(ratings_totals[ratings_totals['RatingsPages'] == 0])}\n")
+
     ratings_totals = ratings_totals.sort_values(
         "RatingsPages", ascending=False
     ).reset_index(drop=True)
+    
+    max_ratings_pages = int(np.ceil(total_ratings / NUMBER_PROCESSES))
+    print(f"Max ratings pages per process to spawn {NUMBER_PROCESSES} processes: {max_ratings_pages}\n")
 
-    total_ratings = ratings_totals["RatingsPages"].sum()
-    max_ratings_pages = int(np.ceil(total_ratings/NUMBER_PROCESSES))
-    max_ratings_pages
+    # END SETUP METRICS
 
     df_groups = {}
     group_counter = 1
     position = 0
 
+    print(f"Splitting the games into groups of ~{max_ratings_pages} ratings pages\n")
     while len(ratings_totals) > 0:
 
         chunk_size = 0
@@ -66,32 +81,52 @@ def lambda_handler(event, context):
         ratings_lists = []
 
         while max_ratings_pages > chunk_size:
-            try:
-                num_ratings = ratings_totals.iloc[position]['RatingsPages']
-                bgg_id = ratings_totals.iloc[position]['BGGId']
-                bgg_id_lists.append(bgg_id)
-                ratings_lists.append(num_ratings)
-                chunk_size += num_ratings
-                ratings_totals = ratings_totals.drop(position)
-                position += 1
 
-            except:
+            num_ratings = ratings_totals.iloc[0]["RatingsPages"]
+            bgg_id = ratings_totals.iloc[0]["BGGId"]
+            bgg_id_lists.append(bgg_id)
+            ratings_lists.append(num_ratings)
+            chunk_size += num_ratings
+            ratings_totals = ratings_totals.drop(0).reset_index(drop=True)
+            if len(ratings_totals) == 0:
                 break
 
-        # print(chunk_size)
-        if len(bgg_id_lists) == 0:
-            break
         df_groups[f"group{group_counter}"] = [bgg_id_lists, ratings_lists]
-        # print(f"group{group_counter} Complete - {len(bgg_id_lists)} games with {chunk_size} ratings")
+        print(f"group{group_counter} Complete - {len(bgg_id_lists)} games with {chunk_size} ratings pages")
         group_counter += 1
-    
+
     group_urls = {}
+    local_path = "/tmp" if ENV == "prod" else "game_data_scraper/user_scraper_urls_raw"
+
+    total_games_processed = 0
+    total_pages_processed = 0
+
+    print(f"\nWriting the urls to json files\n")
 
     for group, game_entries in df_groups.items():
+
+        print(f"{len(game_entries[0])} games in {group}")
         group_urls = generate_ratings_urls(game_entries)
 
-        with open(f"../game_user_scraper/scraper_urls_raw/{group}_scraper_urls_ratings.json", "w") as convert_file:
+        with open(
+            f"{local_path}/{group}_user_scraper_urls_raw.json", "w"
+        ) as convert_file:
             convert_file.write(json.dumps(group_urls))
+
+        if ENV == "prod":
+            # upload the json to S3 with boto3
+            s3_client = boto3.client("s3")
+            s3_client.upload_file(
+                f"{local_path}/{group}_user_scraper_urls_raw.json",
+                S3_SCRAPER_BUCKET,
+                f"{USER_JSON_URLS_PREFIX}/{group}_user_scraper_urls_raw.json",
+            )
+        
+        total_games_processed += len(game_entries[0])
+        total_pages_processed += sum(game_entries[1])
+    
+    print(f"\nTotal games processed: {total_games_processed}")
+    print(f"Total pages processed: {total_pages_processed}")
 
 
 if __name__ == "__main__":
