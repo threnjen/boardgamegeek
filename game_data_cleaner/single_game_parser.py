@@ -186,23 +186,21 @@ class GameEntryParser:
         return None
 
     def get_boardgame_family_attribute(self, attribute: str) -> str:
-        
+
         found_attribute = self.game_entry.find(
-                "link", type="boardgamefamily", value=re.compile(attribute)
-            )
+            "link", type="boardgamefamily", value=re.compile(attribute)
+        )
         if found_attribute is None:
             return None
-        return (
-            found_attribute["value"]
-            .strip(attribute)
-            .strip(" ")
-        )
+        return found_attribute["value"].strip(attribute).strip(" ")
 
     def _get_player_counts(self) -> dict:
         # Best and Good Players
         players = self.game_entry.find(
             "poll", title="User Suggested Number of Players"
-        ).find_all("results")  # get user players poll
+        ).find_all(
+            "results"
+        )  # get user players poll
         player_num_votes = int(
             self.game_entry.find("poll", title="User Suggested Number of Players")[
                 "totalvotes"
@@ -241,8 +239,8 @@ class GameEntryParser:
         )
         if families is None:
             return {}
-        
-        return {item.get("name",None): item.get("value") for item in families}
+
+        return {item.get("name", None): item.get("value") for item in families}
 
     def _create_game_data(self):
         """

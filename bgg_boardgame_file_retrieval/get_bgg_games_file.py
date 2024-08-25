@@ -12,12 +12,13 @@ BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 
+
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
 def initialize_driver():
 
     if not os.environ.get("ENV", "dev") == "prod":
         return webdriver.Chrome()
-    
+
     chrome_options = ChromeOptions()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
@@ -36,42 +37,46 @@ def initialize_driver():
 
     service = Service(
         executable_path="/opt/chrome-driver/chromedriver-linux64/chromedriver",
-        service_log_path="/tmp/chromedriver.log"
+        service_log_path="/tmp/chromedriver.log",
     )
 
-    driver = webdriver.Chrome(
-        service=service,
-        options=chrome_options
-    )
+    driver = webdriver.Chrome(service=service, options=chrome_options)
 
     return driver
+
 
 def lambda_handler(event, context):
     driver = initialize_driver()
 
-    driver.get('https://boardgamegeek.com/login')
+    driver.get("https://boardgamegeek.com/login")
 
     title = driver.title
     print(title)
 
-    driver.find_element(by='id',value="inputUsername").send_keys(BGG_USERNAME)
-    driver.find_element(by='id',value="inputPassword").send_keys(BGG_PASSWORD)
+    driver.find_element(by="id", value="inputUsername").send_keys(BGG_USERNAME)
+    driver.find_element(by="id", value="inputPassword").send_keys(BGG_PASSWORD)
 
-    driver.find_element(by='css selector',value="button[type='submit']").click()
+    driver.find_element(by="css selector", value="button[type='submit']").click()
 
     time.sleep(3)
 
     driver.get("https://boardgamegeek.com/data_dumps/bg_ranks")
 
-    download_element = driver.find_element(By.LINK_TEXT, 'Click to Download').get_attribute('href')
+    download_element = driver.find_element(
+        By.LINK_TEXT, "Click to Download"
+    ).get_attribute("href")
 
-    print(f'The main content is: {download_element}')
+    print(f"The main content is: {download_element}")
 
     local_file_path = "." if ENV == "dev" else "/tmp"
     with open(f"{local_file_path}/boardgames_ranks.csv", "w") as f:
         f.write(download_element)
 
-    wr.s3.upload(local_file=f"{local_file_path}/boardgames_ranks.csv", path=f's3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv')
+    wr.s3.upload(
+        local_file=f"{local_file_path}/boardgames_ranks.csv",
+        path=f"s3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv",
+    )
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     lambda_handler(None, None)
