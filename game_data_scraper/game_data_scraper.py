@@ -42,7 +42,7 @@ class BGGSpider(scrapy.Spider):
         self.scraper_type = scraper_type
         print("Completed init")
 
-    def set_filename(self):
+    def set_base_save_filename(self):
         filename = (
             f'gameset{self.filename.split("_")[-1].split(".")[0]}'
             if self.scraper_type == "game"
@@ -60,7 +60,7 @@ class BGGSpider(scrapy.Spider):
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-        save_filename = f"{self.set_filename()}{response_id}_{timestamp}.xml"
+        save_filename = f"{self.set_base_save_filename()}{response_id}_{timestamp}.xml"
         full_local_path = f"{self.local_save_path}/{save_filename}"
         print(full_local_path)
 
