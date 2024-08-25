@@ -2,21 +2,33 @@ import boto3
 import os
 
 ENV = os.environ.get("ENV", "dev")
-S3_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-URLS_PREFIX = os.environ.get("JSON_URLS_PREFIX")
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 SCRAPER_TASK_DEFINITION = os.environ.get("SCRAPER_TASK_DEFINITION")
 
+SCRAPER_CONFIG = {
+    "game": {
+        "s3_location": os.environ.get("GAME_JSON_URLS_PREFIX"),
+        "local_path": "game_scraper_urls_raw",
+    },
+    "user": {
+        "s3_location": os.environ.get("USER_JSON_URLS_PREFIX"),
+        "local_path": "user_scraper_urls_raw",
+    },
+}
 
-def get_filenames():
+
+def get_filenames(scraper_type):
 
     if ENV != "prod":
-        raw_files = os.listdir("data_store/local_files/scraper_urls_raw")
+        raw_files = os.listdir(
+            f"game_data_scraper/{SCRAPER_CONFIG[scraper_type]['local_path']}"
+        )
         file_prefixes = [x for x in raw_files if x.endswith(".json")]
     else:
         s3_client = boto3.client("s3")
-        raw_files = s3_client.list_objects_v2(Bucket=S3_BUCKET, Prefix=URLS_PREFIX)[
-            "Contents"
-        ]
+        raw_files = s3_client.list_objects_v2(
+            Bucket=S3_SCRAPER_BUCKET, Prefix=SCRAPER_CONFIG[scraper_type]["s3_location"]
+        )["Contents"]
         file_prefixes = [x["Key"] for x in raw_files]
 
     print(file_prefixes)
@@ -25,9 +37,11 @@ def get_filenames():
 
 def lambda_handler(event, context):
 
+    scraper_type = event.get("scraper_type")
+
     # TO DO LATER: HAVE THIS TRIGGER OFF OF EACH FILE LANDING AND SPAWN TASKS IN PARALLEL INSTEAD OF READING THE DIRECTORY
 
-    file_prefixes = get_filenames()
+    file_prefixes = get_filenames(scraper_type)
 
     task_definition = (
         f"{SCRAPER_TASK_DEFINITION}-dev" if ENV != "prod" else SCRAPER_TASK_DEFINITION
@@ -66,7 +80,10 @@ def lambda_handler(event, context):
                 "containerOverrides": [
                     {
                         "name": task_definition,
-                        "environment": [{"name": "FILENAME", "value": filename}],
+                        "environment": [
+                            {"name": "FILENAME", "value": filename},
+                            {"name": "SCRAPER_TYPE", "value": scraper_type},
+                        ],
                     }
                 ]
             },
@@ -74,4 +91,5 @@ def lambda_handler(event, context):
 
 
 if __name__ == "__main__":
+    event = {"scraper_type": "game"}
     lambda_handler(None, None)

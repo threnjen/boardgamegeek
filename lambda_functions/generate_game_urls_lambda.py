@@ -7,7 +7,7 @@ import boto3
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-JSON_URLS_PREFIX = os.environ.get("JSON_URLS_PREFIX")
+GAME_JSON_URLS_PREFIX = os.environ.get("GAME_JSON_URLS_PREFIX")
 url_block_size = 20
 number_url_files = 30
 
@@ -67,7 +67,7 @@ def lambda_handler(event, context):
             s3_client.upload_file(
                 f"{local_path}/scraper_urls_raw_{i}.json",
                 S3_SCRAPER_BUCKET,
-                f"{JSON_URLS_PREFIX}/scraper_urls_raw_{i}.json",
+                f"{GAME_JSON_URLS_PREFIX}/scraper_urls_raw_{i}.json",
             )
 
 
