@@ -7,7 +7,8 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "bggscraper"
+BOT_NAME_GAMES = "bggscraper_games"
+BOT_NAME_USERS = "bggscraper_users"
 
 # SPIDER_MODULES = ["bggscraper.spiders"]
 # NEWSPIDER_MODULE = "bggscraper.spiders"
