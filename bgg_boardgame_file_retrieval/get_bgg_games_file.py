@@ -6,11 +6,13 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from tempfile import mkdtemp
 import awswrangler as wr
+import zipfile
 
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+DEFAULT_DIRECTORY = "/tmp" if os.environ.get("ENV", "dev") == "prod" else "."
 
 
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
@@ -33,6 +35,13 @@ def initialize_driver():
     chrome_options.add_argument("--remote-debugging-pipe")
     chrome_options.add_argument("--verbose")
     chrome_options.add_argument("--log-path=/tmp")
+    prefs = {
+        "download.default_directory": DEFAULT_DIRECTORY,
+        "download_restrictions": 0,
+        "download.prompt_for_download": False,  # To auto download the file
+        "directory_upgrade": True,
+    }
+    chrome_options.add_experimental_option("prefs", prefs)
     chrome_options.binary_location = "/opt/chrome/chrome-linux64/chrome"
 
     service = Service(
@@ -64,16 +73,26 @@ def lambda_handler(event, context):
 
     download_element = driver.find_element(
         By.LINK_TEXT, "Click to Download"
-    ).get_attribute("href")
+    )  # .get_attribute("href")
+    filename = (
+        download_element.get_attribute("href")
+        .split("?X-Amz-Content-Sha256")[0]
+        .split("/")[-1]
+    )
+    download_element.click()
+
+    time.sleep(10)
+
+    with zipfile.ZipFile(f"{DEFAULT_DIRECTORY}/{filename}", "r") as zip_ref:
+        zip_ref.extractall(f"{DEFAULT_DIRECTORY}/boardgames_ranks.csv")
 
     print(f"The main content is: {download_element}")
 
-    local_file_path = "." if ENV == "dev" else "/tmp"
-    with open(f"{local_file_path}/boardgames_ranks.csv", "w") as f:
+    with open(f"{DEFAULT_DIRECTORY}/boardgames_ranks.csv", "w") as f:
         f.write(download_element)
 
     wr.s3.upload(
-        local_file=f"{local_file_path}/boardgames_ranks.csv",
+        local_file=f"{DEFAULT_DIRECTORY}/boardgames_ranks.csv",
         path=f"s3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv",
     )
 
