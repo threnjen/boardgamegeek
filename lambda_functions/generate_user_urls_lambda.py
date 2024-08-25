@@ -71,11 +71,14 @@ def lambda_handler(event, context):
         f"Max ratings pages per process to spawn {NUMBER_PROCESSES} processes: {max_ratings_pages}\n"
     )
 
+    # turn ratings total into a dictionary
+    ratings_totals = ratings_totals.to_dict(orient="records")
+    print(ratings_totals)
+
     # END SETUP METRICS
 
     df_groups = {}
     group_counter = 1
-    position = 0
 
     print(f"Splitting the games into groups of ~{max_ratings_pages} ratings pages\n")
     while len(ratings_totals) > 0:
@@ -86,12 +89,12 @@ def lambda_handler(event, context):
 
         while max_ratings_pages > chunk_size:
 
-            num_ratings = ratings_totals.iloc[0]["RatingsPages"]
-            bgg_id = ratings_totals.iloc[0]["BGGId"]
+            num_ratings = ratings_totals[0]["RatingsPages"]
+            bgg_id = ratings_totals[0]["BGGId"]
             bgg_id_lists.append(bgg_id)
             ratings_lists.append(num_ratings)
             chunk_size += num_ratings
-            ratings_totals = ratings_totals.drop(0).reset_index(drop=True)
+            del ratings_totals[0]
             if len(ratings_totals) == 0:
                 break
 
