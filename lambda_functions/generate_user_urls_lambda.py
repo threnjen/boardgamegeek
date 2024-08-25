@@ -58,14 +58,18 @@ def lambda_handler(event, context):
     total_ratings = ratings_totals["RatingsPages"].sum()
     print(f"Total pages of ratings: {total_ratings}\n")
 
-    print(f"Number of games with no ratings: {len(ratings_totals[ratings_totals['RatingsPages'] == 0])}\n")
+    print(
+        f"Number of games with no ratings: {len(ratings_totals[ratings_totals['RatingsPages'] == 0])}\n"
+    )
 
     ratings_totals = ratings_totals.sort_values(
         "RatingsPages", ascending=False
     ).reset_index(drop=True)
-    
+
     max_ratings_pages = int(np.ceil(total_ratings / NUMBER_PROCESSES))
-    print(f"Max ratings pages per process to spawn {NUMBER_PROCESSES} processes: {max_ratings_pages}\n")
+    print(
+        f"Max ratings pages per process to spawn {NUMBER_PROCESSES} processes: {max_ratings_pages}\n"
+    )
 
     # END SETUP METRICS
 
@@ -92,7 +96,9 @@ def lambda_handler(event, context):
                 break
 
         df_groups[f"group{group_counter}"] = [bgg_id_lists, ratings_lists]
-        print(f"group{group_counter} Complete - {len(bgg_id_lists)} games with {chunk_size} ratings pages")
+        print(
+            f"group{group_counter} Complete - {len(bgg_id_lists)} games with {chunk_size} ratings pages"
+        )
         group_counter += 1
 
     group_urls = {}
@@ -121,10 +127,10 @@ def lambda_handler(event, context):
                 S3_SCRAPER_BUCKET,
                 f"{USER_JSON_URLS_PREFIX}/{group}_user_scraper_urls_raw.json",
             )
-        
+
         total_games_processed += len(game_entries[0])
         total_pages_processed += sum(game_entries[1])
-    
+
     print(f"\nTotal games processed: {total_games_processed}")
     print(f"Total pages processed: {total_pages_processed}")
 
