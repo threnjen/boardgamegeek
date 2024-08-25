@@ -56,13 +56,12 @@ def lambda_handler(event, context):
                     scraper_urls_raw[i * url_block_size : (i + 1) * url_block_size]
                 )
             )
-        if ENV == "prod":
-            s3_client = boto3.client("s3")
-            s3_client.upload_file(
-                f"{local_path}/group{i+1}_game_scraper_urls_raw.json",
-                S3_SCRAPER_BUCKET,
-                f"{GAME_JSON_URLS_PREFIX}/group{i+1}_game_scraper_urls_raw.json",
-            )
+        s3_client = boto3.client("s3")
+        s3_client.upload_file(
+            f"{local_path}/group{i+1}_game_scraper_urls_raw.json",
+            S3_SCRAPER_BUCKET,
+            f"{GAME_JSON_URLS_PREFIX}/group{i+1}_game_scraper_urls_raw.json",
+        )
 
 
 if __name__ == "__main__":

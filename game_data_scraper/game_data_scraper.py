@@ -67,20 +67,13 @@ def set_vars_depending_on_scraper_type(scraper_type: str) -> tuple:
     json_urls_prefix = SCRAPER_CONFIG[scraper_type]["s3_location"]
     scrapy_bot_name = SCRAPER_CONFIG[scraper_type]["bot_name"]
     local_path = SCRAPER_CONFIG[scraper_type]["local_path"]
-    scraped_games_save = SCRAPER_CONFIG[scraper_type]["local_subfolder"]
+    scraped_games_save = SCRAPER_CONFIG[scraper_type]["save_subfolder"]
 
     return json_urls_prefix, scrapy_bot_name, local_path, scraped_games_save
 
 
 def set_base_save_filename(filename: str, scraper_type: str) -> str:
-    filename = (
-        f'gameset{filename.split("_")[-1].split(".")[0]}'
-        if scraper_type == "game"
-        else filename.split("_")[0].split(".")[0]
-    )
-    filename = f"{filename}_{scraper_type}_raw_"
-    return filename
-
+    return f"{filename.split("_")[0]}_{scraper_type}_raw_"
 
 if __name__ == "__main__":
 
