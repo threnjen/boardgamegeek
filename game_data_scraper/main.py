@@ -1,17 +1,13 @@
 from functools import partial
 import scrapy
 from datetime import datetime
-import json
 import os
 import sys
-import boto3
-import awswrangler as wr
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
 from scraper_config import SCRAPER_CONFIG
 from utils.load_save import (
     LocalLoader,
-    DataLoader,
     DataSaver,
     S3Loader,
     S3Saver,

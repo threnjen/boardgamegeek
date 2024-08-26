@@ -1,6 +1,5 @@
 from abc import abstractmethod, ABC
 import json
-import xmltodict
 
 class DataReader(ABC):
     @abstractmethod
@@ -13,8 +12,8 @@ class JSONReader(DataReader):
 
 
 class XMLReader(DataReader):
-    def read_data(cls, data: bytes) -> dict:
-        return xmltodict.parse(data)
+    def read_data(cls, data: bytes) -> bytes:
+        return data
 
 
 class DataWriter(ABC):
@@ -27,5 +26,5 @@ class JSONWriter(DataWriter):
         return json.dumps(data)
 
 class XMLWriter(DataWriter):
-    def write_data(cls, data: dict) -> bytes:
-        return xmltodict.unparse(data)
+    def write_data(cls, data: dict) -> dict:
+        return data
