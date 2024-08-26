@@ -26,5 +26,5 @@ COPY game_data_scraper/Pipfile* .
 # Install dependencies with pipenv
 RUN pipenv sync
 
-ENTRYPOINT ["pipenv", "run", "python", "game_data_cleaner.xml_file_parser.py"]
+ENTRYPOINT ["pipenv", "run", "python", "game_data_cleaner/xml_file_parser.py"]
 CMD ["$FILENAME"]
