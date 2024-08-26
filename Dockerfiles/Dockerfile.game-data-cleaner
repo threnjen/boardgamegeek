@@ -1,0 +1,30 @@
+FROM python:3.12
+
+# Install required dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up environment variables
+ARG FILENAME
+ENV FILENAME=$FILENAME
+
+# Install pipenv
+RUN pip3 install pipenv
+
+# Create necessary directories
+RUN mkdir -p /app/game_data_cleaner/utils \
+    /app/local_data/scraped_xml_raw_users \
+    /app/local_data/scraped_xml_raw_games
+
+# Copy the source code into the container
+COPY game_data_cleaner game_data_cleaner
+COPY utils game_data_cleaner/utils
+COPY game_data_scraper/Pipfile* .
+
+# Install dependencies with pipenv
+RUN pipenv sync
+
+ENTRYPOINT ["pipenv", "run", "python", "game_data_cleaner.xml_file_parser.py"]
+CMD ["$FILENAME"]
