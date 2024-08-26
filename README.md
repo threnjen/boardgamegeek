@@ -8,7 +8,7 @@ AWS is required for this project to run as presented. Running on the cloud is no
 
 This project uses Pipenv as its environment manager. Documentation on pipenv is outside the scope of this repo.
 
-A file called .env must be made in the project root directory. Copy in the variables from env.example and populate as needed for your use case.
+A `.env` must be made in the project root directory. Copy in the variables from `env.example` and populate as needed for your use case. 
 
 
 ## Project Order
@@ -22,7 +22,7 @@ Most steps in this project are explicitly dependent on a prior step. Dependencie
 
 ### 02 - Generate GAME scraping URLS
 - `lambda_functions.generate_game_urls_lambda.py`
-- Must have `boardgames_ranks.csv` in directory `local_data` OR on S3 from prior step. Download from BGG or use Step 01 to write it to S3.
+- Must have `boardgames_ranks.csv` in directory `local_data` OR on S3 from the [prior step](#01---get-boardgames_ranks.csv-file-from-bgg-and-save-it-to-s3). Download from BGG or use [Step 01](#01---get-boardgames_ranks.csv-file-from-bgg-and-save-it-to-s3) to write it to S3.
 - Opens the `boardgames_ranks.csv` file and generates urls for the game scraper. Writes URLS locally when run locally, and always writes URLs to S3.
 
 ### 03 - Scrape games from URLS
@@ -34,7 +34,7 @@ Most steps in this project are explicitly dependent on a prior step. Dependencie
 
 - TEST - `game_data_scraper.main.py` for GAME to test a single file locally
     - Use to test a single specific url file. Must have generated game urls first with step 02.
-    - Run locally and pass both scraper_type arg, and an existing filename without directory or suffix from `local_data/scraper_urls_raw_game`
+    - Run locally and pass both `scraper_type` and an existing filename without directory or suffix from `local_data/scraper_urls_raw_game`
     - Example: `python game_data_scraper/main.py game group1_game_scraper_urls_raw`
     - Only saves data locally to `local_data/scraped_xml_raw_games`
 

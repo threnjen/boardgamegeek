@@ -15,6 +15,7 @@ from utils.load_save import (
     LocalSaver,
 )
 from utils.read_write import JSONReader, XMLWriter, JSONWriter
+from config import DIRECTORY_CONFIGS
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 ENV = os.environ.get("ENV", "dev")
@@ -74,8 +75,8 @@ def set_base_save_filename(filename: str, scraper_type: str) -> str:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("scraper_type", type=str, help="The type of scraper to run")
-    parser.add_argument("filename", type=str, help="The filename to process")
+    parser.add_argument("scraper_type", type=str, help="The type of scraper to run.  Current options are 'game' and 'user'") 
+    parser.add_argument("filename", type=str, help=f"The filename to process from path local_files/{DIRECTORY_CONFIGS['scraper_urls_raw_game']}, without a suffix")
     return parser.parse_args()
 
 if __name__ == "__main__":
