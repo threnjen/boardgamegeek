@@ -31,7 +31,6 @@ class BGGSpider(scrapy.Spider):
         name: str,
         scraper_urls_raw: list[str],
         filename: str,
-        loader: DataLoader,
         saver: DataSaver,
     ):
         """
@@ -47,7 +46,6 @@ class BGGSpider(scrapy.Spider):
         super().__init__()
         self.scraper_urls_raw = scraper_urls_raw
         self.filename = filename
-        self.loader = loader
         self.saver = saver
 
     def start_requests(self):
