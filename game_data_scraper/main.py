@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import xml.etree.ElementTree as ET
 from datetime import datetime
 from functools import partial
 
@@ -55,19 +56,118 @@ class BGGSpider(scrapy.Spider):
         )
 
 
-def set_vars_depending_on_scraper_type(scraper_type: str) -> tuple:
-    """Set the variables depending on the scraper type"""
-    json_urls_prefix = SCRAPER_CONFIG[scraper_type]["s3_location"]
-    scrapy_bot_name = SCRAPER_CONFIG[scraper_type]["bot_name"]
-    local_path = SCRAPER_CONFIG[scraper_type]["local_path"]
-    scraped_games_save = SCRAPER_CONFIG[scraper_type]["save_subfolder"]
+class GameScraper:
 
-    return json_urls_prefix, scrapy_bot_name, local_path, scraped_games_save
+    def __init__(self, scraper_type, filename) -> None:
+        self.file_group = filename.split("_")[0]
+        self.scraped_games_save = SCRAPER_CONFIG[scraper_type]["save_subfolder"]
+        self.scraper_type = scraper_type
 
+    def run_game_scraper_processes(self):
+        scraper_urls_raw = self._load_scraper_urls()
+        self._run_scrapy_scraper(scraper_urls_raw)
+        raw_xml = self._combine_xml_files_to_master()
+        self._write_master_xml_file(
+            raw_xml, filename=f"master_{self.file_group}_{self.scraper_type}_raw.xml"
+        )
 
-def set_base_save_filename(filename: str, scraper_type: str) -> str:
-    """Set the base filename for the saved files"""
-    return f"{filename.split("_")[0]}_{scraper_type}_raw_"
+    def _load_scraper_urls(self) -> list[str]:
+        # get file from local if dev, else from S3
+
+        local_path = SCRAPER_CONFIG[self.scraper_type]["local_path"]
+        if os.path.exists(f"{local_path}/{filename}.json"):
+            scraper_urls_raw = LocalLoader(JSONReader(), local_path).load_data(
+                f"{filename}.json"
+            )
+        else:
+            scraper_urls_raw = S3Loader(
+                JSONReader(),
+                f"s3://{S3_SCRAPER_BUCKET}/{SCRAPER_CONFIG[scraper_type]["s3_location"]}",
+            ).load_data(f"{filename}.json")
+
+        if ENV == "dev":
+            if not os.path.exists(f"{local_path}/{filename}.json"):
+                LocalSaver(
+                    JSONWriter(local_path),
+                ).save_data(scraper_urls_raw, f"{filename}.json")
+            scraper_urls_raw = scraper_urls_raw[:10]
+            print(scraper_urls_raw)
+
+        return scraper_urls_raw
+
+    def _run_scrapy_scraper(self, scraper_urls_raw) -> None:
+        process = CrawlerProcess(
+            settings={
+                "LOG_LEVEL": "DEBUG",
+                "BOT_NAME": SCRAPER_CONFIG[scraper_type]["bot_name"],
+                "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
+                "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
+                "COOKIES_ENABLED": COOKIES_ENABLED,
+                "AUTOTHROTTLE_ENABLED": AUTOTHROTTLE_ENABLED,
+                "AUTOTHROTTLE_START_DELAY": AUTOTHROTTLE_START_DELAY,
+                "AUTOTHROTTLE_MAX_DELAY": AUTOTHROTTLE_MAX_DELAY,
+                "AUTOTHROTTLE_TARGET_CONCURRENCY": AUTOTHROTTLE_TARGET_CONCURRENCY,
+                "AUTOTHROTTLE_DEBUG": AUTOTHROTTLE_DEBUG,
+            }
+        )
+
+        process.crawl(
+            BGGSpider,
+            name="bgg_raw",
+            scraper_urls_raw=scraper_urls_raw,
+            filename=filename,
+            saver=LocalSaver(XMLWriter(), self.scraped_games_save),
+        )
+
+        process.start()
+
+        # Testing section to see what happens after we are done with process.start()
+        print("Completed with scraping process")
+
+    def _combine_xml_files_to_master(self) -> str:
+        """Combine the XML files into a single XML file"""
+
+        print(f"Combining XML files for {self.file_group}")
+
+        saved_files = [
+            f"{self.scraped_games_save}/{x}"
+            for x in os.listdir(self.scraped_games_save)
+            if self.file_group in x
+        ]
+
+        # Parse the first XML file to get the root and header
+        tree = ET.parse(saved_files[0])
+        root = tree.getroot()
+
+        # Create a new root element for the combined XML
+        combined_root = ET.Element(root.tag, root.attrib)
+
+        # Iterate over each XML file
+        for xml_file in saved_files:
+            # Parse the XML file
+            tree = ET.parse(xml_file)
+            root = tree.getroot()
+
+            # Append each <item> element to the new root
+            for item in root.findall("item"):
+                combined_root.append(item)
+
+        # Create a new XML tree and write it to a new file
+        combined_tree = ET.ElementTree(combined_root)
+
+        # Get the root element from the ElementTree
+        combined_root = combined_tree.getroot()
+
+        xml_bytes = ET.tostring(combined_root, encoding="utf-8", xml_declaration=True)
+
+        return xml_bytes
+
+    def _write_master_xml_file(self, xml_bytes: bytes, filename=str) -> None:
+
+        LocalSaver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, filename)
+
+        if ENV == "prod":
+            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, filename)
 
 
 def parse_args():
@@ -91,58 +191,4 @@ if __name__ == "__main__":
     scraper_type = args.scraper_type
     filename = args.filename
 
-    json_urls_prefix, scrapy_bot_name, local_path, scraped_games_save = (
-        set_vars_depending_on_scraper_type(scraper_type)
-    )
-
-    print(filename)
-
-    process = CrawlerProcess(
-        settings={
-            "LOG_LEVEL": "DEBUG",
-            "BOT_NAME": scrapy_bot_name,
-            "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
-            "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
-            "COOKIES_ENABLED": COOKIES_ENABLED,
-            "AUTOTHROTTLE_ENABLED": AUTOTHROTTLE_ENABLED,
-            "AUTOTHROTTLE_START_DELAY": AUTOTHROTTLE_START_DELAY,
-            "AUTOTHROTTLE_MAX_DELAY": AUTOTHROTTLE_MAX_DELAY,
-            "AUTOTHROTTLE_TARGET_CONCURRENCY": AUTOTHROTTLE_TARGET_CONCURRENCY,
-            "AUTOTHROTTLE_DEBUG": AUTOTHROTTLE_DEBUG,
-        }
-    )
-
-    # get file from local if dev, else from S3
-    if os.path.exists(f"{local_path}/{filename}.json"):
-        scraper_urls_raw = LocalLoader(JSONReader(), local_path).load_data(
-            f"{filename}.json"
-        )
-    else:
-        scraper_urls_raw = S3Loader(
-            JSONReader(), f"s3://{S3_SCRAPER_BUCKET}/{json_urls_prefix}"
-        ).load_data(f"{filename}.json")
-
-    if ENV == "dev":
-        if not os.path.exists(f"{local_path}/{filename}.json"):
-            LocalSaver(
-                JSONWriter(local_path),
-            ).save_data(scraper_urls_raw, f"{filename}.json")
-        scraper_urls_raw = scraper_urls_raw[:1]
-        data_saver = LocalSaver(XMLWriter(), scraped_games_save)
-        print(scraper_urls_raw)
-    elif ENV == "prod":
-        data_saver = S3Saver(XMLWriter(), scraped_games_save)
-    else:
-        raise ValueError("ENV must be either 'dev' or 'prod'")
-
-    filename = set_base_save_filename(filename, scraper_type)
-
-    process.crawl(
-        BGGSpider,
-        name="bgg_raw",
-        scraper_urls_raw=scraper_urls_raw,
-        filename=filename,
-        saver=data_saver,
-    )
-
-    process.start()
+    GameScraper(scraper_type, filename).run_game_scraper_processes()
