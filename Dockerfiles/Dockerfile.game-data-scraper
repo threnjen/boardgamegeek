@@ -27,7 +27,7 @@ COPY utils game_data_scraper/utils
 COPY game_data_scraper/Pipfile* .
 
 # Install dependencies with pipenv
-RUN pipenv sync
+RUN pipenv install --deploy --ignore-pipfile
 
 # Set the entry point and command
 ENTRYPOINT ["pipenv", "run", "python", "game_data_scraper/main.py"]
