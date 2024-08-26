@@ -24,6 +24,7 @@ xmltodict = "*"
 pytest = "*"
 black = {extras = ["jupyter"], version = "*"}
 ipykernel = "*"
+isort = "*"
 
 [requires]
 python_version = "3.12"

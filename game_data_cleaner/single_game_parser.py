@@ -27,6 +27,7 @@ class GameEntryParser:
     def check_rating_count_threshold(
         self,
     ) -> bool:
+        """Check if the game has enough user ratings to be considered"""
         user_ratings = int(self.find_thing_in_soup("usersrated"))
 
         if user_ratings < MIN_USER_RATINGS:
@@ -34,6 +35,7 @@ class GameEntryParser:
         return True
 
     def parse_individual_game(self) -> dict:
+        """Parse the individual game data"""
         self._parse_unique_elements()
         self._parse_config_elements()
         self._parse_poll_items()
@@ -41,6 +43,7 @@ class GameEntryParser:
         self._create_game_data()
 
     def get_single_game_attributes(self) -> tuple:
+        """Return the game data and ancillary data"""
         return (
             self.game_entry_df,
             self.subcategories,
@@ -52,6 +55,9 @@ class GameEntryParser:
         )
 
     def _parse_unique_elements(self) -> dict:
+        """Parse the unique elements of the game
+        This includes the BGGId, name, description, image path, number of alternates, expansions, implementations,
+        """
         self.game_base_attributes["BGGId"] = self.game_entry["id"]
         self.game_base_attributes["Name"] = self.game_entry.find(
             "name", type="primary"
@@ -90,15 +96,22 @@ class GameEntryParser:
             self.game_base_attributes[player] = value
 
     def _parse_config_elements(self) -> dict:
+        """Parse the configuration elements of the game
+        This includes the year published, min and max players, min and max playtime, and min and max age.
+        """
         for key, attributes in GAME_ATTRIBUTES.items():
             self.game_base_attributes[key] = self.find_thing_in_soup(
                 attributes["find_item"]
             )
 
     def find_thing_in_soup(self, find_type_str: str) -> str:
+        """Find a specific item in the soup"""
         return self.game_entry.find(find_type_str)["value"]
 
     def _parse_poll_items(self) -> dict:
+        """Parse the poll items of the game
+        This includes the user suggested player age, language dependence, best players, and play time.
+        """
         self.game_base_attributes["ComAgeRec"] = self.evaulate_poll(
             "User Suggested Player Age"
         )  # community age min poll
@@ -116,6 +129,9 @@ class GameEntryParser:
         )  # Community Max Playtime poll
 
     def _parse_family_attributes(self) -> dict:
+        """Parse the family attributes of the game
+        This includes the family, setting, theme, mechanism, category, and kickstarted attributes.
+        """
         self.game_base_attributes["Family"] = self.get_family()
         self.game_base_attributes["Setting"] = self.get_boardgame_family_attribute(
             "Setting:"
@@ -144,6 +160,7 @@ class GameEntryParser:
         }
 
     def evaulate_poll(self, poll_title: str):
+        """Attempts to evaluate a poll item from the game entry."""
         NUMVOTES_TAG = "numvotes"
         poll_result = None
         try:
@@ -161,6 +178,7 @@ class GameEntryParser:
         return poll_result
 
     def get_family(self) -> str:
+        """Returns the family of a game."""
         family = self.game_entry.find(
             "link", type="boardgamefamily", value=re.compile("Game:")
         )
@@ -186,6 +204,7 @@ class GameEntryParser:
         return None
 
     def get_boardgame_family_attribute(self, attribute: str) -> str:
+        """Returns a specific attribute of a game family."""
 
         found_attribute = self.game_entry.find(
             "link", type="boardgamefamily", value=re.compile(attribute)
@@ -195,6 +214,9 @@ class GameEntryParser:
         return found_attribute["value"].strip(attribute).strip(" ")
 
     def _get_player_counts(self) -> dict:
+        """Returns the best and good player counts for a game.
+        Best players are defined as the number of players that have the most votes for best and recommended.
+        """
         # Best and Good Players
         players = self.game_entry.find(
             "poll", title="User Suggested Number of Players"
@@ -234,6 +256,11 @@ class GameEntryParser:
         return {"BestPlayers": best_players, "GoodPlayers": good_players}
 
     def _get_components(self) -> dict:
+        """Returns the components of a game.
+        Components may include dice, cards, and board.
+
+        Returns:
+            dict"""
         families = self.game_entry.find_all(
             "link", type="boardgamefamily", value=re.compile("Component")
         )
@@ -354,6 +381,16 @@ class GameEntryParser:
         }
 
     def get_subcategories(self, game_id: str) -> dict[str, list]:
+        """Get the subcategories of a game.
+
+        Parameters:
+        game_id: str
+            The id of the game.
+
+        Returns:
+        dict[str, list]
+            A dictionary containing the subcategories of the specified game id.  The id is repeated for each subcategory.
+        """
         all_subcategories = self.game_entry.find_all("link", type="boardgamecategory")
 
         return {

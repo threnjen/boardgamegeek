@@ -4,10 +4,10 @@ import os
 import awswrangler as wr
 import math
 import boto3
+from config import DIRECTORY_CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-GAME_JSON_URLS_PREFIX = os.environ.get("GAME_JSON_URLS_PREFIX")
 url_block_size = 20
 number_url_files = 30
 
@@ -27,6 +27,12 @@ def generate_raw_urls(game_ids: list[str]):
 
 
 def lambda_handler(event, context):
+    """Generate the raw URLs for the game scraper
+    This function will read the game ids from the local csv file or S3
+    and generate the raw URLs for the game scraper. The URLs
+    will be split into blocks and saved to S3 for the scraper
+    to pick up.
+    """
 
     try:
         print("Reading the file locally")
@@ -44,7 +50,11 @@ def lambda_handler(event, context):
     url_block_size = math.ceil(len(scraper_urls_raw) / number_url_files)
     print(f"URL block size: {url_block_size}")
 
-    local_path = "local_data/scraper_urls_raw_game" if ENV != "prod" else "/tmp"
+    local_path = (
+        f"local_data/{DIRECTORY_CONFIGS['scraper_urls_raw_game']}"
+        if ENV != "prod"
+        else "/tmp"
+    )
 
     for i in range(number_url_files):
         print(f"Saving block size {i * url_block_size} : {(i + 1) * url_block_size}")
@@ -60,7 +70,7 @@ def lambda_handler(event, context):
         s3_client.upload_file(
             f"{local_path}/group{i+1}_game_scraper_urls_raw.json",
             S3_SCRAPER_BUCKET,
-            f"{GAME_JSON_URLS_PREFIX}/group{i+1}_game_scraper_urls_raw.json",
+            f"{DIRECTORY_CONFIGS['scraper_urls_raw_game']}/group{i+1}_game_scraper_urls_raw.json",
         )
 
 

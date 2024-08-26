@@ -3,6 +3,7 @@ import scrapy
 from datetime import datetime
 import os
 import sys
+import argparse
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
 from scraper_config import SCRAPER_CONFIG
@@ -14,6 +15,7 @@ from utils.load_save import (
     LocalSaver,
 )
 from utils.read_write import JSONReader, XMLWriter, JSONWriter
+from config import DIRECTORY_CONFIGS
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 ENV = os.environ.get("ENV", "dev")
@@ -58,6 +60,7 @@ class BGGSpider(scrapy.Spider):
 
 
 def set_vars_depending_on_scraper_type(scraper_type: str) -> tuple:
+    """Set the variables depending on the scraper type"""
     json_urls_prefix = SCRAPER_CONFIG[scraper_type]["s3_location"]
     scrapy_bot_name = SCRAPER_CONFIG[scraper_type]["bot_name"]
     local_path = SCRAPER_CONFIG[scraper_type]["local_path"]
@@ -67,12 +70,20 @@ def set_vars_depending_on_scraper_type(scraper_type: str) -> tuple:
 
 
 def set_base_save_filename(filename: str, scraper_type: str) -> str:
+    """Set the base filename for the saved files"""
     return f"{filename.split("_")[0]}_{scraper_type}_raw_"
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("scraper_type", type=str, help="The type of scraper to run.  Current options are 'game' and 'user'") 
+    parser.add_argument("filename", type=str, help=f"The filename to process from path local_files/{DIRECTORY_CONFIGS['scraper_urls_raw_game']}, without a suffix")
+    return parser.parse_args()
 
 if __name__ == "__main__":
 
-    scraper_type = sys.argv[1]
-    filename = sys.argv[2]
+    args = parse_args()
+    scraper_type = args.scraper_type
+    filename = args.filename
 
     json_urls_prefix, scrapy_bot_name, local_path, scraped_games_save = (
         set_vars_depending_on_scraper_type(scraper_type)
