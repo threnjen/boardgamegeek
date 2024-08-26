@@ -21,8 +21,8 @@ jobs:
       - name: Zip functions
         run: |
           cd lambda_functions
-          zip -r boardgame_scraper_fargate_trigger.zip boardgame_scraper_fargate_trigger.py
-          zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py
+          zip -r boardgame_scraper_fargate_trigger.zip boardgame_scraper_fargate_trigger.py ../config.py
+          zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../config.py
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:

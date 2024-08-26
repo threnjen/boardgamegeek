@@ -17,6 +17,10 @@ DEFAULT_DIRECTORY = "/tmp" if os.environ.get("ENV", "dev") == "prod" else "."
 
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
 def initialize_driver():
+    """Initialize the Chrome driver
+    This function will initialize the Chrome driver with the necessary
+    options for the scraper to work. The function will return the
+    initialized driver."""
 
     if not os.environ.get("ENV", "dev") == "prod":
         return webdriver.Chrome()
@@ -55,6 +59,9 @@ def initialize_driver():
 
 
 def lambda_handler(event, context):
+    """Uses Selenium to download the BGG game ranks file
+    This function will use Selenium to download the BGG game ranks file
+    and upload it to S3. The function will return None."""
     driver = initialize_driver()
 
     driver.get("https://boardgamegeek.com/login")

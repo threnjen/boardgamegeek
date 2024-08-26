@@ -7,7 +7,7 @@ RUN dnf install -y atk cups-libs gtk3 libXcomposite alsa-lib \
     xorg-x11-xauth dbus-glib dbus-glib-devel nss mesa-libgbm jq unzip
     
 # Copy and run the chrome installer script
-COPY ./chrome-installer.sh ./chrome-installer.sh
+COPY Dockerfile/chrome-installer.sh ./chrome-installer.sh
 RUN chmod +x ./chrome-installer.sh
 RUN ./chrome-installer.sh
 RUN rm ./chrome-installer.sh
@@ -15,6 +15,6 @@ RUN rm ./chrome-installer.sh
 RUN pip install selenium
 RUN pip install awswrangler
 
-COPY get_bgg_games_file.py ./
+COPY bgg_boardgame_file_retrieval/get_bgg_games_file.py .
 
 CMD [ "get_bgg_games_file.lambda_handler" ]

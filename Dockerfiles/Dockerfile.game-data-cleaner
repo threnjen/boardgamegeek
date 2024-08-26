@@ -22,6 +22,7 @@ RUN mkdir -p /app/game_data_cleaner/utils \
 COPY game_data_cleaner game_data_cleaner
 COPY utils game_data_cleaner/utils
 COPY Pipfile* .
+COPY config.py .
 
 # Install dependencies with pipenv
 RUN pipenv sync

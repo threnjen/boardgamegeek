@@ -1,34 +1,28 @@
 import boto3
 import os
 import sys
+from config import DIRECTORY_CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 SCRAPER_TASK_DEFINITION = os.environ.get("SCRAPER_TASK_DEFINITION")
 
 SCRAPER_CONFIG = {
-    "game": {
-        "s3_location": os.environ.get("GAME_JSON_URLS_PREFIX"),
-        "local_path": "game_scraper_urls_raw",
-    },
-    "user": {
-        "s3_location": os.environ.get("USER_JSON_URLS_PREFIX"),
-        "local_path": "user_scraper_urls_raw",
-    },
+    "game": DIRECTORY_CONFIGS["scraper_urls_raw_game"],
+    "user": DIRECTORY_CONFIGS["scaper_urls_raw_user"],
 }
 
 
 def get_filenames(scraper_type):
+    """Get the filenames of the files to be processed by the scraper"""
 
     if ENV == "dev":
-        raw_files = os.listdir(
-            f"local_data/{SCRAPER_CONFIG[scraper_type]['local_path']}"
-        )
+        raw_files = os.listdir(f"local_data/{SCRAPER_CONFIG[scraper_type]}")
         file_prefixes = [x for x in raw_files if x.endswith(".json")]
     else:
         s3_client = boto3.client("s3")
         raw_files = s3_client.list_objects_v2(
-            Bucket=S3_SCRAPER_BUCKET, Prefix=SCRAPER_CONFIG[scraper_type]["s3_location"]
+            Bucket=S3_SCRAPER_BUCKET, Prefix=SCRAPER_CONFIG[scraper_type]
         )["Contents"]
         file_prefixes = [x["Key"] for x in raw_files]
 
@@ -36,6 +30,7 @@ def get_filenames(scraper_type):
 
 
 def lambda_handler(event, context):
+    """Trigger the Fargate task to process the files in the S3 bucket"""
 
     scraper_type = event.get("scraper_type")
 
