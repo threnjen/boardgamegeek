@@ -30,5 +30,5 @@ COPY game_data_scraper/Pipfile* .
 RUN pipenv sync
 
 # Set the entry point and command
-ENTRYPOINT ["pipenv", "run", "python", "game_data_scraper/game_data_scraper.py"]
+ENTRYPOINT ["pipenv", "run", "python", "game_data_scraper/main.py"]
 CMD ["$SCRAPER_TYPE", "$FILENAME"]
