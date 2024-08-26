@@ -1,9 +1,9 @@
-from bs4 import BeautifulSoup
-import re
 import json
-import pandas as pd
 import os
+import re
+
 import awswrangler as wr
+import pandas as pd
 from bs4 import BeautifulSoup
 
 ENV = os.environ.get("ENV", "dev")

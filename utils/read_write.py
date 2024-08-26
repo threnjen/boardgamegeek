@@ -1,10 +1,12 @@
-from abc import abstractmethod, ABC
 import json
+from abc import ABC, abstractmethod
+
 
 class DataReader(ABC):
     @abstractmethod
     def read_data(cls, data: bytes) -> dict:
         pass
+
 
 class JSONReader(DataReader):
     def read_data(cls, data: bytes) -> dict:
@@ -21,9 +23,11 @@ class DataWriter(ABC):
     def write_data(cls, data: dict) -> bytes:
         pass
 
+
 class JSONWriter(DataWriter):
     def write_data(cls, data: dict) -> bytes:
         return json.dumps(data)
+
 
 class XMLWriter(DataWriter):
     def write_data(cls, data: dict) -> dict:

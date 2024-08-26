@@ -1,9 +1,11 @@
-import pandas as pd
 import json
 import os
+
 import awswrangler as wr
-import numpy as np
 import boto3
+import numpy as np
+import pandas as pd
+
 from config import DIRECTORY_CONFIGS
 
 ENV = os.environ.get("ENV", "dev")

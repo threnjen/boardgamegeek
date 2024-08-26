@@ -1,21 +1,17 @@
-from functools import partial
-import scrapy
-from datetime import datetime
+import argparse
 import os
 import sys
-import argparse
+from datetime import datetime
+from functools import partial
+
+import scrapy
+from scraper_config import SCRAPER_CONFIG
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
-from scraper_config import SCRAPER_CONFIG
-from utils.load_save import (
-    LocalLoader,
-    DataSaver,
-    S3Loader,
-    S3Saver,
-    LocalSaver,
-)
-from utils.read_write import JSONReader, XMLWriter, JSONWriter
+
 from config import DIRECTORY_CONFIGS
+from utils.load_save import DataSaver, LocalLoader, LocalSaver, S3Loader, S3Saver
+from utils.read_write import JSONReader, JSONWriter, XMLWriter
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 ENV = os.environ.get("ENV", "dev")
@@ -73,11 +69,21 @@ def set_base_save_filename(filename: str, scraper_type: str) -> str:
     """Set the base filename for the saved files"""
     return f"{filename.split("_")[0]}_{scraper_type}_raw_"
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("scraper_type", type=str, help="The type of scraper to run.  Current options are 'game' and 'user'") 
-    parser.add_argument("filename", type=str, help=f"The filename to process from path local_files/{DIRECTORY_CONFIGS['scraper_urls_raw_game']}, without a suffix")
+    parser.add_argument(
+        "scraper_type",
+        type=str,
+        help="The type of scraper to run.  Current options are 'game' and 'user'",
+    )
+    parser.add_argument(
+        "filename",
+        type=str,
+        help=f"The filename to process from path local_files/{DIRECTORY_CONFIGS['scraper_urls_raw_game']}, without a suffix",
+    )
     return parser.parse_args()
+
 
 if __name__ == "__main__":
 

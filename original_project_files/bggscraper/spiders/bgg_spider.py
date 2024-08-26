@@ -1,6 +1,7 @@
-import scrapy
-from datetime import datetime
 import json
+from datetime import datetime
+
+import scrapy
 
 
 class BggSpider(scrapy.Spider):

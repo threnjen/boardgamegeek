@@ -1,6 +1,8 @@
-import boto3
 import os
 import sys
+
+import boto3
+
 from config import DIRECTORY_CONFIGS
 
 ENV = os.environ.get("ENV", "dev")

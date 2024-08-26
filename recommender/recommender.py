@@ -1,6 +1,6 @@
 import easygui as eg
-import pandas as pd
 import numpy as np
+import pandas as pd
 import regex as re
 
 sims_byname = pd.read_pickle(

@@ -1,8 +1,9 @@
-import scrapy
-import time
-import boto3
 import json
+import time
 from datetime import datetime
+
+import boto3
+import scrapy
 
 
 class BggSpider(scrapy.Spider):

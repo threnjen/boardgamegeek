@@ -1,6 +1,8 @@
 import os
-from config import DIRECTORY_CONFIGS
+
 from scrapy_settings import *
+
+from config import DIRECTORY_CONFIGS
 
 SCRAPER_CONFIG = {
     "game": {

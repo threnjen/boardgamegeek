@@ -1,19 +1,18 @@
-import pandas as pd
-import numpy as np
-import numba as nb
-import time
-import gc
 import copy
+import gc
 import json
-from statistics import mean
-
-from numba import jit, cuda, prange, typeof, typed, types
-from numpy.linalg import norm
-
-from multiprocessing import Pool, Manager
+import time
 
 # ignore warnings (gets rid of Pandas copy warnings)
 import warnings
+from multiprocessing import Manager, Pool
+from statistics import mean
+
+import numba as nb
+import numpy as np
+import pandas as pd
+from numba import cuda, jit, prange, typed, typeof, types
+from numpy.linalg import norm
 
 warnings.filterwarnings("ignore")
 pd.options.display.max_columns = None
@@ -21,9 +20,8 @@ pd.options.display.max_columns = None
 pd.set_option("display.max_columns", None)
 pd.set_option("display.max_rows", 100)
 
-from sklearn.preprocessing import MinMaxScaler, normalize
-
 import tensorflow as tf
+from sklearn.preprocessing import MinMaxScaler, normalize
 from tensorflow.compat.v1.losses import cosine_distance
 from tensorflow.keras.losses import CosineSimilarity
 

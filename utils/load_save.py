@@ -1,7 +1,8 @@
+import os
 from abc import ABC, abstractmethod
+
 import awswrangler as wr
 import boto3
-import os
 
 from utils.read_write import DataReader, DataWriter
 
@@ -18,10 +19,15 @@ class DataLoader(ABC):
 
 class S3Loader(DataLoader):
     S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+
     def load_data(self, filename: str) -> dict:
         print(f"Loading data from S3: {self.folder_path}/{filename}")
-        s3 = boto3.client('s3')
-        return self.reader.read_data(s3.get_object(Bucket=self.S3_SCRAPER_BUCKET, Key=f"{self.folder_path}/{filename}"))
+        s3 = boto3.client("s3")
+        return self.reader.read_data(
+            s3.get_object(
+                Bucket=self.S3_SCRAPER_BUCKET, Key=f"{self.folder_path}/{filename}"
+            )
+        )
 
 
 class LocalLoader(DataLoader):

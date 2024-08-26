@@ -1,12 +1,13 @@
 import os
 import time
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from tempfile import mkdtemp
-import awswrangler as wr
 import zipfile
+from tempfile import mkdtemp
+
+import awswrangler as wr
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
 
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
