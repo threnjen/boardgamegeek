@@ -21,7 +21,7 @@ RUN mkdir -p /app/game_data_cleaner/utils \
 # Copy the source code into the container
 COPY game_data_cleaner game_data_cleaner
 COPY utils game_data_cleaner/utils
-COPY game_data_scraper/Pipfile* .
+COPY Pipfile* .
 
 # Install dependencies with pipenv
 RUN pipenv sync
