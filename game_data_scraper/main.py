@@ -60,50 +60,46 @@ class GameScraper:
 
     def __init__(self, scraper_type, filename) -> None:
         self.file_group = filename.split("_")[0]
-        self.json_urls_prefix = SCRAPER_CONFIG[scraper_type]["s3_location"]
-        self.scrapy_bot_name = SCRAPER_CONFIG[scraper_type]["bot_name"]
-        self.local_path = SCRAPER_CONFIG[scraper_type]["local_path"]
         self.scraped_games_save = SCRAPER_CONFIG[scraper_type]["save_subfolder"]
-        self.scraper_urls_raw = []
         self.scraper_type = scraper_type
-        self.filename = self._set_base_save_filename(filename)
 
     def run_game_scraper_processes(self):
-        self.scraper_urls_raw = self._load_scraper_urls()
-        self._run_scrapy_scraper()
+        scraper_urls_raw = self._load_scraper_urls()
+        self._run_scrapy_scraper(scraper_urls_raw)
         raw_xml = self._combine_xml_files_to_master()
-        self._write_master_xml_file(raw_xml)
-
-    def _set_base_save_filename(self, filename: str) -> str:
-        """Set the base filename for the saved files"""
-        return f"{filename.split("_")[0]}_{self.scraper_type}_raw_"
+        self._write_master_xml_file(
+            raw_xml, filename=f"master_{self.file_group}_{self.scraper_type}_raw.xml"
+        )
 
     def _load_scraper_urls(self) -> list[str]:
         # get file from local if dev, else from S3
-        if os.path.exists(f"{self.local_path}/{filename}.json"):
-            scraper_urls_raw = LocalLoader(JSONReader(), self.local_path).load_data(
+
+        local_path = SCRAPER_CONFIG[self.scraper_type]["local_path"]
+        if os.path.exists(f"{local_path}/{filename}.json"):
+            scraper_urls_raw = LocalLoader(JSONReader(), local_path).load_data(
                 f"{filename}.json"
             )
         else:
             scraper_urls_raw = S3Loader(
-                JSONReader(), f"s3://{S3_SCRAPER_BUCKET}/{self.json_urls_prefix}"
+                JSONReader(),
+                f"s3://{S3_SCRAPER_BUCKET}/{SCRAPER_CONFIG[scraper_type]["s3_location"]}",
             ).load_data(f"{filename}.json")
 
         if ENV == "dev":
-            if not os.path.exists(f"{self.local_path}/{filename}.json"):
+            if not os.path.exists(f"{local_path}/{filename}.json"):
                 LocalSaver(
-                    JSONWriter(self.local_path),
+                    JSONWriter(local_path),
                 ).save_data(scraper_urls_raw, f"{filename}.json")
             scraper_urls_raw = scraper_urls_raw[:10]
             print(scraper_urls_raw)
 
         return scraper_urls_raw
 
-    def _run_scrapy_scraper(self) -> None:
+    def _run_scrapy_scraper(self, scraper_urls_raw) -> None:
         process = CrawlerProcess(
             settings={
                 "LOG_LEVEL": "DEBUG",
-                "BOT_NAME": self.scrapy_bot_name,
+                "BOT_NAME": SCRAPER_CONFIG[scraper_type]["bot_name"],
                 "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
                 "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
                 "COOKIES_ENABLED": COOKIES_ENABLED,
@@ -118,7 +114,7 @@ class GameScraper:
         process.crawl(
             BGGSpider,
             name="bgg_raw",
-            scraper_urls_raw=self.scraper_urls_raw,
+            scraper_urls_raw=scraper_urls_raw,
             filename=filename,
             saver=LocalSaver(XMLWriter(), self.scraped_games_save),
         )
@@ -166,20 +162,12 @@ class GameScraper:
 
         return xml_bytes
 
-    def _write_master_xml_file(self, raw_xml: bytes):
+    def _write_master_xml_file(self, xml_bytes: bytes, filename=str) -> None:
 
-        master_xml_group_filename = (
-            f"master_{self.file_group}_{self.scraper_type}_raw.xml"
-        )
-
-        LocalSaver(XMLWriter(), self.scraped_games_save).save_data(
-            raw_xml, master_xml_group_filename
-        )
+        LocalSaver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, filename)
 
         if ENV == "prod":
-            S3Saver(XMLWriter(), self.scraped_games_save).save_data(
-                raw_xml, master_xml_group_filename
-            )
+            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, filename)
 
 
 def parse_args():
