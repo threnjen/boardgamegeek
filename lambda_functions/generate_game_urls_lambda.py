@@ -28,15 +28,11 @@ def generate_raw_urls(game_ids: list[str]):
 
 def lambda_handler(event, context):
 
-    # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
-    if ENV == "dev":
+    try:
         print("Reading the file locally")
-        df = pd.read_csv(
-            "data_store/local_files/boardgames_ranks.csv", low_memory=False
-        )
-    else:
+        df = pd.read_csv("local_data/boardgames_ranks.csv", low_memory=False)
+    except:
         print("Reading the file from S3")
-        # read the file from S3
         df = wr.s3.read_csv(f"s3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv")
 
     game_ids = df["id"].astype(str).to_list()
@@ -48,27 +44,24 @@ def lambda_handler(event, context):
     url_block_size = math.ceil(len(scraper_urls_raw) / number_url_files)
     print(f"URL block size: {url_block_size}")
 
-    # divide the list of scraper_raw_urls into number_url_files parts
-    # and save them in separate files
-
-    local_path = "data_store/local_files/scraper_urls_raw" if ENV != "prod" else "/tmp"
+    local_path = "local_data/scraper_urls_raw_game" if ENV != "prod" else "/tmp"
 
     for i in range(number_url_files):
         print(f"Saving block size {i * url_block_size} : {(i + 1) * url_block_size}")
-        with open(f"{local_path}/scraper_urls_raw_{i}.json", "w") as convert_file:
+        with open(
+            f"{local_path}/group{i+1}_game_scraper_urls_raw.json", "w"
+        ) as convert_file:
             convert_file.write(
                 json.dumps(
                     scraper_urls_raw[i * url_block_size : (i + 1) * url_block_size]
                 )
             )
-        if ENV == "prod":
-            # upload the json to S3 with boto3
-            s3_client = boto3.client("s3")
-            s3_client.upload_file(
-                f"{local_path}/scraper_urls_raw_{i}.json",
-                S3_SCRAPER_BUCKET,
-                f"{GAME_JSON_URLS_PREFIX}/scraper_urls_raw_{i}.json",
-            )
+        s3_client = boto3.client("s3")
+        s3_client.upload_file(
+            f"{local_path}/group{i+1}_game_scraper_urls_raw.json",
+            S3_SCRAPER_BUCKET,
+            f"{GAME_JSON_URLS_PREFIX}/group{i+1}_game_scraper_urls_raw.json",
+        )
 
 
 if __name__ == "__main__":

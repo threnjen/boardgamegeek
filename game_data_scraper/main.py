@@ -1,14 +1,19 @@
 from functools import partial
 import scrapy
 from datetime import datetime
-import json
 import os
 import sys
-import boto3
-import awswrangler as wr
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
 from scraper_config import SCRAPER_CONFIG
+from utils.load_save import (
+    LocalLoader,
+    DataSaver,
+    S3Loader,
+    S3Saver,
+    LocalSaver,
+)
+from utils.read_write import JSONReader, XMLWriter, JSONWriter
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 ENV = os.environ.get("ENV", "dev")
@@ -22,8 +27,7 @@ class BGGSpider(scrapy.Spider):
         name: str,
         scraper_urls_raw: list[str],
         filename: str,
-        local_save_path: str,
-        scraper_type: str,
+        saver: DataSaver,
     ):
         """
         Parameters:
@@ -38,18 +42,7 @@ class BGGSpider(scrapy.Spider):
         super().__init__()
         self.scraper_urls_raw = scraper_urls_raw
         self.filename = filename
-        self.local_save_path = local_save_path
-        self.scraper_type = scraper_type
-        print("Completed init")
-
-    def set_base_save_filename(self):
-        filename = (
-            f'gameset{self.filename.split("_")[-1].split(".")[0]}'
-            if self.scraper_type == "game"
-            else self.filename.split("_")[0].split(".")[0]
-        )
-        filename = f"{filename}_{self.scraper_type}_raw_"
-        return filename
+        self.saver = saver
 
     def start_requests(self):
         for i, url in enumerate(self.scraper_urls_raw):
@@ -59,31 +52,22 @@ class BGGSpider(scrapy.Spider):
 
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
-        save_filename = f"{self.set_base_save_filename()}{response_id}_{timestamp}.xml"
-        full_local_path = f"{self.local_save_path}/{save_filename}"
-        print(full_local_path)
-
-        with open(full_local_path, "wb") as f:
-            f.write(response.body)
-
-        if ENV == "prod":
-            s3_client = boto3.client("s3")
-            s3_client.upload_file(
-                full_local_path,
-                S3_SCRAPER_BUCKET,
-                f"data_dirty/{self.local_save_path}/{save_filename}",
-            )
+        self.saver.save_data(
+            response.body, f"{self.filename}{response_id}_{timestamp}.xml"
+        )
 
 
-def set_vars_depending_on_scraper_type(scraper_type):
+def set_vars_depending_on_scraper_type(scraper_type: str) -> tuple:
     json_urls_prefix = SCRAPER_CONFIG[scraper_type]["s3_location"]
     scrapy_bot_name = SCRAPER_CONFIG[scraper_type]["bot_name"]
     local_path = SCRAPER_CONFIG[scraper_type]["local_path"]
-    scraped_games_save = SCRAPER_CONFIG[scraper_type]["local_subfolder"]
+    scraped_games_save = SCRAPER_CONFIG[scraper_type]["save_subfolder"]
 
     return json_urls_prefix, scrapy_bot_name, local_path, scraped_games_save
 
+
+def set_base_save_filename(filename: str, scraper_type: str) -> str:
+    return f"{filename.split("_")[0]}_{scraper_type}_raw_"
 
 if __name__ == "__main__":
 
@@ -95,17 +79,6 @@ if __name__ == "__main__":
     )
 
     print(filename)
-
-    # get file from local if dev, else from S3
-
-    if ENV == "dev":
-        scraper_urls_raw = json.load(open(f"{local_path}/{filename}.json"))
-    else:
-        wr.s3.download(
-            path=f"s3://{S3_SCRAPER_BUCKET}/{json_urls_prefix}/{filename}.json",
-            local_file=f"{local_path}/{filename}.json",
-        )
-        scraper_urls_raw = json.load(open(f"{local_path}/{filename}.json"))
 
     process = CrawlerProcess(
         settings={
@@ -122,17 +95,37 @@ if __name__ == "__main__":
         }
     )
 
-    if ENV != "prod":
+    # get file from local if dev, else from S3
+    if os.path.exists(f"{local_path}/{filename}.json"):
+        scraper_urls_raw = LocalLoader(JSONReader(), local_path).load_data(
+            f"{filename}.json"
+        )
+    else:
+        scraper_urls_raw = S3Loader(
+            JSONReader(), f"s3://{S3_SCRAPER_BUCKET}/{json_urls_prefix}"
+        ).load_data(f"{filename}.json")
+
+    if ENV == "dev":
+        if not os.path.exists(f"{local_path}/{filename}.json"):
+            LocalSaver(
+                JSONWriter(local_path),
+            ).save_data(scraper_urls_raw, f"{filename}.json")
         scraper_urls_raw = scraper_urls_raw[:1]
+        data_saver = LocalSaver(XMLWriter(), scraped_games_save)
         print(scraper_urls_raw)
+    elif ENV == "prod":
+        data_saver = S3Saver(XMLWriter(), scraped_games_save)
+    else:
+        raise ValueError("ENV must be either 'dev' or 'prod'")
+
+    filename = set_base_save_filename(filename, scraper_type)
 
     process.crawl(
         BGGSpider,
         name="bgg_raw",
         scraper_urls_raw=scraper_urls_raw,
         filename=filename,
-        local_save_path=scraped_games_save,
-        scraper_type=scraper_type,
+        saver=data_saver,
     )
 
     process.start()

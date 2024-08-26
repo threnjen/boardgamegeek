@@ -1,5 +1,6 @@
 import boto3
 import os
+import sys
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
@@ -19,9 +20,9 @@ SCRAPER_CONFIG = {
 
 def get_filenames(scraper_type):
 
-    if ENV != "prod":
+    if ENV == "dev":
         raw_files = os.listdir(
-            f"game_data_scraper/{SCRAPER_CONFIG[scraper_type]['local_path']}"
+            f"local_data/{SCRAPER_CONFIG[scraper_type]['local_path']}"
         )
         file_prefixes = [x for x in raw_files if x.endswith(".json")]
     else:
@@ -31,7 +32,6 @@ def get_filenames(scraper_type):
         )["Contents"]
         file_prefixes = [x["Key"] for x in raw_files]
 
-    print(file_prefixes)
     return file_prefixes
 
 
@@ -91,5 +91,8 @@ def lambda_handler(event, context):
 
 
 if __name__ == "__main__":
-    event = {"scraper_type": "game"}
-    lambda_handler(None, None)
+    scraper_type = sys.argv[1]
+
+    event = {"scraper_type": scraper_type}
+
+    lambda_handler(event, None)

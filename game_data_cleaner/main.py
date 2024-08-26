@@ -10,7 +10,7 @@ from collections import defaultdict
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-DATA_DIRTY_PREFIX = os.environ.get("DATA_DIRTY_PREFIX")
+GAME_DATA_DIRTY_PREFIX = os.environ.get("GAME_DATA_DIRTY_PREFIX")
 
 
 class XMLFileParser:
@@ -31,13 +31,13 @@ class XMLFileParser:
     def process_file_list(self):
 
         # list files in data dirty prefix in s3 using awswrangler
-        file_list = wr.s3.list_objects(f"s3://{S3_SCRAPER_BUCKET}/{DATA_DIRTY_PREFIX}")
+        file_list = wr.s3.list_objects(f"s3://{S3_SCRAPER_BUCKET}/{GAME_DATA_DIRTY_PREFIX}")
 
         # download items in file_list to local path
 
         for file in file_list:
             print(file)
-            local_file_path = f"./raw_bgg_xml/{file.split("/")[-1]}"
+            local_file_path = f"local_data/scraped_xml_raw_games/{file.split("/")[-1]}"
 
             try:
                 # open from local_pile_path
@@ -114,11 +114,9 @@ class XMLFileParser:
             del list_of_entries
 
             print(f"Saving {table_name} to disk and uploading to S3")
-            if ENV == "dev":
-                table.to_pickle(f"game_dfs_dirty/{table_name}.pkl")
-            if ENV == "prod":
-                table.to_pickle(f"{table_name}.pkl")
-                wr.s3.upload(
+
+            table.to_pickle(f"local_data/game_dfs_dirty/{table_name}.pkl")
+            wr.s3.upload(
                     f"{table_name}.pkl",
                     f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/{table_name}.pkl",
                 )

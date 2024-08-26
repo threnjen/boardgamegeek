@@ -18,6 +18,7 @@ scikit-learn = "*"
 boto3 = "*"
 python-dotenv = "*"
 awswrangler = "*"
+xmltodict = "*"
 
 [dev-packages]
 pytest = "*"

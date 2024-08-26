@@ -34,14 +34,15 @@ def generate_ratings_urls(game_entries):
 def lambda_handler(event, context):
 
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
-    if ENV == "dev":
+    try:
+        games = pd.read_pickle("local_data/game_dfs_dirty/games.pkl")
         print("Reading the games.pkl file locally")
-        games = pd.read_pickle("game_data_cleaner/game_dfs_dirty/games.pkl")
-    else:
+
+    except:
         print("Reading the games.pkl file from S3")
         # download the pickle file from S3
         wr.s3.download(
-            path=f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/games.pkl",
+            path=f"s3://{S3_SCRAPER_BUCKET}/cleaned_data/games.pkl",
             local_file="games.pkl",
         )
         games = pd.read_pickle("games.pkl")
@@ -105,7 +106,7 @@ def lambda_handler(event, context):
         group_counter += 1
 
     group_urls = {}
-    local_path = "/tmp" if ENV == "prod" else "game_data_scraper/user_scraper_urls_raw"
+    local_path = "/tmp" if ENV == "prod" else "local_data/scraper_urls_raw_user"
 
     total_games_processed = 0
     total_pages_processed = 0
