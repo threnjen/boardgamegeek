@@ -69,7 +69,7 @@ class GameScraper:
         self._run_scrapy_scraper(scraper_urls_raw)
         raw_xml = self._combine_xml_files_to_master()
         self._write_master_xml_file(
-            raw_xml, filename=f"master_{self.file_group}_{self.scraper_type}_raw.xml"
+            raw_xml, xml_filename=f"master_{self.file_group}_{self.scraper_type}_raw.xml"
         )
 
     def _load_scraper_urls(self) -> list[str]:
