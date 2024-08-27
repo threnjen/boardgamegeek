@@ -75,7 +75,7 @@ def lambda_handler(event, context):
 
     driver.find_element(by="css selector", value="button[type='submit']").click()
 
-    time.sleep(3)
+    time.sleep(5)
 
     driver.get("https://boardgamegeek.com/data_dumps/bg_ranks")
 
