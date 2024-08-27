@@ -12,13 +12,8 @@ RUN chmod +x ./chrome-installer.sh
 RUN ./chrome-installer.sh
 RUN rm ./chrome-installer.sh
 
-# Install pipenv
-RUN pip3 install pipenv
-
-COPY Pipfile* .
-
-# Install dependencies with pipenv
-RUN pipenv sync
+RUN pip install selenium
+RUN pip install awswrangler
 
 COPY bgg_boardgame_file_retrieval/get_bgg_games_file.py .
 
