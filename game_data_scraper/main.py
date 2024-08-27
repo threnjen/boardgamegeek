@@ -162,6 +162,11 @@ class GameScraper:
 
         xml_bytes = ET.tostring(combined_root, encoding="utf-8", xml_declaration=True)
 
+        if ENV == "dev":
+            # remove the saved files
+            for xml_file in saved_files:
+                os.remove(xml_file)
+
         return xml_bytes
 
     def _write_master_xml_file(self, xml_bytes: bytes, xml_filename=str) -> None:
