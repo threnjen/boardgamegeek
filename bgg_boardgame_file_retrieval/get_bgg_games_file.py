@@ -91,6 +91,8 @@ def lambda_handler(event, context):
 
     time.sleep(10)
 
+    print(os.listdir(DEFAULT_DIRECTORY))
+
     with zipfile.ZipFile(f"{DEFAULT_DIRECTORY}/{filename}", "r") as zip_ref:
         zip_ref.extractall(f"{DEFAULT_DIRECTORY}/boardgames_ranks.csv")
 
