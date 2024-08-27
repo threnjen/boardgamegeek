@@ -60,6 +60,7 @@ class GameScraper:
 
     def __init__(self, scraper_type, filename) -> None:
         self.file_group = filename.split("_")[0]
+        self.filename = filename
         self.scraped_games_save = SCRAPER_CONFIG[scraper_type]["save_subfolder"]
         self.scraper_type = scraper_type
 
@@ -68,28 +69,29 @@ class GameScraper:
         self._run_scrapy_scraper(scraper_urls_raw)
         raw_xml = self._combine_xml_files_to_master()
         self._write_master_xml_file(
-            raw_xml, filename=f"master_{self.file_group}_{self.scraper_type}_raw.xml"
+            raw_xml, xml_filename=f"master_{self.file_group}_{self.scraper_type}_raw.xml"
         )
 
     def _load_scraper_urls(self) -> list[str]:
         # get file from local if dev, else from S3
 
         local_path = SCRAPER_CONFIG[self.scraper_type]["local_path"]
-        if os.path.exists(f"{local_path}/{filename}.json"):
+        if os.path.exists(f"{local_path}/{self.filename}.json"):
             scraper_urls_raw = LocalLoader(JSONReader(), local_path).load_data(
-                f"{filename}.json"
+                f"{self.filename}.json"
             )
         else:
             scraper_urls_raw = S3Loader(
                 JSONReader(),
-                f"s3://{S3_SCRAPER_BUCKET}/{SCRAPER_CONFIG[scraper_type]["s3_location"]}",
-            ).load_data(f"{filename}.json")
+                f"{SCRAPER_CONFIG[scraper_type]["s3_location"]}",
+            ).load_data(f"{self.filename}.json")
 
         if ENV == "dev":
-            if not os.path.exists(f"{local_path}/{filename}.json"):
+            if not os.path.exists(f"{local_path}/{self.filename}.json"):
                 LocalSaver(
-                    JSONWriter(local_path),
-                ).save_data(scraper_urls_raw, f"{filename}.json")
+                    JSONWriter(),
+                    local_path
+                ).save_data(data=scraper_urls_raw, filename=f"{self.filename}.json")
             scraper_urls_raw = scraper_urls_raw[:10]
             print(scraper_urls_raw)
 
@@ -115,7 +117,7 @@ class GameScraper:
             BGGSpider,
             name="bgg_raw",
             scraper_urls_raw=scraper_urls_raw,
-            filename=filename,
+            filename=self.filename,
             saver=LocalSaver(XMLWriter(), self.scraped_games_save),
         )
 
@@ -133,6 +135,7 @@ class GameScraper:
             f"{self.scraped_games_save}/{x}"
             for x in os.listdir(self.scraped_games_save)
             if self.file_group in x
+            and "master" not in x
         ]
 
         # Parse the first XML file to get the root and header
@@ -160,14 +163,19 @@ class GameScraper:
 
         xml_bytes = ET.tostring(combined_root, encoding="utf-8", xml_declaration=True)
 
+        if ENV == "dev":
+            # remove the saved files
+            for xml_file in saved_files:
+                os.remove(xml_file)
+
         return xml_bytes
 
-    def _write_master_xml_file(self, xml_bytes: bytes, filename=str) -> None:
+    def _write_master_xml_file(self, xml_bytes: bytes, xml_filename=str) -> None:
 
-        LocalSaver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, filename)
+        LocalSaver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, xml_filename)
 
         if ENV == "prod":
-            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, filename)
+            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, xml_filename)
 
 
 def parse_args():
