@@ -93,13 +93,15 @@ def lambda_handler(event, context):
 
     print(os.listdir(f"{DEFAULT_DIRECTORY}/Downloads"))
 
-    with zipfile.ZipFile(f"{DEFAULT_DIRECTORY}/{filename}", "r") as zip_ref:
-        zip_ref.extractall(f"{DEFAULT_DIRECTORY}/boardgames_ranks.csv")
+    # if directory DEFAULT_DIRECTORY/Downloads does not exist, create it
+    if not os.path.exists(f"{DEFAULT_DIRECTORY}/Downloads"):
+        os.makedirs(f"{DEFAULT_DIRECTORY}/Downloads")
 
-    print(f"The main content is: {download_element}")
+    with zipfile.ZipFile(f"{DEFAULT_DIRECTORY}/Downloads/{filename}", "r") as zip_ref:
+        zip_ref.extractall(DEFAULT_DIRECTORY)
 
-    with open(f"{DEFAULT_DIRECTORY}/boardgames_ranks.csv", "w") as f:
-        f.write(download_element)
+    print(os.listdir(f"{DEFAULT_DIRECTORY}/Downloads"))
+    print(os.listdir(f"{DEFAULT_DIRECTORY}"))
 
     wr.s3.upload(
         local_file=f"{DEFAULT_DIRECTORY}/boardgames_ranks.csv",
