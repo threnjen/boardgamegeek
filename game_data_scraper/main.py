@@ -135,6 +135,7 @@ class GameScraper:
             f"{self.scraped_games_save}/{x}"
             for x in os.listdir(self.scraped_games_save)
             if self.file_group in x
+            and "master" not in x
         ]
 
         # Parse the first XML file to get the root and header
