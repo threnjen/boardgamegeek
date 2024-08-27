@@ -20,7 +20,7 @@ class DataLoader(ABC):
 class S3Loader(DataLoader):
     S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 
-    def load_data(self, filename: str) -> dict:
+    def load_data(self, filename: str) -> bytes:
         key = f"{self.folder_path}/{filename}"
         print(f"Loading data from S3: {key}")
         object = (
