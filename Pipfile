@@ -5,7 +5,6 @@ name = "pypi"
 
 [packages]
 pandas = "*"
-numpy = "*"
 requests = "*"
 lxml = "*"
 bs4 = "*"
@@ -13,10 +12,7 @@ selenium = "*"
 regex = "*"
 scrapy = "*"
 spacy = "*"
-nltk = "*"
-scikit-learn = "*"
 boto3 = "*"
-python-dotenv = "*"
 awswrangler = "*"
 xmltodict = "*"
 
