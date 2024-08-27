@@ -31,6 +31,14 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
+      - name: Build, tag, push image to AWS ECR bgg_boardgame_file_retrieval
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: bgg_boardgame_file_retrieval_dev
+        run: |
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.bgg_boardgame_file_retrieval -t $ECR_REGISTRY/$ECR_REPOSITORY .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY
+          
       - name: Build, tag, push image to AWS ECR game_data_scraper
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -39,10 +47,4 @@ jobs:
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-scraper --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
           
-      - name: Build, tag, push image to AWS ECR bgg_boardgame_file_retrieval
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: bgg_boardgame_file_retrieval_dev
-        run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.bgg_boardgame_file_retrieval -t $ECR_REGISTRY/$ECR_REPOSITORY .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY
+      
