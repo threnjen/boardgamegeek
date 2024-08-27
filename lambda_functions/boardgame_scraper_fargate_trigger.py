@@ -11,7 +11,7 @@ SCRAPER_TASK_DEFINITION = os.environ.get("SCRAPER_TASK_DEFINITION")
 
 SCRAPER_CONFIG = {
     "game": DIRECTORY_CONFIGS["scraper_urls_raw_game"],
-    "user": DIRECTORY_CONFIGS["scaper_urls_raw_user"],
+    "user": DIRECTORY_CONFIGS["scraper_urls_raw_user"],
 }
 
 
@@ -35,6 +35,9 @@ def lambda_handler(event, context):
     """Trigger the Fargate task to process the files in the S3 bucket"""
 
     scraper_type = event.get("scraper_type")
+
+    print(f"Running scraper for {scraper_type}")
+    print(SCRAPER_CONFIG[scraper_type])
 
     # TO DO LATER: HAVE THIS TRIGGER OFF OF EACH FILE LANDING AND SPAWN TASKS IN PARALLEL INSTEAD OF READING THE DIRECTORY
 
