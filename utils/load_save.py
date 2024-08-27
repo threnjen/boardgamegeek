@@ -21,13 +21,15 @@ class S3Loader(DataLoader):
     S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 
     def load_data(self, filename: str) -> dict:
-        print(f"Loading data from S3: {self.folder_path}/{filename}")
-        s3 = boto3.client("s3")
-        return self.reader.read_data(
-            s3.get_object(
-                Bucket=self.S3_SCRAPER_BUCKET, Key=f"{self.folder_path}/{filename}"
-            )
+        key = f"{self.folder_path}/{filename}"
+        print(f"Loading data from S3: {key}")
+        object = (
+            boto3.client("s3")
+            .get_object(Bucket=self.S3_SCRAPER_BUCKET, Key=key)["Body"]
+            .read()
+            .decode("utf-8")
         )
+        return self.reader.read_data(object)
 
 
 class LocalLoader(DataLoader):
