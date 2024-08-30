@@ -5,7 +5,6 @@ import awswrangler as wr
 import boto3
 
 from utils.read_write import DataReader, DataWriter
-from config import CONFIGS
 
 
 class DataLoader(ABC):
@@ -18,13 +17,12 @@ class DataLoader(ABC):
 
 
 class S3Loader(DataLoader):
-    S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 
-    def load_data(self, filename: str) -> bytes:
+    def load_data(self, bucket: str, filename: str) -> bytes:
         print(f"Loading data from S3: {filename}")
         object = (
             boto3.client("s3")
-            .get_object(Bucket=self.S3_SCRAPER_BUCKET, Key=filename)["Body"]
+            .get_object(Bucket=bucket, Key=filename)["Body"]
             .read()
             .decode("utf-8")
         )
@@ -50,14 +48,13 @@ class DataSaver(ABC):
 
 
 class S3Saver(DataSaver):
-    S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 
-    def save_data(self, data: dict, filename: str) -> None:
+    def save_data(self, data: dict, bucket: str, filename: str) -> None:
         print(f"Saving data to S3: {self.folder_path}/{filename}")
         s3_client = boto3.client("s3")
         s3_client.put_object(
             self.writer.write_data(data),
-            bucket=self.S3_SCRAPER_BUCKET,
+            bucket=bucket,
             key=f"{self.folder_path}/{filename}",
         )
 

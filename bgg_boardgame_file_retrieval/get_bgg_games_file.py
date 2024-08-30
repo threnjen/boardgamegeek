@@ -105,6 +105,12 @@ def lambda_handler(event, context):
     with zipfile.ZipFile(f"{DEFAULT_DIRECTORY}/Downloads/{filename}", "r") as zip_ref:
         zip_ref.extractall(f"{DEFAULT_DIRECTORY}/Downloads")
 
+    if ENV == "dev":
+        with zipfile.ZipFile(
+            f"{DEFAULT_DIRECTORY}/Downloads/{filename}", "r"
+        ) as zip_ref:
+            zip_ref.extractall(f"local_data")
+
     wr.s3.upload(
         local_file=f"{DEFAULT_DIRECTORY}/Downloads/boardgames_ranks.csv",
         path=f"s3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv",

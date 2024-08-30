@@ -82,8 +82,8 @@ class GameScraper:
             )
         else:
             scraper_urls_raw = S3Loader(
-                JSONReader()
-            ).load_data(f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
+                JSONReader() 
+            ).load_data(bucket=S3_SCRAPER_BUCKET,filename=f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
 
         if ENV == "dev":
             if not os.path.exists(f"{self.local_path}/{self.filename}.json"):
@@ -174,7 +174,7 @@ class GameScraper:
         LocalSaver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, xml_filename)
 
         if ENV == "prod":
-            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, xml_filename)
+            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, bucket=S3_SCRAPER_BUCKET,filename=xml_filename)
 
 
 def parse_args():
