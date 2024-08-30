@@ -187,7 +187,7 @@ def parse_args():
     parser.add_argument(
         "filename",
         type=str,
-        help=f"The filename to process from path local_files/{CONFIGS['scraper_urls_raw_game']}, without a suffix",
+        help=f"The filename to process, without a suffix",
     )
     return parser.parse_args()
 
