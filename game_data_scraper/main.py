@@ -6,7 +6,6 @@ from datetime import datetime
 from functools import partial
 
 import scrapy
-from scraper_config import SCRAPER_CONFIG
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
 
@@ -61,7 +60,8 @@ class GameScraper:
     def __init__(self, scraper_type, filename) -> None:
         self.file_group = filename.split("_")[0]
         self.filename = filename
-        self.scraped_games_save = SCRAPER_CONFIG[scraper_type]["save_subfolder"]
+        self.configs = CONFIGS[scraper_type]
+        self.scraped_games_save = self.configs["save_subfolder"]
         self.scraper_type = scraper_type
 
     def run_game_scraper_processes(self):
@@ -75,7 +75,7 @@ class GameScraper:
     def _load_scraper_urls(self) -> list[str]:
         # get file from local if dev, else from S3
 
-        local_path = SCRAPER_CONFIG[self.scraper_type]["local_path"]
+        local_path = self.configs["local_path"]
         if os.path.exists(f"{local_path}/{self.filename}.json"):
             scraper_urls_raw = LocalLoader(JSONReader()).load_data(
                 f"{local_path}/{self.filename}.json"
@@ -83,7 +83,7 @@ class GameScraper:
         else:
             scraper_urls_raw = S3Loader(
                 JSONReader()
-            ).load_data(f"{SCRAPER_CONFIG[self.scraper_type]["raw_urls_directory"]}/{self.filename}.json")
+            ).load_data(f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
 
         if ENV == "dev":
             if not os.path.exists(f"{local_path}/{self.filename}.json"):
@@ -100,7 +100,7 @@ class GameScraper:
         process = CrawlerProcess(
             settings={
                 "LOG_LEVEL": "DEBUG",
-                "BOT_NAME": SCRAPER_CONFIG[self.scraper_type]["bot_name"],
+                "BOT_NAME": self.configs["scrapy_bot_name"],
                 "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
                 "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
                 "COOKIES_ENABLED": COOKIES_ENABLED,
