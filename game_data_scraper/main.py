@@ -83,7 +83,7 @@ class GameScraper:
         else:
             scraper_urls_raw = S3Loader(
                 JSONReader()
-            ).load_data(f"{SCRAPER_CONFIG[scraper_type]["s3_location"]}/{self.filename}.json")
+            ).load_data(f"{SCRAPER_CONFIG[self.scraper_type]["raw_urls_directory"]}/{self.filename}.json")
 
         if ENV == "dev":
             if not os.path.exists(f"{local_path}/{self.filename}.json"):
@@ -100,7 +100,7 @@ class GameScraper:
         process = CrawlerProcess(
             settings={
                 "LOG_LEVEL": "DEBUG",
-                "BOT_NAME": SCRAPER_CONFIG[scraper_type]["bot_name"],
+                "BOT_NAME": SCRAPER_CONFIG[self.scraper_type]["bot_name"],
                 "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
                 "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
                 "COOKIES_ENABLED": COOKIES_ENABLED,

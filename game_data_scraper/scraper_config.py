@@ -7,14 +7,14 @@ from config import CONFIGS
 SCRAPER_CONFIG = {
     "game": {
         "bot_name": BOT_NAME_GAMES,
-        "s3_location": CONFIGS["scraper_urls_raw_game"],
-        "local_path": f"local_data/{CONFIGS['scraper_urls_raw_game']}",
-        "save_subfolder": f"local_data/{CONFIGS['scraped_xml_raw_games']}",
+        "raw_urls_directory": CONFIGS["game"]["raw_urls_directory"],
+        "local_path": f"local_data/{CONFIGS['game']['raw_urls_directory']}",
+        "save_subfolder": f"local_data/{CONFIGS['game']['output_xml_directory']}",
     },
     "user": {
         "bot_name": BOT_NAME_USERS,
-        "s3_location": CONFIGS["scraper_urls_raw_user"],
-        "local_path": f"local_data/{CONFIGS['scraper_urls_raw_user']}",
-        "save_subfolder": f"local_data/{CONFIGS['scraped_xml_raw_users']}",
+        "raw_urls_directory": CONFIGS["user"]["raw_urls_directory"],
+        "local_path": f"local_data/{CONFIGS['user']['raw_urls_directory']}",
+        "save_subfolder": f"local_data/{CONFIGS['user']['output_xml_directory']}",
     },
 }
