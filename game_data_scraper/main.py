@@ -61,7 +61,7 @@ class GameScraper:
         self.file_group = filename.split("_")[0]
         self.filename = filename
         self.configs = CONFIGS[scraper_type]
-        self.scraped_games_save = self.configs["output_xml_directory"]
+        self.scraped_games_save = f'local_data/{self.configs["output_xml_directory"]}'
         self.local_path = f"local_data/{self.configs["raw_urls_directory"]}"
         self.scraper_type = scraper_type
 
