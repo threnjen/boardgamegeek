@@ -3,15 +3,15 @@ import sys
 
 import boto3
 
-from config import DIRECTORY_CONFIGS
+from config import CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-SCRAPER_TASK_DEFINITION = os.environ.get("SCRAPER_TASK_DEFINITION")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+SCRAPER_TASK_DEFINITION = CONFIGS("scraper_task_definition")
 
 SCRAPER_CONFIG = {
-    "game": DIRECTORY_CONFIGS["scraper_urls_raw_game"],
-    "user": DIRECTORY_CONFIGS["scraper_urls_raw_user"],
+    "game": CONFIGS["scraper_urls_raw_game"],
+    "user": CONFIGS["scraper_urls_raw_user"],
 }
 
 

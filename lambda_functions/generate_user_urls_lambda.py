@@ -6,10 +6,10 @@ import boto3
 import numpy as np
 import pandas as pd
 
-from config import DIRECTORY_CONFIGS
+from config import CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 url_block_size = 20
 number_url_files = 30
 NUMBER_PROCESSES = 30
@@ -43,16 +43,14 @@ def lambda_handler(event, context):
 
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
     try:
-        games = pd.read_pickle(
-            f"local_data/{DIRECTORY_CONFIGS['game_dfs_dirty']}/games.pkl"
-        )
+        games = pd.read_pickle(f"local_data/game_dfs_dirty/games.pkl")
         print("Reading the games.pkl file locally")
 
     except:
         print("Reading the games.pkl file from S3")
         # download the pickle file from S3
         wr.s3.download(
-            path=f"s3://{S3_SCRAPER_BUCKET}/cleaned_data/games.pkl",
+            path=f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/games.pkl",
             local_file="games.pkl",
         )
         games = pd.read_pickle("games.pkl")
@@ -116,11 +114,9 @@ def lambda_handler(event, context):
         group_counter += 1
 
     group_urls = {}
-    local_path = (
-        "/tmp"
-        if ENV == "prod"
-        else f"local_data/{DIRECTORY_CONFIGS['scraper_urls_raw_user']}"
-    )
+
+    raw_urls_directory = CONFIGS["user"]["raw_urls_directory"]
+    local_path = "/tmp" if ENV == "prod" else f"local_data/{raw_urls_directory}"
 
     total_games_processed = 0
     total_pages_processed = 0
@@ -132,8 +128,11 @@ def lambda_handler(event, context):
         print(f"{len(game_entries[0])} games in {group}")
         group_urls = generate_ratings_urls(game_entries)
 
+        output_urls_json_suffix = CONFIGS["user"]["output_urls_json_suffix"]
+
         with open(
-            f"{local_path}/{group}_user_scraper_urls_raw.json", "w"
+            f"{local_path}/{group}{output_urls_json_suffix}",
+            "w",
         ) as convert_file:
             convert_file.write(json.dumps(group_urls))
 
@@ -141,9 +140,9 @@ def lambda_handler(event, context):
             # upload the json to S3 with boto3
             s3_client = boto3.client("s3")
             s3_client.upload_file(
-                f"{local_path}/{group}_user_scraper_urls_raw.json",
+                f"{local_path}/{group}{output_urls_json_suffix}",
                 S3_SCRAPER_BUCKET,
-                f"scaper_urls_raw_user/{group}_user_scraper_urls_raw.json",
+                f"{raw_urls_directory}/{group}{output_urls_json_suffix}",
             )
 
         total_games_processed += len(game_entries[0])

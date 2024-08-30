@@ -6,15 +6,14 @@ from datetime import datetime
 from functools import partial
 
 import scrapy
-from scraper_config import SCRAPER_CONFIG
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
 
-from config import DIRECTORY_CONFIGS
+from config import CONFIGS
 from utils.load_save import DataSaver, LocalLoader, LocalSaver, S3Loader, S3Saver
 from utils.read_write import JSONReader, JSONWriter, XMLWriter
 
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 ENV = os.environ.get("ENV", "dev")
 
 
@@ -61,7 +60,9 @@ class GameScraper:
     def __init__(self, scraper_type, filename) -> None:
         self.file_group = filename.split("_")[0]
         self.filename = filename
-        self.scraped_games_save = SCRAPER_CONFIG[scraper_type]["save_subfolder"]
+        self.configs = CONFIGS[scraper_type]
+        self.scraped_games_save = f'local_data/{self.configs["output_xml_directory"]}'
+        self.local_path = f"local_data/{self.configs["raw_urls_directory"]}"
         self.scraper_type = scraper_type
 
     def run_game_scraper_processes(self):
@@ -75,22 +76,20 @@ class GameScraper:
     def _load_scraper_urls(self) -> list[str]:
         # get file from local if dev, else from S3
 
-        local_path = SCRAPER_CONFIG[self.scraper_type]["local_path"]
-        if os.path.exists(f"{local_path}/{self.filename}.json"):
-            scraper_urls_raw = LocalLoader(JSONReader(), local_path).load_data(
-                f"{self.filename}.json"
+        if os.path.exists(f"{self.local_path}/{self.filename}.json"):
+            scraper_urls_raw = LocalLoader(JSONReader()).load_data(
+                f"{self.local_path}/{self.filename}.json"
             )
         else:
             scraper_urls_raw = S3Loader(
-                JSONReader(),
-                f"{SCRAPER_CONFIG[scraper_type]["s3_location"]}",
-            ).load_data(f"{self.filename}.json")
+                JSONReader() 
+            ).load_data(bucket=S3_SCRAPER_BUCKET,filename=f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
 
         if ENV == "dev":
-            if not os.path.exists(f"{local_path}/{self.filename}.json"):
+            if not os.path.exists(f"{self.local_path}/{self.filename}.json"):
                 LocalSaver(
                     JSONWriter(),
-                    local_path
+                    f"{self.local_path}"
                 ).save_data(data=scraper_urls_raw, filename=f"{self.filename}.json")
             scraper_urls_raw = scraper_urls_raw[:10]
             print(scraper_urls_raw)
@@ -101,7 +100,7 @@ class GameScraper:
         process = CrawlerProcess(
             settings={
                 "LOG_LEVEL": "DEBUG",
-                "BOT_NAME": SCRAPER_CONFIG[scraper_type]["bot_name"],
+                "BOT_NAME": self.configs["scrapy_bot_name"],
                 "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
                 "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
                 "COOKIES_ENABLED": COOKIES_ENABLED,
@@ -175,7 +174,7 @@ class GameScraper:
         LocalSaver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, xml_filename)
 
         if ENV == "prod":
-            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, xml_filename)
+            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, bucket=S3_SCRAPER_BUCKET,filename=xml_filename)
 
 
 def parse_args():
@@ -188,7 +187,7 @@ def parse_args():
     parser.add_argument(
         "filename",
         type=str,
-        help=f"The filename to process from path local_files/{DIRECTORY_CONFIGS['scraper_urls_raw_game']}, without a suffix",
+        help=f"The filename to process, without a suffix",
     )
     return parser.parse_args()
 
