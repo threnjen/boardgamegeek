@@ -61,7 +61,8 @@ class GameScraper:
         self.file_group = filename.split("_")[0]
         self.filename = filename
         self.configs = CONFIGS[scraper_type]
-        self.scraped_games_save = self.configs["save_subfolder"]
+        self.scraped_games_save = self.configs["output_xml_directory"]
+        self.local_path = f"local_data/{self.configs["raw_urls_directory"]}"
         self.scraper_type = scraper_type
 
     def run_game_scraper_processes(self):
@@ -75,10 +76,9 @@ class GameScraper:
     def _load_scraper_urls(self) -> list[str]:
         # get file from local if dev, else from S3
 
-        local_path = self.configs["local_path"]
-        if os.path.exists(f"{local_path}/{self.filename}.json"):
+        if os.path.exists(f"{self.local_path}/{self.filename}.json"):
             scraper_urls_raw = LocalLoader(JSONReader()).load_data(
-                f"{local_path}/{self.filename}.json"
+                f"{self.local_path}/{self.filename}.json"
             )
         else:
             scraper_urls_raw = S3Loader(
@@ -86,10 +86,10 @@ class GameScraper:
             ).load_data(f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
 
         if ENV == "dev":
-            if not os.path.exists(f"{local_path}/{self.filename}.json"):
+            if not os.path.exists(f"{self.local_path}/{self.filename}.json"):
                 LocalSaver(
                     JSONWriter(),
-                    local_path
+                    f"{self.local_path}"
                 ).save_data(data=scraper_urls_raw, filename=f"{self.filename}.json")
             scraper_urls_raw = scraper_urls_raw[:10]
             print(scraper_urls_raw)

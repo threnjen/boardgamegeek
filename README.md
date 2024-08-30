@@ -18,7 +18,6 @@ Most steps in this project are explicitly dependent on a prior step. Dependencie
 ### Step 01 - get boardgames_ranks.csv file from BGG and save it to S3
 - `bgg_boardgame_file_retrieval.get_bgg_games_file.py`
 - Gets the `boardgames_ranks.csv` file from BGG and saves it to S3. A BGG account is required for this.
-- Currently broken. Download file manually and save to local_data
 
 ### 02 - Generate GAME scraping URLS
 - `lambda_functions.generate_game_urls_lambda.py`
