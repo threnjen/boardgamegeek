@@ -9,11 +9,15 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 
+from os.path import expanduser
+
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-DEFAULT_DIRECTORY = "/tmp" if os.environ.get("ENV", "dev") == "prod" else "."
+DEFAULT_DIRECTORY = (
+    "/tmp" if os.environ.get("ENV", "dev") == "prod" else expanduser("~")
+)
 
 
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
@@ -63,6 +67,11 @@ def lambda_handler(event, context):
     """Uses Selenium to download the BGG game ranks file
     This function will use Selenium to download the BGG game ranks file
     and upload it to S3. The function will return None."""
+
+    # if directory DEFAULT_DIRECTORY/Downloads does not exist, create it
+    if not os.path.exists(f"{DEFAULT_DIRECTORY}/Downloads"):
+        os.makedirs(f"{DEFAULT_DIRECTORY}/Downloads")
+
     driver = initialize_driver()
 
     driver.get("https://boardgamegeek.com/login")
@@ -89,17 +98,15 @@ def lambda_handler(event, context):
     )
     download_element.click()
 
+    driver.close()
+
     time.sleep(10)
 
-    # if directory DEFAULT_DIRECTORY/Downloads does not exist, create it
-    if not os.path.exists(f"{DEFAULT_DIRECTORY}/Downloads"):
-        os.makedirs(f"{DEFAULT_DIRECTORY}/Downloads")
-
     with zipfile.ZipFile(f"{DEFAULT_DIRECTORY}/Downloads/{filename}", "r") as zip_ref:
-        zip_ref.extractall(DEFAULT_DIRECTORY)
+        zip_ref.extractall(f"{DEFAULT_DIRECTORY}/Downloads")
 
     wr.s3.upload(
-        local_file=f"{DEFAULT_DIRECTORY}/boardgames_ranks.csv",
+        local_file=f"{DEFAULT_DIRECTORY}/Downloads/boardgames_ranks.csv",
         path=f"s3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv",
     )
 
