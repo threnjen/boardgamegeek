@@ -10,6 +10,7 @@ from config import CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+CONFIGS = CONFIGS["game"]
 url_block_size = 20
 number_url_files = 30
 
@@ -53,7 +54,7 @@ def lambda_handler(event, context):
     print(f"URL block size: {url_block_size}")
 
     local_path = (
-        f"local_data/{CONFIGS['scraper_urls_raw_game']}" if ENV != "prod" else "/tmp"
+        f"local_data/{CONFIGS['raw_urls_directory']}" if ENV != "prod" else "/tmp"
     )
 
     for i in range(number_url_files):
@@ -70,7 +71,7 @@ def lambda_handler(event, context):
         s3_client.upload_file(
             f"{local_path}/group{i+1}_game_scraper_urls_raw.json",
             S3_SCRAPER_BUCKET,
-            f"{CONFIGS['scraper_urls_raw_game']}/group{i+1}_game_scraper_urls_raw.json",
+            f"{CONFIGS['raw_urls_directory']}/group{i+1}{CONFIGS['output_urls_json_suffix']}",
         )
 
 
