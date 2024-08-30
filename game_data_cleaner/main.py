@@ -8,10 +8,10 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
 
-from config import DIRECTORY_CONFIGS
+from config import CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 
 
 class XMLFileParser:
@@ -37,18 +37,18 @@ class XMLFileParser:
 
         # list files in data dirty prefix in s3 using awswrangler
         file_list = wr.s3.list_objects(
-            f"s3://{S3_SCRAPER_BUCKET}/{DIRECTORY_CONFIGS['scraped_xml_raw_games']}"
+            f"s3://{S3_SCRAPER_BUCKET}/{CONFIGS['scraped_xml_raw_games']}"
         )
         if not file_list:
             file_list = os.listdir(
-                f"local_data/{DIRECTORY_CONFIGS['scraped_xml_raw_games']}"
+                f"local_data/{CONFIGS['scraped_xml_raw_games']}"
             )
 
         # download items in file_list to local path
 
         for file in file_list:
             print(file)
-            local_file_path = f"local_data/{DIRECTORY_CONFIGS['scraped_xml_raw_games']}/{file.split("/")[-1]}"
+            local_file_path = f"local_data/{CONFIGS['scraped_xml_raw_games']}/{file.split("/")[-1]}"
 
             try:
                 # open from local_pile_path
@@ -127,12 +127,12 @@ class XMLFileParser:
             print(f"Saving {table_name} to disk and uploading to S3")
 
             table.to_pickle(
-                f"local_data/{DIRECTORY_CONFIGS['game_dfs_dirty']}/{table_name}.pkl"
+                f"local_data/{CONFIGS['game_dfs_dirty']}/{table_name}.pkl"
             )
             if ENV == "prod":
                 wr.s3.upload(
                     f"{table_name}.pkl",
-                    f"s3://{S3_SCRAPER_BUCKET}/{DIRECTORY_CONFIGS['game_dfs_dirty']}/{table_name}.pkl",
+                    f"s3://{S3_SCRAPER_BUCKET}/{CONFIGS['game_dfs_dirty']}/{table_name}.pkl",
                 )
 
             del table

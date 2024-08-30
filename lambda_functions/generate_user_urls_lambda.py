@@ -6,10 +6,10 @@ import boto3
 import numpy as np
 import pandas as pd
 
-from config import DIRECTORY_CONFIGS
+from config import CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 url_block_size = 20
 number_url_files = 30
 NUMBER_PROCESSES = 30
@@ -43,9 +43,7 @@ def lambda_handler(event, context):
 
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
     try:
-        games = pd.read_pickle(
-            f"local_data/{DIRECTORY_CONFIGS['game_dfs_dirty']}/games.pkl"
-        )
+        games = pd.read_pickle(f"local_data/{CONFIGS['game_dfs_dirty']}/games.pkl")
         print("Reading the games.pkl file locally")
 
     except:
@@ -117,9 +115,7 @@ def lambda_handler(event, context):
 
     group_urls = {}
     local_path = (
-        "/tmp"
-        if ENV == "prod"
-        else f"local_data/{DIRECTORY_CONFIGS['scraper_urls_raw_user']}"
+        "/tmp" if ENV == "prod" else f"local_data/{CONFIGS['scraper_urls_raw_user']}"
     )
 
     total_games_processed = 0

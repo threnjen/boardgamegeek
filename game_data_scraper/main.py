@@ -10,11 +10,11 @@ from scraper_config import SCRAPER_CONFIG
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
 
-from config import DIRECTORY_CONFIGS
+from config import CONFIGS
 from utils.load_save import DataSaver, LocalLoader, LocalSaver, S3Loader, S3Saver
 from utils.read_write import JSONReader, JSONWriter, XMLWriter
 
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 ENV = os.environ.get("ENV", "dev")
 
 
@@ -77,14 +77,13 @@ class GameScraper:
 
         local_path = SCRAPER_CONFIG[self.scraper_type]["local_path"]
         if os.path.exists(f"{local_path}/{self.filename}.json"):
-            scraper_urls_raw = LocalLoader(JSONReader(), local_path).load_data(
-                f"{self.filename}.json"
+            scraper_urls_raw = LocalLoader(JSONReader()).load_data(
+                f"{local_path}/{self.filename}.json"
             )
         else:
             scraper_urls_raw = S3Loader(
-                JSONReader(),
-                f"{SCRAPER_CONFIG[scraper_type]["s3_location"]}",
-            ).load_data(f"{self.filename}.json")
+                JSONReader()
+            ).load_data(f"{SCRAPER_CONFIG[scraper_type]["s3_location"]}/{self.filename}.json")
 
         if ENV == "dev":
             if not os.path.exists(f"{local_path}/{self.filename}.json"):
@@ -188,7 +187,7 @@ def parse_args():
     parser.add_argument(
         "filename",
         type=str,
-        help=f"The filename to process from path local_files/{DIRECTORY_CONFIGS['scraper_urls_raw_game']}, without a suffix",
+        help=f"The filename to process from path local_files/{CONFIGS['scraper_urls_raw_game']}, without a suffix",
     )
     return parser.parse_args()
 

@@ -5,12 +5,12 @@ import awswrangler as wr
 import boto3
 
 from utils.read_write import DataReader, DataWriter
+from config import CONFIGS
 
 
 class DataLoader(ABC):
-    def __init__(self, reader: DataReader, folder_path: str):
+    def __init__(self, reader: DataReader):
         self.reader = reader
-        self.folder_path = folder_path
 
     @abstractmethod
     def load_data(self, path: str) -> dict:
@@ -18,14 +18,13 @@ class DataLoader(ABC):
 
 
 class S3Loader(DataLoader):
-    S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+    S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 
     def load_data(self, filename: str) -> bytes:
-        key = f"{self.folder_path}/{filename}"
-        print(f"Loading data from S3: {key}")
+        print(f"Loading data from S3: {filename}")
         object = (
             boto3.client("s3")
-            .get_object(Bucket=self.S3_SCRAPER_BUCKET, Key=key)["Body"]
+            .get_object(Bucket=self.S3_SCRAPER_BUCKET, Key=filename)["Body"]
             .read()
             .decode("utf-8")
         )
@@ -34,8 +33,8 @@ class S3Loader(DataLoader):
 
 class LocalLoader(DataLoader):
     def load_data(self, filename: str) -> dict:
-        print(f"Loading data from local: {self.folder_path}/{filename}")
-        with open(f"{self.folder_path}/{filename}", "rb") as f:
+        print(f"Loading data from local: {filename}")
+        with open(filename, "rb") as f:
             file = self.reader.read_data(f.read())
         return file
 
@@ -51,7 +50,7 @@ class DataSaver(ABC):
 
 
 class S3Saver(DataSaver):
-    S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+    S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 
     def save_data(self, data: dict, filename: str) -> None:
         print(f"Saving data to S3: {self.folder_path}/{filename}")
