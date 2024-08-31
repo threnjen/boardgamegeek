@@ -8,6 +8,9 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
 
+from utils.s3_file_handler import S3FileHandler
+from utils.local_file_handler import LocalFileHandler
+
 from config import CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
@@ -131,11 +134,13 @@ class XMLFileParser:
             table.to_pickle(
                 f"data/game_dfs_dirty/{table_name}.pkl"
             )
-            if ENV == "prod":
-                wr.s3.upload(
-                    f"{table_name}.pkl",
-                    f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/{table_name}.pkl",
-                )
+
+            file_name = f"{table_name}.pkl"
+            s3_path = "game_dfs_dirty" if ENV == "prod" else f"test/game_dfs_dirty"
+
+            S3FileHandler().save_file(file_path=f"{s3_path}/{file_name}",data=table)
+
+            df = S3FileHandler().load_file(file_path=f"{s3_path}/{file_name}")
 
             del table
             gc.collect()
