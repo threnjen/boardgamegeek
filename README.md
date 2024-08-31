@@ -48,14 +48,14 @@ Most steps in this project are explicitly dependent on a prior step. Dependencie
     - Use to test a single specific url file. Must have generated game urls first with step 02.
     - Run locally and pass both `scraper_type` and an existing filename without directory or suffix from `data/scraper_urls_raw_game`
     - Example: `python game_data_scraper/main.py game group1_game_scraper_urls_raw`
-    - Only saves data locally to `data/scraped_xml_raw_games`
+    - Only saves data locally to `data/games/scraped_xml_raw`
 
 ### 04 - Clean raw scraped GAME data
 
 - `game_data_cleaner.main.py`
     - Takes the scraped files and composes into various dirty data frames of full data. Writes these locally. Will only write to S3 if run on AWS.
     - Step 03 needs to have run at least once for this to work, although two sample files from local will also suffice for testing.
-    - If files are present on S3, it will download all of them for this process. If there are no files on S3 yet, it will use files in `data/scraped_xml_raw_games`
+    - If files are present on S3, it will download all of them for this process. If there are no files on S3 yet, it will use files in `data/games/scraped_xml_raw`
 
 ### 05 - Generate USER scraping URLS
 
@@ -74,4 +74,4 @@ Most steps in this project are explicitly dependent on a prior step. Dependencie
     - Use to test a single specific url file. Must have generated user urls first with step 05.
     - Run locally and pass both scraper_type arg, and an existing filename without directory or suffix from `data/scraper_urls_raw_user`
     - Example: `python game_data_scraper/main.py user group1_user_scraper_urls_raw`
-    - Only saves data locally to `data/scraped_xml_raw_users`
+    - Only saves data locally to `data/users/scraped_xml_raw`

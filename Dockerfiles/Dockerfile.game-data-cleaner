@@ -14,8 +14,8 @@ ENV FILENAME=$FILENAME
 RUN pip3 install pipenv
 
 # Create necessary directories
-RUN mkdir -p data/scraped_xml_raw_users \
-    data/scraped_xml_raw_games \
+RUN mkdir -p data/users/scraped_xml_raw \
+    data/games/scraped_xml_raw \
     data/game_dfs_dirty
 
 # Copy the source code into the container
