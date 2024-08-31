@@ -86,7 +86,7 @@ class GameScraper:
             ).load_data(bucket=S3_SCRAPER_BUCKET,filename=f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
 
         if ENV == "dev":
-            scraper_urls_raw = scraper_urls_raw[:5]
+            scraper_urls_raw = scraper_urls_raw[:1]
             print(scraper_urls_raw)
 
         return scraper_urls_raw
