@@ -79,7 +79,7 @@ class GameScraper:
                 f"{self.local_path}/{self.filename}.json"
             )
         else:
-            scraper_urls_raw = S3FileHandler().load_file(bucket=S3_SCRAPER_BUCKET,filename=f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
+            scraper_urls_raw = S3FileHandler().load_file(file_path=f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
 
         if ENV == "dev":
             if not os.path.exists(f"{self.local_path}/{self.filename}.json"):
