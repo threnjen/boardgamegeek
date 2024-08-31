@@ -1,8 +1,10 @@
 import boto3
 import os
-from utils.load_save import S3Loader
-from utils.read_write import JSONReader
+from utils.s3_file_handler import S3FileHandler
+from utils.local_file_handler import LocalFileHandler
 
-CONFIGS = S3Loader(JSONReader()).load_data(
-    bucket=os.environ.get("S3_SCRAPER_BUCKET"), filename="config.json"
-)["CONFIGS"]
+IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
+
+CONFIGS = S3FileHandler().load_file(file_path="config.json")["CONFIGS"]
+if IS_LOCAL:
+    LocalFileHandler().save_file(file_path="config.json", data=CONFIGS)
