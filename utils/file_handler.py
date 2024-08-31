@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Any, Union
 
+
 class FileHandler(ABC):
     def __init__(self):
         pass
@@ -9,7 +10,7 @@ class FileHandler(ABC):
 
         if file_type is None:
             file_type = file_path.split(".")[-1]
-        if file_type == 'json':
+        if file_type == "json":
             return self.load_json(file_path)
         elif file_type == "jsonl":
             return self.load_jsonl(file_path)
@@ -17,13 +18,15 @@ class FileHandler(ABC):
             return self.load_xml(file_path)
         elif file_type == "csv":
             return self.load_csv(file_path)
+        elif file_type == "pkl":
+            return self.load_pkl(file_path)
         else:
             raise ValueError("Unsupported file type")
 
     def save_file(self, file_path: str, data: Any, file_type: Optional[str] = None):
         if file_type is None:
             file_type = file_path.split(".")[-1]
-        if file_type == 'json':
+        if file_type == "json":
             self.save_json(file_path, data)
         elif file_type == "jsonl":
             self.save_jsonl(file_path, data)
@@ -31,6 +34,8 @@ class FileHandler(ABC):
             self.save_xml(file_path, data)
         elif file_type == "csv":
             self.save_csv(file_path, data)
+        elif file_type == "pkl":
+            self.save_pkl(file_path, data)
         else:
             raise ValueError("Unsupported file type")
 
