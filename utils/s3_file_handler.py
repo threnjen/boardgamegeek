@@ -4,6 +4,8 @@ import json
 import pandas as pd
 import boto3
 import os
+import pickle
+import io
 
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
@@ -39,30 +41,44 @@ class S3FileHandler(FileHandler):
             file_pathBucket=S3_SCRAPER_BUCKET, Key=file_path, body=data.encode("utf-8")
         )
 
-    def save_jsonl(self, file_path: str, data: str):
-        jsonl = "\n".join([json.dumps(line) for line in data]).encode("utf-8")
-        self.s3_client.put_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=jsonl)
-
     def load_jsonl(self, file_path: str) -> list[dict]:
         obj = self.s3_client.get_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
         return [
             json.loads(line) for line in obj["Body"].read().decode("utf-8").split("\n")
         ]
 
+    def save_jsonl(self, file_path: str, data: str):
+        jsonl = "\n".join([json.dumps(line) for line in data]).encode("utf-8")
+        self.s3_client.put_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=jsonl)
+
     def load_xml(self, file_path: str):
         obj = self.s3_client.get_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
         return obj["Body"].read().decode("utf-8")
 
-    def load_csv(self, file_path: str) -> Union[dict, list]:
-        obj = self.s3_client.get_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
-        return pd.read_csv(obj["Body"])
-
     def save_xml(self, file_path: str, data: Any):
         self.s3_client.put_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data)
+
+    def load_csv(self, file_path: str) -> Union[dict, list]:
+        obj = self.s3_client.get_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
+        return pd.read_csv(obj["Body"], low_memory=False, on_bad_lines="skip")
 
     def save_csv(self, file_path: str, data: Any):
         self.s3_client.put_object(
             Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data.to_csv().encode("utf-8")
+        )
+
+    def load_pkl(self, file_path: str) -> pd.DataFrame:
+        obj = self.s3_client.get_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)[
+            "Body"
+        ].read()
+        return pickle.loads(obj)
+
+    def save_pkl(self, file_path: str, data: Any):
+        in_memory_object = pickle.dumps(data)
+        self.s3_client.put_object(
+            Bucket=S3_SCRAPER_BUCKET,
+            Key=file_path,
+            Body=in_memory_object,
         )
 
     def delete_file(self, file_path: str):
