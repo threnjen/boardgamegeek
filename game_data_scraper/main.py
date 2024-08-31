@@ -164,8 +164,8 @@ class GameScraper:
 
         LocalFileHandler().save_file(file_path=f"test/{self.scraped_games_save}/{xml_filename}",data=xml)
 
-        if ENV == "prod":
-            S3FileHandler().save_file(file_path=f"{self.scraped_games_save}/{xml_filename}",data=xml)
+        s3_path = self.scraped_games_save if ENV == "prod" else f"test/{self.scraped_games_save}"
+        S3FileHandler().save_file(file_path=f"{s3_path}/{xml_filename}",data=xml)
 
 
 def parse_args():
