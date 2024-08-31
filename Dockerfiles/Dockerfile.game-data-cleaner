@@ -15,7 +15,8 @@ RUN pip3 install pipenv
 
 # Create necessary directories
 RUN mkdir -p local_data/scraped_xml_raw_users \
-    local_data/scraped_xml_raw_games
+    local_data/scraped_xml_raw_games \
+    local_data/game_dfs_dirty
 
 # Copy the source code into the container
 COPY game_data_cleaner game_data_cleaner

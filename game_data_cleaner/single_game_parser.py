@@ -7,7 +7,9 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 ENV = os.environ.get("ENV", "dev")
-GAME_ATTRIBUTES = json.load(open(f"find_config.json"))["GAME_ATTRIBUTES"]
+GAME_ATTRIBUTES = json.load(open(f"game_data_cleaner/find_config.json"))[
+    "GAME_ATTRIBUTES"
+]
 MIN_USER_RATINGS = 10
 
 
