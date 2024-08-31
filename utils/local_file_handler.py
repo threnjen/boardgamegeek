@@ -42,7 +42,7 @@ class LocalFileHandler(FileHandler):
     
     def save_xml(self, file_path: str, data: str):
         self.make_directory(Path(file_path).parent)
-        with open(file_path, "w") as f:
+        with open(file_path, "wb") as f:
             f.write(data)
 
     def load_csv(self, file_path: str) -> pd.DataFrame:

@@ -15,13 +15,11 @@ BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-DEFAULT_DIRECTORY = (
-    "/tmp" if os.environ.get("ENV", "dev") == "prod" else expanduser("~")
-)
+IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
 
 
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
-def initialize_driver():
+def initialize_driver(default_directory):
     """Initialize the Chrome driver
     This function will initialize the Chrome driver with the necessary
     options for the scraper to work. The function will return the
@@ -45,7 +43,7 @@ def initialize_driver():
     chrome_options.add_argument("--verbose")
     chrome_options.add_argument("--log-path=/tmp")
     prefs = {
-        "download.default_directory": DEFAULT_DIRECTORY,
+        "download.default_directory": default_directory,
         "download_restrictions": 0,
         "download.prompt_for_download": False,  # To auto download the file
         "directory_upgrade": True,
@@ -68,11 +66,15 @@ def lambda_handler(event, context):
     This function will use Selenium to download the BGG game ranks file
     and upload it to S3. The function will return None."""
 
-    # if directory DEFAULT_DIRECTORY/Downloads does not exist, create it
-    if not os.path.exists(f"{DEFAULT_DIRECTORY}/Downloads"):
-        os.makedirs(f"{DEFAULT_DIRECTORY}/Downloads")
+    print(event)
 
-    driver = initialize_driver()
+    default_directory = "/tmp" if not IS_LOCAL else expanduser("~")
+
+    # if directory default_directory/Downloads does not exist, create it
+    if not os.path.exists(f"{default_directory}/Downloads"):
+        os.makedirs(f"{default_directory}/Downloads")
+
+    driver = initialize_driver(default_directory)
 
     driver.get("https://boardgamegeek.com/login")
 
@@ -102,20 +104,17 @@ def lambda_handler(event, context):
 
     time.sleep(10)
 
-    with zipfile.ZipFile(f"{DEFAULT_DIRECTORY}/Downloads/{filename}", "r") as zip_ref:
-        zip_ref.extractall(f"{DEFAULT_DIRECTORY}/Downloads")
+    extract_directory = default_directory if not IS_LOCAL else f"local_data"
 
-    if ENV == "dev":
-        with zipfile.ZipFile(
-            f"{DEFAULT_DIRECTORY}/Downloads/{filename}", "r"
-        ) as zip_ref:
-            zip_ref.extractall(f"local_data")
+    with zipfile.ZipFile(f"{default_directory}/Downloads/{filename}", "r") as zip_ref:
+        zip_ref.extractall(extract_directory)
 
     wr.s3.upload(
-        local_file=f"{DEFAULT_DIRECTORY}/Downloads/boardgames_ranks.csv",
+        local_file=f"{extract_directory}/boardgames_ranks.csv",
         path=f"s3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv",
     )
 
 
 if __name__ == "__main__":
+
     lambda_handler(None, None)

@@ -84,7 +84,7 @@ class GameScraper:
         if ENV == "dev":
             if not os.path.exists(f"{self.local_path}/{self.filename}.json"):
                 LocalFileHandler().save_file(file_path=f"{self.local_path}/{self.filename}.json",data=scraper_urls_raw)
-            scraper_urls_raw = scraper_urls_raw[:10]
+            scraper_urls_raw = scraper_urls_raw[:1]
             print(scraper_urls_raw)
 
         return scraper_urls_raw
@@ -109,7 +109,7 @@ class GameScraper:
             BGGSpider,
             name="bgg_raw",
             scraper_urls_raw=scraper_urls_raw,
-            filename=self.filename,
+            filename=f"{self.scraped_games_save}/{self.filename}",
             file_handler = LocalFileHandler(),
         )
 
@@ -164,7 +164,7 @@ class GameScraper:
 
     def _write_master_xml_file(self, xml: bytes, xml_filename=str) -> None:
 
-        LocalFileHandler().save_file(file_path=f"{self.scraped_games_save}/{xml_filename}",data=xml)
+        LocalFileHandler().save_file(file_path=f"test/{self.scraped_games_save}/{xml_filename}",data=xml)
 
         if ENV == "prod":
             S3FileHandler().save_file(file_path=f"{self.scraped_games_save}/{xml_filename}",data=xml)
