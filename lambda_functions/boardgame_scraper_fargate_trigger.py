@@ -13,17 +13,11 @@ SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
 def get_filenames(scraper_type):
     """Get the filenames of the files to be processed by the scraper"""
 
-    if ENV == "dev":
-        raw_files = os.listdir(
-            f"local_data/{CONFIGS[scraper_type]['raw_urls_directory']}"
-        )
-        file_prefixes = [x for x in raw_files if x.endswith(".json")]
-    else:
-        s3_client = boto3.client("s3")
-        raw_files = s3_client.list_objects_v2(
-            Bucket=S3_SCRAPER_BUCKET, Prefix=CONFIGS[scraper_type]["raw_urls_directory"]
-        )["Contents"]
-        file_prefixes = [x["Key"] for x in raw_files]
+    s3_client = boto3.client("s3")
+    raw_files = s3_client.list_objects_v2(
+        Bucket=S3_SCRAPER_BUCKET, Prefix=CONFIGS[scraper_type]["raw_urls_directory"]
+    )["Contents"]
+    file_prefixes = [x["Key"] for x in raw_files]
 
     return file_prefixes
 
@@ -32,6 +26,7 @@ def lambda_handler(event, context):
     """Trigger the Fargate task to process the files in the S3 bucket"""
 
     scraper_type = event.get("scraper_type")
+    print(CONFIGS[scraper_type])
 
     print(f"Running scraper for {scraper_type}")
 
