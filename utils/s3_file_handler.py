@@ -17,13 +17,8 @@ class S3FileHandler(FileHandler):
         self.s3_client = boto3.client("s3", region_name=REGION_NAME)
 
     def _check_s3_access(self):
-        # try:
         s3_client = boto3.client("s3", region_name=REGION_NAME)
         response = s3_client.head_bucket(Bucket=S3_SCRAPER_BUCKET)
-        #     if response("responseMetadata")("HTTPStatusCode") != 200:
-        #         raise ConnectionError("S3 response code is not 200")
-        # except Exception as e:
-        #     raise ConnectionError("S3 response code is not 200")
 
     @property
     def file_missing_exception(self) -> Exception:
@@ -63,9 +58,7 @@ class S3FileHandler(FileHandler):
         return pd.read_csv(obj["Body"])
 
     def save_xml(self, file_path: str, data: Any):
-        self.s3_client.put_object(
-            Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data
-        )
+        self.s3_client.put_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data)
 
     def save_csv(self, file_path: str, data: Any):
         self.s3_client.put_object(
