@@ -13,6 +13,7 @@ from config import CONFIGS
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["game"]
+IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
 
 
 class XMLFileParser:
