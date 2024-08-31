@@ -64,7 +64,7 @@ class S3FileHandler(FileHandler):
 
     def save_xml(self, file_path: str, data: Any):
         self.s3_client.put_object(
-            Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data.encode("utf-8")
+            Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data
         )
 
     def save_csv(self, file_path: str, data: Any):
