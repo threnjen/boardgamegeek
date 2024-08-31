@@ -53,6 +53,9 @@ def lambda_handler(event, context):
         .get("revision")
     )
 
+    if ENV == "dev":
+        file_prefixes = file_prefixes[:1]
+
     for file in file_prefixes:
         filename = file.split("/")[-1].split(".")[0]
         print(filename)
