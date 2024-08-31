@@ -24,8 +24,8 @@ class BGGSpider(scrapy.Spider):
         self,
         name: str,
         scraper_urls_raw: list[str],
-        filename: str,
-        file_handler: FileHandler
+        save_file_path: str,
+        file_handler: FileHandler,
     ):
         """
         Parameters:
@@ -39,7 +39,7 @@ class BGGSpider(scrapy.Spider):
         self.name = name
         super().__init__()
         self.scraper_urls_raw = scraper_urls_raw
-        self.filename = filename
+        self.save_file_path = save_file_path
         self.file_handler = file_handler
 
     def start_requests(self):
@@ -50,38 +50,42 @@ class BGGSpider(scrapy.Spider):
 
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        self.file_handler.save_file(file_path=f"{self.filename}{response_id}_{timestamp}.xml", data=response.body)
+        self.file_handler.save_file(
+            file_path=f"{self.save_file_path}{response_id}_{timestamp}.xml",
+            data=response.body,
+        )
 
 
 class GameScraper:
 
-    def __init__(self, scraper_type, filename) -> None:
-        self.file_group = filename.split("_")[0]
-        self.filename = filename
+    def __init__(self, scraper_type: str, urls_filename: str) -> None:
+        self.file_group = urls_filename.split("_")[0]
+        self.urls_filename = urls_filename.split(".")[0]
         self.configs = CONFIGS[scraper_type]
-        self.scraped_games_save = f'local_data/{self.configs["output_xml_directory"]}'
-        self.local_path = f"local_data/{self.configs["raw_urls_directory"]}"
+        self.scraped_games_xml_folder = f'data/{self.configs["output_xml_directory"]}'
+        self.raw_urls_folder = f'data/{self.configs["raw_urls_directory"]}'
         self.scraper_type = scraper_type
+        self.dev_mode = True if ENV == "dev" else False
 
     def run_game_scraper_processes(self):
         scraper_urls_raw = self._load_scraper_urls()
         self._run_scrapy_scraper(scraper_urls_raw)
         raw_xml = self._combine_xml_files_to_master()
-        self._write_master_xml_file(
-            raw_xml, xml_filename=f"master_{self.file_group}_{self.scraper_type}_raw.xml"
+        self._write_combined_xml_file(
+            raw_xml,
+            combined_xml_filename=f"combined_{self.file_group}_{self.scraper_type}_raw.xml",
         )
 
     def _load_scraper_urls(self) -> list[str]:
         # get file from local if dev, else from S3
-
-        if os.path.exists(f"{self.local_path}/{self.filename}.json"):
-            scraper_urls_raw = LocalFileHandler().load_file(
-                f"{self.local_path}/{self.filename}.json"
-            )
+        urls_filepath = f"{self.raw_urls_folder}/{self.urls_filename}.json"
+        if os.path.exists(urls_filepath):
+            scraper_urls_raw = LocalFileHandler().load_file(urls_filepath)
         else:
-            scraper_urls_raw = S3FileHandler().load_file(file_path=f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
+            print(f"File {urls_filepath} not found.  Attempting to load from S3.")
+            scraper_urls_raw = S3FileHandler().load_file(urls_filepath)
 
-        if ENV == "dev":
+        if self.dev_mode:
             scraper_urls_raw = scraper_urls_raw[:1]
             print(scraper_urls_raw)
 
@@ -107,8 +111,8 @@ class GameScraper:
             BGGSpider,
             name="bgg_raw",
             scraper_urls_raw=scraper_urls_raw,
-            filename=f"{self.scraped_games_save}/{self.filename}",
-            file_handler = LocalFileHandler(),
+            save_file_path=f"{self.scraped_games_xml_folder}/{self.urls_filename}",
+            file_handler=LocalFileHandler(),
         )
 
         process.start()
@@ -122,10 +126,9 @@ class GameScraper:
         print(f"Combining XML files for {self.file_group}")
 
         saved_files = [
-            f"{self.scraped_games_save}/{x}"
-            for x in os.listdir(self.scraped_games_save)
-            if self.file_group in x
-            and "master" not in x
+            f"{self.scraped_games_xml_folder}/{file_name}"
+            for file_name in os.listdir(self.scraped_games_xml_folder)
+            if self.file_group in file_name and "master" not in file_name
         ]
 
         # Parse the first XML file to get the root and header
@@ -153,19 +156,25 @@ class GameScraper:
 
         xml_bytes = ET.tostring(combined_root, encoding="utf-8", xml_declaration=True)
 
-        if ENV == "dev":
+        if self.dev_mode:
             # remove the saved files
             for xml_file in saved_files:
                 os.remove(xml_file)
 
         return xml_bytes
 
-    def _write_master_xml_file(self, xml: bytes, xml_filename=str) -> None:
+    def _write_combined_xml_file(self, xml: bytes, combined_xml_filename=str) -> None:
 
-        LocalFileHandler().save_file(file_path=f"test/{self.scraped_games_save}/{xml_filename}",data=xml)
+        LocalFileHandler().save_file(
+            file_path=f"test/{self.scraped_games_xml_folder}/{combined_xml_filename}", data=xml
+        )
 
-        s3_path = self.scraped_games_save if ENV == "prod" else f"test/{self.scraped_games_save}"
-        S3FileHandler().save_file(file_path=f"{s3_path}/{xml_filename}",data=xml)
+        s3_path = (
+            self.scraped_games_xml_folder
+            if ENV == "prod"
+            else f"test/{self.scraped_games_xml_folder}"
+        )
+        S3FileHandler().save_file(file_path=f"{s3_path}/{combined_xml_filename}", data=xml)
 
 
 def parse_args():
@@ -176,9 +185,9 @@ def parse_args():
         help="The type of scraper to run.  Current options are 'game' and 'user'",
     )
     parser.add_argument(
-        "filename",
+        "urls_filename",
         type=str,
-        help=f"The filename to process, without a suffix",
+        help=f"The filename containing the urls to scrape.  Do not include the path.  Extension is optional but will be ignored.",
     )
     return parser.parse_args()
 
@@ -187,6 +196,6 @@ if __name__ == "__main__":
 
     args = parse_args()
     scraper_type = args.scraper_type
-    filename = args.filename
+    urls_filename = args.urls_filename
 
-    GameScraper(scraper_type, filename).run_game_scraper_processes()
+    GameScraper(scraper_type, urls_filename).run_game_scraper_processes()

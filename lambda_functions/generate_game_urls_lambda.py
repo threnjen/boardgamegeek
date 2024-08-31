@@ -39,7 +39,7 @@ def lambda_handler(event, context):
 
     try:
         print("Reading the file locally")
-        df = pd.read_csv("local_data/boardgames_ranks.csv", low_memory=False)
+        df = pd.read_csv("data/boardgames_ranks.csv", low_memory=False)
     except:
         print("Reading the file from S3")
         df = wr.s3.read_csv(f"s3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv")
@@ -54,7 +54,7 @@ def lambda_handler(event, context):
     print(f"URL block size: {url_block_size}")
 
     local_path = (
-        f"local_data/{CONFIGS['raw_urls_directory']}" if ENV != "prod" else "/tmp"
+        f"data/{CONFIGS['raw_urls_directory']}" if ENV != "prod" else "/tmp"
     )
 
     for i in range(number_url_files):

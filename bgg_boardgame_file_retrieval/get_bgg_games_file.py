@@ -104,7 +104,7 @@ def lambda_handler(event, context):
 
     time.sleep(10)
 
-    extract_directory = default_directory if not IS_LOCAL else f"local_data"
+    extract_directory = default_directory if not IS_LOCAL else f"data"
 
     with zipfile.ZipFile(f"{default_directory}/Downloads/{filename}", "r") as zip_ref:
         zip_ref.extractall(extract_directory)

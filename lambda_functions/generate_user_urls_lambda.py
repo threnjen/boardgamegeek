@@ -43,7 +43,7 @@ def lambda_handler(event, context):
 
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
     try:
-        games = pd.read_pickle(f"local_data/game_dfs_dirty/games.pkl")
+        games = pd.read_pickle(f"data/game_dfs_dirty/games.pkl")
         print("Reading the games.pkl file locally")
 
     except:
@@ -116,7 +116,7 @@ def lambda_handler(event, context):
     group_urls = {}
 
     raw_urls_directory = CONFIGS["user"]["raw_urls_directory"]
-    local_path = "/tmp" if ENV == "prod" else f"local_data/{raw_urls_directory}"
+    local_path = "/tmp" if ENV == "prod" else f"data/{raw_urls_directory}"
 
     total_games_processed = 0
     total_pages_processed = 0
