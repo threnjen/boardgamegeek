@@ -53,9 +53,9 @@ class S3Saver(DataSaver):
         print(f"Saving data to S3: {self.folder_path}/{filename}")
         s3_client = boto3.client("s3")
         s3_client.put_object(
-            self.writer.write_data(data),
-            bucket=bucket,
-            key=f"{self.folder_path}/{filename}",
+            Body=self.writer.write_data(data),
+            Bucket=bucket,
+            Key=f"{self.folder_path}/{filename}",
         )
 
 

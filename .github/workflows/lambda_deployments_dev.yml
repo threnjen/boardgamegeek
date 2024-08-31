@@ -1,4 +1,4 @@
-name: Lambda Trigger CICD Deployment
+name: Lambda Trigger DEV CICD Deployment
 
 on:
   push:
@@ -16,13 +16,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Check out code
         uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Zip functions
         run: |
           cd lambda_functions
           zip -r boardgame_scraper_fargate_trigger.zip boardgame_scraper_fargate_trigger.py ../config.py ../utils
-          zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../config.py ../utils
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -30,5 +31,4 @@ jobs:
           aws-region: us-west-2
       - run: |
           cd lambda_functions
-          aws lambda update-function-code --function-name=bgg_generate_game_urls  --zip-file=fileb://generate_game_urls_lambda.zip 
-          aws lambda update-function-code --function-name=boardgame_scraper_fargate_trigger  --zip-file=fileb://boardgame_scraper_fargate_trigger.zip
+          aws lambda update-function-code --function-name=boardgame_scraper_fargate_trigger_dev  --zip-file=fileb://boardgame_scraper_fargate_trigger.zip
