@@ -24,7 +24,6 @@ jobs:
         run: |
           cd lambda_functions
           zip -r boardgame_scraper_fargate_trigger.zip boardgame_scraper_fargate_trigger.py ../config.py ../utils
-          zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../config.py ../utils
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -32,5 +31,4 @@ jobs:
           aws-region: us-west-2
       - run: |
           cd lambda_functions
-          aws lambda update-function-code --function-name=bgg_generate_game_urls_dev  --zip-file=fileb://generate_game_urls_lambda.zip 
           aws lambda update-function-code --function-name=boardgame_scraper_fargate_trigger_dev  --zip-file=fileb://boardgame_scraper_fargate_trigger.zip
