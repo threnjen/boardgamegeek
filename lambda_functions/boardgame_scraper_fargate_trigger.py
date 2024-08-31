@@ -7,24 +7,21 @@ from config import CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
-SCRAPER_TASK_DEFINITION = CONFIGS("scraper_task_definition")
-
-SCRAPER_CONFIG = {
-    "game": CONFIGS["scraper_urls_raw_game"],
-    "user": CONFIGS["scraper_urls_raw_user"],
-}
+SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
 
 
 def get_filenames(scraper_type):
     """Get the filenames of the files to be processed by the scraper"""
 
     if ENV == "dev":
-        raw_files = os.listdir(f"local_data/{SCRAPER_CONFIG[scraper_type]}")
+        raw_files = os.listdir(
+            f"local_data/{CONFIGS[scraper_type]['raw_urls_directory']}"
+        )
         file_prefixes = [x for x in raw_files if x.endswith(".json")]
     else:
         s3_client = boto3.client("s3")
         raw_files = s3_client.list_objects_v2(
-            Bucket=S3_SCRAPER_BUCKET, Prefix=SCRAPER_CONFIG[scraper_type]
+            Bucket=S3_SCRAPER_BUCKET, Prefix=CONFIGS[scraper_type]["raw_urls_directory"]
         )["Contents"]
         file_prefixes = [x["Key"] for x in raw_files]
 
@@ -37,11 +34,11 @@ def lambda_handler(event, context):
     scraper_type = event.get("scraper_type")
 
     print(f"Running scraper for {scraper_type}")
-    print(SCRAPER_CONFIG[scraper_type])
 
     # TO DO LATER: HAVE THIS TRIGGER OFF OF EACH FILE LANDING AND SPAWN TASKS IN PARALLEL INSTEAD OF READING THE DIRECTORY
 
     file_prefixes = get_filenames(scraper_type)
+    print(file_prefixes)
 
     task_definition = (
         f"{SCRAPER_TASK_DEFINITION}-dev" if ENV != "prod" else SCRAPER_TASK_DEFINITION
