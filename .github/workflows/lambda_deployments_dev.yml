@@ -1,4 +1,4 @@
-name: Lambda Trigger CICD Deployment
+name: Lambda Trigger DEV CICD Deployment
 
 on:
   push:
