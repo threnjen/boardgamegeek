@@ -1,8 +1,6 @@
 import boto3
 import os
-from utils.load_save import S3Loader
-from utils.read_write import JSONReader
+from utils.s3_file_handler import S3FileHandler
 
-CONFIGS = S3Loader(JSONReader()).load_data(
-    bucket=os.environ.get("S3_SCRAPER_BUCKET"), filename="config.json"
-)["CONFIGS"]
+
+CONFIGS = S3FileHandler().load_file(file_path="config.json")["CONFIGS"]

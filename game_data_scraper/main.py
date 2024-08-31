@@ -8,12 +8,12 @@ from functools import partial
 import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
-
+from utils.file_handler import FileHandler
+from utils.s3_file_handler import S3FileHandler
+from utils.local_file_handler import LocalFileHandler
 from config import CONFIGS
-from utils.load_save import DataSaver, LocalLoader, LocalSaver, S3Loader, S3Saver
-from utils.read_write import JSONReader, JSONWriter, XMLWriter
 
-S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 ENV = os.environ.get("ENV", "dev")
 
 
@@ -25,7 +25,7 @@ class BGGSpider(scrapy.Spider):
         name: str,
         scraper_urls_raw: list[str],
         filename: str,
-        saver: DataSaver,
+        file_handler: FileHandler
     ):
         """
         Parameters:
@@ -40,7 +40,7 @@ class BGGSpider(scrapy.Spider):
         super().__init__()
         self.scraper_urls_raw = scraper_urls_raw
         self.filename = filename
-        self.saver = saver
+        self.file_handler = file_handler
 
     def start_requests(self):
         for i, url in enumerate(self.scraper_urls_raw):
@@ -50,9 +50,7 @@ class BGGSpider(scrapy.Spider):
 
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        self.saver.save_data(
-            response.body, f"{self.filename}{response_id}_{timestamp}.xml"
-        )
+        self.file_handler.save_file(file_path=f"{self.filename}{response_id}_{timestamp}.xml", data=response.body)
 
 
 class GameScraper:
@@ -77,20 +75,15 @@ class GameScraper:
         # get file from local if dev, else from S3
 
         if os.path.exists(f"{self.local_path}/{self.filename}.json"):
-            scraper_urls_raw = LocalLoader(JSONReader()).load_data(
+            scraper_urls_raw = LocalFileHandler().load_file(
                 f"{self.local_path}/{self.filename}.json"
             )
         else:
-            scraper_urls_raw = S3Loader(
-                JSONReader() 
-            ).load_data(bucket=S3_SCRAPER_BUCKET,filename=f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
+            scraper_urls_raw = S3FileHandler().load_file(bucket=S3_SCRAPER_BUCKET,filename=f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
 
         if ENV == "dev":
             if not os.path.exists(f"{self.local_path}/{self.filename}.json"):
-                LocalSaver(
-                    JSONWriter(),
-                    f"{self.local_path}"
-                ).save_data(data=scraper_urls_raw, filename=f"{self.filename}.json")
+                LocalFileHandler().save_file(file_path=f"{self.local_path}/{self.filename}.json",data=scraper_urls_raw)
             scraper_urls_raw = scraper_urls_raw[:10]
             print(scraper_urls_raw)
 
@@ -117,7 +110,7 @@ class GameScraper:
             name="bgg_raw",
             scraper_urls_raw=scraper_urls_raw,
             filename=self.filename,
-            saver=LocalSaver(XMLWriter(), self.scraped_games_save),
+            file_handler = LocalFileHandler(),
         )
 
         process.start()
@@ -169,12 +162,12 @@ class GameScraper:
 
         return xml_bytes
 
-    def _write_master_xml_file(self, xml_bytes: bytes, xml_filename=str) -> None:
+    def _write_master_xml_file(self, xml: bytes, xml_filename=str) -> None:
 
-        LocalSaver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, xml_filename)
+        LocalFileHandler().save_file(file_path=f"{self.scraped_games_save}/{xml_filename}",data=xml)
 
         if ENV == "prod":
-            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, bucket=S3_SCRAPER_BUCKET,filename=xml_filename)
+            S3FileHandler().save_file(file_path=f"{self.scraped_games_save}/{xml_filename}",data=xml)
 
 
 def parse_args():
