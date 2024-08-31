@@ -82,8 +82,6 @@ class GameScraper:
             scraper_urls_raw = S3FileHandler().load_file(file_path=f"{self.configs["raw_urls_directory"]}/{self.filename}.json")
 
         if ENV == "dev":
-            if not os.path.exists(f"{self.local_path}/{self.filename}.json"):
-                LocalFileHandler().save_file(file_path=f"{self.local_path}/{self.filename}.json",data=scraper_urls_raw)
             scraper_urls_raw = scraper_urls_raw[:1]
             print(scraper_urls_raw)
 
