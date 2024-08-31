@@ -82,6 +82,7 @@ class GameScraper:
         if os.path.exists(urls_filepath):
             scraper_urls_raw = LocalFileHandler().load_file(urls_filepath)
         else:
+            print(f"File {urls_filepath} not found.  Attempting to load from S3.")
             scraper_urls_raw = S3FileHandler().load_file(urls_filepath)
 
         if self.dev_mode:
