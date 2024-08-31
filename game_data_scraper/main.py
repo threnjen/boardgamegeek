@@ -168,8 +168,8 @@ class GameScraper:
 
         LocalSaver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, xml_filename)
 
-        if ENV == "prod":
-            S3Saver(XMLWriter(), self.scraped_games_save).save_data(xml_bytes, bucket=S3_SCRAPER_BUCKET,filename=xml_filename)
+        s3_path = self.scraped_games_save if ENV == "prod" else f"test/{self.scraped_games_save}"
+        S3Saver(XMLWriter(), s3_path).save_data(xml_bytes, bucket=S3_SCRAPER_BUCKET, filename=xml_filename)
 
 
 def parse_args():
