@@ -7,9 +7,11 @@ import boto3
 import pandas as pd
 
 from config import CONFIGS
+from utils.local_file_handler import LocalFileHandler
+from utils.s3_file_handler import S3FileHandler
 
 ENV = os.environ.get("ENV", "dev")
-S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 CONFIGS = CONFIGS["game"]
 url_block_size = 20
 number_url_files = 30
@@ -39,10 +41,10 @@ def lambda_handler(event, context):
 
     try:
         print("Reading the file locally")
-        df = pd.read_csv("data/boardgames_ranks.csv", low_memory=False)
+        df = LocalFileHandler().load_csv("data/boardgames_ranks.csv")
     except:
         print("Reading the file from S3")
-        df = wr.s3.read_csv(f"s3://{S3_SCRAPER_BUCKET}/boardgames_ranks.csv")
+        df = S3FileHandler().load_csv(file_path="boardgames_ranks.csv")
 
     game_ids = df["id"].astype(str).to_list()
     print(f"Number of game ids: {len(game_ids)}")
@@ -53,25 +55,19 @@ def lambda_handler(event, context):
     url_block_size = math.ceil(len(scraper_urls_raw) / number_url_files)
     print(f"URL block size: {url_block_size}")
 
-    local_path = (
-        f"data/{CONFIGS['raw_urls_directory']}" if ENV != "prod" else "/tmp"
-    )
-
     for i in range(number_url_files):
         print(f"Saving block size {i * url_block_size} : {(i + 1) * url_block_size}")
-        with open(
-            f"{local_path}/group{i+1}_game_scraper_urls_raw.json", "w"
-        ) as convert_file:
-            convert_file.write(
-                json.dumps(
-                    scraper_urls_raw[i * url_block_size : (i + 1) * url_block_size]
-                )
-            )
-        s3_client = boto3.client("s3")
-        s3_client.upload_file(
-            f"{local_path}/group{i+1}_game_scraper_urls_raw.json",
-            S3_SCRAPER_BUCKET,
-            f"{CONFIGS['raw_urls_directory']}/group{i+1}{CONFIGS['output_urls_json_suffix']}",
+
+        scraper_urls_set = scraper_urls_raw[
+            i * url_block_size : (i + 1) * url_block_size
+        ]
+        S3FileHandler().save_json(
+            file_path=f"{CONFIGS['raw_urls_directory']}/group{i+1}_game_scraper_urls_raw.json",
+            data=scraper_urls_set,
+        )
+        LocalFileHandler().save_json(
+            file_path=f"data/{CONFIGS['raw_urls_directory']}/group{i+1}_game_scraper_urls_raw.json",
+            data=scraper_urls_set,
         )
 
 
