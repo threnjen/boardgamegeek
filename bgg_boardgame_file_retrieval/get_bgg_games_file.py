@@ -66,8 +66,6 @@ def lambda_handler(event, context):
     This function will use Selenium to download the BGG game ranks file
     and upload it to S3. The function will return None."""
 
-    print(event)
-
     default_directory = "/tmp" if not IS_LOCAL else expanduser("~")
 
     # if directory default_directory/Downloads does not exist, create it
@@ -100,9 +98,9 @@ def lambda_handler(event, context):
     )
     download_element.click()
 
-    driver.close()
-
     time.sleep(10)
+
+    driver.close()
 
     extract_directory = default_directory if not IS_LOCAL else f"data"
 
