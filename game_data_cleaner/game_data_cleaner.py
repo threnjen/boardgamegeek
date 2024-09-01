@@ -83,9 +83,6 @@ class GameDataCleaner:
         # fill in missing values with 0
         df["BestPlayers"] = df["BestPlayers"].fillna("0")
 
-        # strip out any "+" from strings and leave only integers
-        df["BestPlayers"] = df["BestPlayers"].apply(lambda x: re.sub(r"\+", "", x))
-
         # change the datatype of BestPlayers to int8
         df["BestPlayers"] = df["BestPlayers"].astype("int8")
 
