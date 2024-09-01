@@ -35,7 +35,12 @@ class XMLFileParser:
             "expansions": [],
         }
 
-    def process_file_list(self):
+    def game_cleaning_chain(self):
+        self._process_file_list()
+        self._save_dfs_to_disk_or_s3()
+        
+
+    def _process_file_list(self):
         """Process the list of files in the S3 bucket
         This function will process the list of files in the S3 bucket
         and extract the necessary information from the XML files. The
@@ -127,6 +132,7 @@ class XMLFileParser:
                 table = pd.DataFrame.from_dict(list_of_entries)
             else:
                 table = pd.concat(list_of_entries, ignore_index=True)
+                self._make_json_game_lookup_file(table)
 
             print(f"Deleting {table_name} from memory")
             del list_of_entries
@@ -138,18 +144,32 @@ class XMLFileParser:
             )
 
             file_name = f"{table_name}.pkl"
-            s3_path = "game_dfs_dirty" if ENV == "prod" else f"test/game_dfs_dirty"
+            s3_path = "game/game_dfs_dirty" if ENV == "prod" else f"test/game/game_dfs_dirty"
 
             S3FileHandler().save_file(file_path=f"{s3_path}/{file_name}",data=table)
 
-            df = S3FileHandler().load_file(file_path=f"{s3_path}/{file_name}")
-
             del table
             gc.collect()
+    
+    def _make_json_game_lookup_file(self, games_df):
+
+        games_df = games_df.copy()
+        print(games_df.head())
+
+        # lists of game ids and game names
+        game_ids = list(games_df["BGGId"])
+        game_names = list(games_df["Name"])
+
+        game_id_lookup = dict(zip(game_ids, game_names))
+
+        S3FileHandler().save_file(
+            file_path="games/game_id_lookup.json",
+            data=game_id_lookup
+        )
+
 
 
 if __name__ == "__main__":
 
     file_parser = XMLFileParser()
-    file_parser.process_file_list()
-    file_parser._save_dfs_to_disk_or_s3()
+    file_parser.game_cleaning_chain()
