@@ -32,6 +32,7 @@ class XMLFileParser:
             "publishers": [],
             "subcategories": [],
             "comments": [],
+            "expansions": [],
         }
 
     def process_file_list(self):
@@ -89,6 +90,7 @@ class XMLFileParser:
                     mechanics,
                     artists,
                     publishers,
+                    expansions
                 ) = game_parser.get_single_game_attributes()
 
                 self.entry_storage["games"].append(game.dropna(axis=1))
@@ -98,6 +100,7 @@ class XMLFileParser:
                 self.entry_storage["artists"].append(artists)
                 self.entry_storage["publishers"].append(publishers)
                 self.entry_storage["subcategories"].append(categories)
+                self.entry_storage["expansions"].append(expansions)
 
         if not self.entry_storage["games"]:
             return

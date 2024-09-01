@@ -25,6 +25,7 @@ class GameEntryParser:
         self.mechanics = pd.DataFrame()
         self.artists = pd.DataFrame()
         self.publishers = pd.DataFrame()
+        self.expansions = pd.DataFrame()
 
     def check_rating_count_threshold(
         self,
@@ -54,6 +55,7 @@ class GameEntryParser:
             self.mechanics,
             self.artists,
             self.publishers,
+            self.expansions,
         )
 
     def _parse_unique_elements(self) -> dict:
@@ -182,7 +184,6 @@ class GameEntryParser:
 
             # give the value from results with the most number of item[NUMVOTES_TAG]
             poll_result = max(results, key=results.get)
-            print(poll_result)
 
         elif len(poll_results) > 1:
             # Define the scoring values
@@ -206,15 +207,6 @@ class GameEntryParser:
                 if score > highest_score:
                     highest_score = score
                     poll_result = numplayers
-
-        if "+" in poll_result:
-            poll_result = poll_result.replace("+", "")
-            poll_result = int(poll_result) + 1
-
-        try:
-            poll_result = int(poll_result)
-        except:
-            pass
 
         return poll_result
 
@@ -335,6 +327,10 @@ class GameEntryParser:
         )
         self.publishers = self.create_thing_of_type(
             game_id, find_type_str="boardgamepublisher"
+        )
+
+        self.expansions = self.create_thing_of_type(
+            game_id, find_type_str="boardgameexpansion"
         )
 
     def create_thing_of_type(self, game_id: str, find_type_str: str) -> dict[str, list]:
