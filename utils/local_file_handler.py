@@ -1,3 +1,4 @@
+from datetime import datetime
 from utils.file_handler import FileHandler
 from typing import Union, Any
 import json
@@ -14,6 +15,13 @@ class LocalFileHandler(FileHandler):
 
     def make_directory(self, directory: str):
         Path(directory).mkdir(parents=True, exist_ok=True)
+
+    def check_file_exists(self, file_path: str) -> bool:
+        return os.path.exists(file_path)
+
+    def get_last_modified(self, file_path: str) -> datetime:
+        last_modified_timestamp = os.path.getmtime(file_path)
+        return datetime.fromtimestamp(last_modified_timestamp)
 
     def get_file_path(self, file_path: str) -> str:
         return file_path

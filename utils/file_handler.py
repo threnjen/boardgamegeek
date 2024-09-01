@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Any, Union
+from datetime import datetime
 
 
 class FileHandler(ABC):
@@ -48,9 +49,23 @@ class FileHandler(ABC):
         pass
 
     @abstractmethod
+    def check_file_exists(self, file_path: str) -> bool:
+        """
+        Check if a file exists.
+        """
+        pass
+
+    @abstractmethod
     def get_file_path(self, file_path: str) -> str:
         """
         Get the file path.
+        """
+        pass
+
+    @abstractmethod
+    def get_last_modified(self, file_path: str) -> datetime:
+        """
+        Get the last modified time of the file.
         """
         pass
 

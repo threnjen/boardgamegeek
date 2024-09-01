@@ -6,6 +6,7 @@ import boto3
 import os
 import pickle
 import io
+from datetime import datetime
 
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
@@ -25,6 +26,17 @@ class S3FileHandler(FileHandler):
     @property
     def file_missing_exception(self) -> Exception:
         return self.s3_client.exceptions.NoSuchKey
+
+    def check_file_exists(self, file_path: str) -> bool:
+        try:
+            self.s3_client.head_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
+            return True
+        except self.file_missing_exception:
+            return False
+
+    def get_last_modified(self, file_path: str) -> datetime:
+        obj = self.s3_client.get_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
+        return obj["LastModified"]
 
     def make_directory(self, directory: str):
         pass
