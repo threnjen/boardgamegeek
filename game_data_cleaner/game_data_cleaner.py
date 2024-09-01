@@ -28,7 +28,7 @@ class GameDataCleaner:
         self.local_handler = LocalFileHandler()
 
     def cleaning_chain(self) -> pd.DataFrame:
-        games_df = self.load_games_data("local_data/game_dfs_dirty/games.pkl")
+        games_df = self.load_games_data("data/game_dfs_dirty/games.pkl")
         games_df = self._drop_duplicates(games_df)
         games_df = self._drop_unneeded_columns(games_df)
         games_df = self._clean_best_players(games_df)
@@ -78,17 +78,16 @@ class GameDataCleaner:
 
     def _clean_best_players(self, df):
         df = df.copy()
+        print(df["BestPlayers"].head())
 
         # fill in missing values with 0
-        df["BestNumPlayers"] = df["BestNumPlayers"].fillna("0")
+        df["BestPlayers"] = df["BestPlayers"].fillna("0")
 
         # strip out any "+" from strings and leave only integers
-        df["BestNumPlayers"] = df["BestNumPlayers"].apply(
-            lambda x: re.sub(r"\+", "", x)
-        )
+        df["BestPlayers"] = df["BestPlayers"].apply(lambda x: re.sub(r"\+", "", x))
 
-        # change the datatype of BestNumPlayers to int8
-        df["BestNumPlayers"] = df["BestNumPlayers"].astype("int8")
+        # change the datatype of BestPlayers to int8
+        df["BestPlayers"] = df["BestPlayers"].astype("int8")
 
         return df
 

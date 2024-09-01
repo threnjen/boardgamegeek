@@ -45,9 +45,8 @@ class XMLFileParser:
             f"s3://{S3_SCRAPER_BUCKET}/{GAME_CONFIGS['output_xml_directory']}"
         )
         if not file_list:
-            file_list = os.listdir(
-                f"data/{GAME_CONFIGS['output_xml_directory']}"
-            )
+            local_files = os.listdir(f"data/{GAME_CONFIGS['output_xml_directory']}")
+            file_list = [x for x in local_files if '.gitkeep' not in x]
 
         # download items in file_list to local path
 
