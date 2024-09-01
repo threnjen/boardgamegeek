@@ -62,8 +62,16 @@ class GameScraper:
         self.file_group = urls_filename.split("_")[0]
         self.urls_filename = urls_filename.split(".")[0]
         self.configs = CONFIGS[scraper_type]
-        self.scraped_games_xml_folder = f'data/{self.configs["output_xml_directory"]}'
-        self.raw_urls_folder = f'data/{self.configs["raw_urls_directory"]}'
+        self.scraped_games_xml_folder = (
+            f'data/{self.configs["output_xml_directory"]}'
+            if self.dev_mode
+            else f'{self.configs["output_xml_directory"]}'
+        )
+        self.raw_urls_folder = (
+            f'data/{self.configs["raw_urls_directory"]}'
+            if self.dev_mode
+            else f'{self.configs["raw_urls_directory"]}'
+        )
         self.scraper_type = scraper_type
         self.dev_mode = True if ENV == "dev" else False
 
@@ -166,7 +174,8 @@ class GameScraper:
     def _write_combined_xml_file(self, xml: bytes, combined_xml_filename=str) -> None:
 
         LocalFileHandler().save_file(
-            file_path=f"test/{self.scraped_games_xml_folder}/{combined_xml_filename}", data=xml
+            file_path=f"test/{self.scraped_games_xml_folder}/{combined_xml_filename}",
+            data=xml,
         )
 
         s3_path = (
@@ -174,7 +183,9 @@ class GameScraper:
             if ENV == "prod"
             else f"test/{self.scraped_games_xml_folder}"
         )
-        S3FileHandler().save_file(file_path=f"{s3_path}/{combined_xml_filename}", data=xml)
+        S3FileHandler().save_file(
+            file_path=f"{s3_path}/{combined_xml_filename}", data=xml
+        )
 
 
 def parse_args():
