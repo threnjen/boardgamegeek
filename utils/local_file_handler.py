@@ -5,6 +5,7 @@ import json
 import pandas as pd
 from pathlib import Path
 import os
+import pytz
 
 
 class LocalFileHandler(FileHandler):
@@ -21,7 +22,7 @@ class LocalFileHandler(FileHandler):
 
     def get_last_modified(self, file_path: str) -> datetime:
         last_modified_timestamp = os.path.getmtime(file_path)
-        return datetime.fromtimestamp(last_modified_timestamp)
+        return datetime.fromtimestamp(last_modified_timestamp).astimezone(pytz.utc)
 
     def get_file_path(self, file_path: str) -> str:
         return file_path

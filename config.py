@@ -9,7 +9,6 @@ IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
 
 if LocalFileHandler().check_file_exists(file_path="config.json"):
     local_datetime = LocalFileHandler().get_last_modified(file_path="config.json")
-    local_datetime = local_datetime.astimezone(pytz.utc)
     NOT_FOUND = False
 else:
     print("Local config not found")
