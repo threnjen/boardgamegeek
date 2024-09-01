@@ -6,6 +6,7 @@ import time
 import os
 import gc
 import json
+from datetime import datetime
 
 # from statistics import mean
 # NLP tools
@@ -19,6 +20,10 @@ import json
 
 from utils.s3_file_handler import S3FileHandler
 from utils.local_file_handler import LocalFileHandler
+from processing_functions import integer_reduce
+from config import CONFIGS
+
+GAME_CONFIGS = CONFIGS["game"]
 
 
 class GameDataCleaner:
@@ -32,8 +37,19 @@ class GameDataCleaner:
         games_df = self._drop_duplicates(games_df)
         games_df = self._drop_unneeded_columns(games_df)
         games_df = self._clean_best_players(games_df)
-        games_df = self._add_binary_flags(games_df)
+        games_df = self._add_binary_category_flags(games_df)
+        games_df = self._reduce_integers_for_memory_usage(games_df)
+        games_df = self._drop_unreleased(games_df)
+        games_df = self._set_missing_min_players(games_df)
+        games_df, themes_df = self._breakout_themes_df(games_df)
+
+        # Generally we would save the data to a new file, but for now we will just print the info
         print(games_df.info())
+
+        # We can save the Kaggle dataset to S3 here
+        self.s3_file_handler.save_file(
+            file_path="games/kaggle_data/games.csv", data=games_df
+        )
 
     def load_games_data(self, file_path: str) -> pd.DataFrame:
         """Load games data from a file path"""
@@ -49,25 +65,7 @@ class GameDataCleaner:
 
         df = df.copy()
 
-        # TO DO - PUT THIS IN THE CONFIG FILE
-        drop_columns = [
-            "NumAwards",
-            "NumFans",
-            "NumPageViews",
-            "RulesPosts",
-            "TotalPosts",
-            "Category",
-            "IsExpansion",
-            "Rank:rpgitem",
-            "Rank:boardgameaccessory",
-            "Rank:videogame",
-            "Rank:amiga",
-            "Rank:commodore64",
-            "Rank:arcade",
-            "Rank:atarist",
-            "Setting",
-            "Mechanism",
-        ]
+        drop_columns = GAME_CONFIGS["drop_columns"]
 
         # drop non-boardgame related information
         for column in drop_columns:
@@ -78,31 +76,62 @@ class GameDataCleaner:
 
     def _clean_best_players(self, df):
         df = df.copy()
-        print(df["BestPlayers"].head())
 
         # fill in missing values with 0
         df["BestPlayers"] = df["BestPlayers"].fillna("0")
+
+        # if "+" in BestPlayers, get rid of it
+        df["BestPlayers"] = df["BestPlayers"].str.replace("+", "")
 
         # change the datatype of BestPlayers to int8
         df["BestPlayers"] = df["BestPlayers"].astype("int8")
 
         return df
 
-    def _add_binary_flags(self, df):
+    def _add_binary_category_flags(self, df):
         df = df.copy()
 
-        # TO DO - PUT THIS IN THE CONFIG FILE
-        # add a binary flag for games that are expansions
-        df.loc[df["Rank:thematic"].notna(), "Cat:Thematic"] = 1
-        df.loc[df["Rank:strategygames"].notna(), "Cat:Strategy"] = 1
-        df.loc[df["Rank:wargames"].notna(), "Cat:War"] = 1
-        df.loc[df["Rank:familygames"].notna(), "Cat:Family"] = 1
-        df.loc[df["Rank:cgs"].notna(), "Cat:CGS"] = 1
-        df.loc[df["Rank:abstracts"].notna(), "Cat:Abstract"] = 1
-        df.loc[df["Rank:partygames"].notna(), "Cat:Party"] = 1
-        df.loc[df["Rank:childrensgames"].notna(), "Cat:Childrens"] = 1
+        for field, category in GAME_CONFIGS["binary_flag_fields"].items():
+            if field in df.columns:
+                df.loc[df[field].notna(), category] = 1
+
+        print(df.head())
 
         return df
+
+    def _reduce_integers_for_memory_usage(self, df):
+        df = df.copy()
+
+        int_columns = [x for x in GAME_CONFIGS["int_columns"] if x in df.columns]
+        rank_columns = [x for x in GAME_CONFIGS["rank_columns"] if x in df.columns]
+
+        df = integer_reduce(df, int_columns, fill_value=0)
+
+        df = integer_reduce(df, rank_columns, fill_value=df.shape[0] + 1)
+
+        return df
+
+    def _drop_unreleased(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+
+        # get this year from datetime
+        next_year = datetime.now().year + 1
+
+        df = df[df["YearPublished"] < next_year]
+        return df
+
+    def _set_missing_min_players(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        df["MinPlayers"] = df["MinPlayers"].fillna(1)
+        df.loc[df["MinPlayers"] < 1, "MinPlayers"] = 2
+        return df
+
+    def _breakout_themes_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = df.copy()
+        themes_df = pd.DataFrame(df[["BGGId", "Theme"]])
+        print(themes_df.head())
+        df = df.drop("Theme", axis=1)
+        return df, themes_df
 
 
 if __name__ == "__main__":

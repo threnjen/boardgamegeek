@@ -6,25 +6,17 @@ import time
 import os
 import gc
 import json
-from statistics import mean
 
-# ignore warnings (gets rid of Pandas copy warnings)
-import warnings
+# from statistics import mean
 
-warnings.filterwarnings("ignore")
-pd.options.display.max_columns = None
+# # NLP tools
+# import spacy
 
-pd.set_option("display.max_columns", None)
-pd.set_option("display.max_rows", 30)
-
-# NLP tools
-import spacy
-
-nlp = spacy.load("en_core_web_sm")
-import re
-import nltk
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from nltk.tokenize import word_tokenize
+# nlp = spacy.load("en_core_web_sm")
+# import re
+# import nltk
+# from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+# from nltk.tokenize import word_tokenize
 
 
 def integer_reduce(data, columns, fill_value=0):
@@ -40,6 +32,8 @@ def integer_reduce(data, columns, fill_value=0):
     data: dataframe with memory reduced data types
     """
     for column in columns:
+        print(data[column].unique())
+        data[column] = data[column].astype("Int64")
         print(column)
         data[column].fillna(fill_value, inplace=True)
         if (data[column].max() <= 127) & (data[column].min() >= -128):
@@ -52,143 +46,143 @@ def integer_reduce(data, columns, fill_value=0):
     return data
 
 
-def text_block_processor(text):
-    """Takes a block of text. Divides block into sentences with words lemmatized.
-    Sends each sentence to word processor. Concatenates all words into one string
-    Otherwise returns string of cleaned and processed words from text block
+# def text_block_processor(text):
+#     """Takes a block of text. Divides block into sentences with words lemmatized.
+#     Sends each sentence to word processor. Concatenates all words into one string
+#     Otherwise returns string of cleaned and processed words from text block
 
-    ARGUMENTS:
-    block of text
-    """
+#     ARGUMENTS:
+#     block of text
+#     """
 
-    text = str(text)
-    line = re.sub(
-        r"[^a-zA-Z\s]", "", text
-    ).lower()  # removes all special characters and numbers, and makes lower case
-    line2 = re.sub(r"\s{2}", "", line).lower()  # removes extra blocks of 2 spaces
-    tokens = nlp(line)
-    words = []
-    for token in tokens:
-        if token.is_stop == False:
-            token_preprocessed = token.lemma_
-            if token_preprocessed != "":  # only continues if returned word is not empty
-                words.append(token_preprocessed)  # appends word to list of words
-    line = " ".join(words)
+#     text = str(text)
+#     line = re.sub(
+#         r"[^a-zA-Z\s]", "", text
+#     ).lower()  # removes all special characters and numbers, and makes lower case
+#     line2 = re.sub(r"\s{2}", "", line).lower()  # removes extra blocks of 2 spaces
+#     tokens = nlp(line)
+#     words = []
+#     for token in tokens:
+#         if token.is_stop == False:
+#             token_preprocessed = token.lemma_
+#             if token_preprocessed != "":  # only continues if returned word is not empty
+#                 words.append(token_preprocessed)  # appends word to list of words
+#     line = " ".join(words)
 
-    return line
-
-
-def fix_numbers(x):
-    """
-    Checks for numbers or strings
-    If a string, strips off the "k" and multiply by 10000
-    Sends back cleaned int
-    """
-
-    if type(x) is int:
-        return int(x)
-
-    if str.endswith(x, "k"):
-        x = str(x).strip("k")
-        new_num = int(float(x) * 1000)
-        return int(new_num)
-
-    else:
-        return int(x)
+#     return line
 
 
-def clean_ratings(id_num, game_ids):
-    """
-    Loads and cleans a raw user ratings file
-    Drops game ids not present in games file
-    Drops users with fewer than 10 ratings
+# def fix_numbers(x):
+#     """
+#     Checks for numbers or strings
+#     If a string, strips off the "k" and multiply by 10000
+#     Sends back cleaned int
+#     """
 
-    Inputs:
-    id_num: the appendation of the file to find the path
-    game_ids: list of game ids in the games file
+#     if type(x) is int:
+#         return int(x)
 
-    Outputs:
-    Cleaned user ratings file
-    """
+#     if str.endswith(x, "k"):
+#         x = str(x).strip("k")
+#         new_num = int(float(x) * 1000)
+#         return int(new_num)
 
-    print("\nCleaning Frame #" + str(id_num))
-
-    # load in raw users file according to id_num inputted
-    path = "userid/user_ratings" + str(id_num) + ".pkl"
-    users = pd.read_pickle(path)
-
-    # convert all datatypes to float
-    float_converted = users.astype("float")
-
-    # delete and clean up raw users file
-    del users
-    gc.collect()
-
-    # create intersection between user file and game list ids
-    float_converted.columns = float_converted.columns.astype("int32")
-    cleaned = float_converted[float_converted.columns.intersection(game_ids)]
-
-    # delete and clean up
-    del float_converted
-    gc.collect()
-
-    # make a list of users with fewer than 5 user ratings
-    sums = cleaned.count(axis=1) < 5
-    # get indices for the rows with fewer than 5 ratings
-    drop_these = sums.loc[sums == True].index
-    # drop the users with fewer than 5 ratings
-    cleaned.drop(drop_these, axis=0, inplace=True)
-
-    # print memory usage
-    print(cleaned.info())
-
-    # return cleaned file
-    return cleaned
+#     else:
+#         return int(x)
 
 
-def create_ratings_file(start_file, end_file, game_ids):
-    """
-    Puts together dataframes from a range of files
-    Each file calls the clean_ratings function
-    Then all files in range are concatenated
+# def clean_ratings(id_num, game_ids):
+#     """
+#     Loads and cleans a raw user ratings file
+#     Drops game ids not present in games file
+#     Drops users with fewer than 10 ratings
 
-    Inputs:
-    start_file: start of file name appendation
-    end_file: end file name appendation
-    game_ids_list: list of game ids in the games file
+#     Inputs:
+#     id_num: the appendation of the file to find the path
+#     game_ids: list of game ids in the games file
 
-    Outputs:
-    Cleaned and concatenated master file
+#     Outputs:
+#     Cleaned user ratings file
+#     """
 
-    """
+#     print("\nCleaning Frame #" + str(id_num))
 
-    # make an empty dataframe
-    master_file = pd.DataFrame()
+#     # load in raw users file according to id_num inputted
+#     path = "userid/user_ratings" + str(id_num) + ".pkl"
+#     users = pd.read_pickle(path)
 
-    # for each number in the range from start to end:
-    for id_num in np.arange(start_file, end_file + 1, 1):
-        print(id_num)
-        # clean the file calling clean_ratings
-        cleaned_item = clean_ratings(id_num, game_ids)
-        # append the file to the dataframe
-        master_file = pd.concat([master_file, cleaned_item], axis=0)
+#     # convert all datatypes to float
+#     float_converted = users.astype("float")
 
-    master_file.drop_duplicates(keep="first", inplace=True)
+#     # delete and clean up raw users file
+#     del users
+#     gc.collect()
 
-    # clean up
-    del cleaned_item
-    gc.collect()
+#     # create intersection between user file and game list ids
+#     float_converted.columns = float_converted.columns.astype("int32")
+#     cleaned = float_converted[float_converted.columns.intersection(game_ids)]
 
-    return master_file
+#     # delete and clean up
+#     del float_converted
+#     gc.collect()
+
+#     # make a list of users with fewer than 5 user ratings
+#     sums = cleaned.count(axis=1) < 5
+#     # get indices for the rows with fewer than 5 ratings
+#     drop_these = sums.loc[sums == True].index
+#     # drop the users with fewer than 5 ratings
+#     cleaned.drop(drop_these, axis=0, inplace=True)
+
+#     # print memory usage
+#     print(cleaned.info())
+
+#     # return cleaned file
+#     return cleaned
 
 
-def process_dataframe_ratings(x, user_ratings, raw_ratings):
+# def create_ratings_file(start_file, end_file, game_ids):
+#     """
+#     Puts together dataframes from a range of files
+#     Each file calls the clean_ratings function
+#     Then all files in range are concatenated
 
-    try:
-        user_ratings[x["Username"]][x["BGGId"]] = float(x["Rating"])
+#     Inputs:
+#     start_file: start of file name appendation
+#     end_file: end file name appendation
+#     game_ids_list: list of game ids in the games file
 
-    except:
-        user_ratings[x["Username"]] = {}
-        user_ratings[x["Username"]][x["BGGId"]] = float(x["Rating"])
+#     Outputs:
+#     Cleaned and concatenated master file
 
-    raw_ratings[x["BGGId"]].append(x["Rating"])
+#     """
+
+#     # make an empty dataframe
+#     master_file = pd.DataFrame()
+
+#     # for each number in the range from start to end:
+#     for id_num in np.arange(start_file, end_file + 1, 1):
+#         print(id_num)
+#         # clean the file calling clean_ratings
+#         cleaned_item = clean_ratings(id_num, game_ids)
+#         # append the file to the dataframe
+#         master_file = pd.concat([master_file, cleaned_item], axis=0)
+
+#     master_file.drop_duplicates(keep="first", inplace=True)
+
+#     # clean up
+#     del cleaned_item
+#     gc.collect()
+
+#     return master_file
+
+
+# def process_dataframe_ratings(x, user_ratings, raw_ratings):
+
+#     try:
+#         user_ratings[x["Username"]][x["BGGId"]] = float(x["Rating"])
+
+#     except:
+#         user_ratings[x["Username"]] = {}
+#         user_ratings[x["Username"]][x["BGGId"]] = float(x["Rating"])
+
+#     raw_ratings[x["BGGId"]].append(x["Rating"])
