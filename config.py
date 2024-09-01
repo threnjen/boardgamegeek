@@ -1,9 +1,6 @@
-import boto3
 import os
-import pytz
 from utils.s3_file_handler import S3FileHandler
 from utils.local_file_handler import LocalFileHandler
-from datetime import datetime
 
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
 
@@ -14,7 +11,6 @@ if LocalFileHandler().check_file_exists(file_path="config.json"):
     NOT_FOUND = False
 else:
     print("Local config not found")
-    local_datetime = datetime(1970, 1, 1).astimezone(pytz.utc)
     NOT_FOUND = True
 
 if (
