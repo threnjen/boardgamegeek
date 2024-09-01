@@ -38,7 +38,7 @@ class S3FileHandler(FileHandler):
 
     def save_json(self, file_path: str, data: str):
         self.s3_client.put_object(
-            file_pathBucket=S3_SCRAPER_BUCKET, Key=file_path, body=data.encode("utf-8")
+            Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data.encode("utf-8")
         )
 
     def load_jsonl(self, file_path: str) -> list[dict]:
