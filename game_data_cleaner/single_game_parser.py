@@ -163,20 +163,59 @@ class GameEntryParser:
 
     def evaulate_poll(self, poll_title: str):
         """Attempts to evaluate a poll item from the game entry."""
+
         NUMVOTES_TAG = "numvotes"
-        poll_result = None
-        try:
-            poll = self.game_entry.find("poll", title=poll_title).find_all("result")
-            vote_total = sum(
-                [int(item[NUMVOTES_TAG]) * int(item["value"][:2]) for item in poll]
-            )
-            items = sum([int(item[NUMVOTES_TAG]) for item in poll])
-            if items > 0:
-                poll_result = vote_total / items
-            else:
-                poll_result = None
-        except:
+        # poll_result = None
+
+        poll = self.game_entry.find("poll", title=poll_title)
+
+        if not poll:
+            return None
+
+        poll_results = poll.find_all("results")
+
+        if len(poll_results) == 1:
+            results = {
+                item["value"]: int(item[NUMVOTES_TAG])
+                for item in poll.find_all("result")
+            }
+
+            # give the value from results with the most number of item[NUMVOTES_TAG]
+            poll_result = max(results, key=results.get)
+            print(poll_result)
+
+        elif len(poll_results) > 1:
+            # Define the scoring values
+            scoring = {"Best": 1, "Recommended": 0.5, "Not Recommended": 0}
+
+            # Initialize variables to track the best numplayers and its score
             poll_result = None
+            highest_score = -1
+
+            # Iterate through all <results> tags
+            for result in poll_results:
+                numplayers = result.get("numplayers")
+
+                # Calculate the score for this numplayers option
+                score = sum(
+                    int(r["numvotes"]) * scoring[r["value"]]
+                    for r in result.find_all("result")
+                )
+
+                # Update if this score is the highest
+                if score > highest_score:
+                    highest_score = score
+                    poll_result = numplayers
+
+        if "+" in poll_result:
+            poll_result = poll_result.replace("+", "")
+            poll_result = int(poll_result) + 1
+
+        try:
+            poll_result = int(poll_result)
+        except:
+            pass
+
         return poll_result
 
     def get_family(self) -> str:
