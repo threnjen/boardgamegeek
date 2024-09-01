@@ -4,9 +4,10 @@ import sys
 import boto3
 
 from config import CONFIGS
+from utils.s3_file_handler import S3FileHandler
 
 ENV = os.environ.get("ENV", "dev")
-S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
 
 
@@ -26,14 +27,15 @@ def lambda_handler(event, context):
     """Trigger the Fargate task to process the files in the S3 bucket"""
 
     scraper_type = event.get("scraper_type")
-    print(CONFIGS[scraper_type])
 
     print(f"Running scraper for {scraper_type}")
 
     # TO DO LATER: HAVE THIS TRIGGER OFF OF EACH FILE LANDING AND SPAWN TASKS IN PARALLEL INSTEAD OF READING THE DIRECTORY
 
-    file_prefixes = get_filenames(scraper_type)
-    print(file_prefixes)
+    # file_prefixes = get_filenames(scraper_type)
+    file_prefixes = S3FileHandler().list_files(
+        directory=CONFIGS[scraper_type]["raw_urls_directory"]
+    )
 
     task_definition = (
         f"{SCRAPER_TASK_DEFINITION}-dev" if ENV != "prod" else SCRAPER_TASK_DEFINITION
