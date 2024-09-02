@@ -63,16 +63,8 @@ class GameScraper:
         self.file_group = urls_filename.split("_")[0]
         self.urls_filename = urls_filename.split(".")[0]
         self.configs = CONFIGS[scraper_type]
-        self.scraped_games_xml_folder = (
-            f'data/{self.configs["output_xml_directory"]}'
-            if IS_LOCAL
-            else f'{self.configs["output_xml_directory"]}'
-        )
-        self.raw_urls_folder = (
-            f'data/{self.configs["raw_urls_directory"]}'
-            if IS_LOCAL
-            else f'{self.configs["raw_urls_directory"]}'
-        )
+        self.scraped_games_xml_folder = self.configs["output_xml_directory"]
+        self.raw_urls_folder = self.configs["raw_urls_directory"]
         self.scraper_type = scraper_type
 
     def run_game_scraper_processes(self):
@@ -86,14 +78,12 @@ class GameScraper:
 
     def _load_scraper_urls(self) -> list[str]:
         # get file from local if dev, else from S3
-        local_filepath = f"{self.raw_urls_folder}/{self.urls_filename}.json"
-        if os.path.exists(local_filepath):
-            scraper_urls_raw = LocalFileHandler().load_file(local_filepath)
+        filepath = f"{self.raw_urls_folder}/{self.urls_filename}.json"
+        if os.path.exists(filepath):
+            scraper_urls_raw = LocalFileHandler().load_file(filepath)
         else:
-            print(f"File {local_filepath} not found.  Attempting to load from S3.")
-            scraper_urls_raw = S3FileHandler().load_file(
-                f'{self.configs["raw_urls_directory"]}/{self.urls_filename}.json'
-            )
+            print(f"File {filepath} not found.  Attempting to load from S3.")
+            scraper_urls_raw = S3FileHandler().load_file(filepath)
 
         if ENV == "dev":
             scraper_urls_raw = scraper_urls_raw[:1]
