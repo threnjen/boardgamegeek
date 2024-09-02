@@ -115,7 +115,7 @@ class GameDataCleaner:
         return df
 
     def _set_missing_min_players(self, df: pd.DataFrame) -> pd.DataFrame:
-        df["MinPlayers"] = df["MinPlayers"].fillna(1)
+        df["MinPlayers"] = df["MinPlayers"].fillna(2)
         df.loc[df["MinPlayers"] == 0, "MinPlayers"] = 2
         return df
 
