@@ -53,7 +53,7 @@ class XMLFileParser:
         file_list = S3FileHandler().list_files(GAME_CONFIGS['output_xml_directory'])
         if not file_list:
             local_files = os.listdir(f"data/{GAME_CONFIGS['output_xml_directory']}")
-            file_list = [x for x in local_files if '.gitkeep' not in x]
+            file_list = [x for x in local_files if x.endswith(".xml")]
 
         # download items in file_list to local path
 
@@ -137,9 +137,9 @@ class XMLFileParser:
 
             print(f"Saving {table_name} to disk and uploading to S3")
 
-            LocalFileHandler().save_file(file_path=f"data/games/game_dfs_dirty/{table_name}.pkl", data=table)
+            LocalFileHandler().save_file(file_path=f"{GAME_CONFIGS['dirty_dfs_directory']}/{table_name}.pkl", data=table)
             if ENV == "prod":
-                S3FileHandler().save_file(file_path=f"games/game_dfs_dirty/{table_name}.pkl", data=table)
+                S3FileHandler().save_file(file_path=f"{GAME_CONFIGS['dirty_dfs_directory']}.pkl", data=table)
 
             del table
             gc.collect()
@@ -147,7 +147,6 @@ class XMLFileParser:
     def _make_json_game_lookup_file(self, games_df):
 
         games_df = games_df.copy()
-        print(games_df.head())
 
         # lists of game ids and game names
         game_ids = list(games_df["BGGId"])
@@ -156,7 +155,7 @@ class XMLFileParser:
         game_id_lookup = dict(zip(game_ids, game_names))
 
         S3FileHandler().save_file(
-            file_path="games/game_id_lookup.json",
+            file_path=GAME_CONFIGS["game_id_lookup_file"],
             data=game_id_lookup
         )
 
