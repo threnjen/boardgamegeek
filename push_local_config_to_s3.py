@@ -4,4 +4,4 @@ import json
 
 CONFIGS = LocalFileHandler().load_file(file_path="config.json")
 print(CONFIGS)
-S3FileHandler().save_json(file_path="config.json", data=CONFIGS)
+S3FileHandler().save_file(file_path="config.json", data=CONFIGS)

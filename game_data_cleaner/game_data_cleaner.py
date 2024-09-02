@@ -54,7 +54,7 @@ class GameDataCleaner:
 
     def load_games_data(self, file_path: str) -> pd.DataFrame:
         """Load games data from a file path"""
-        games_df = self.local_handler.load_pkl(file_path)
+        games_df = self.local_handler.load_file(file_path)
         return games_df
 
     def _drop_duplicates(self, df: pd.DataFrame) -> pd.DataFrame:
