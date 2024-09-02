@@ -59,7 +59,7 @@ class XMLFileParser:
 
         for file in file_list:
             print(file)
-            local_file_path = f"data/{GAME_CONFIGS['output_xml_directory']}/{file.split("/")[-1]}"
+            local_file_path = f"{GAME_CONFIGS['output_xml_directory']}/{file.split("/")[-1]}"
 
             try:
                 # open from local_pile_path

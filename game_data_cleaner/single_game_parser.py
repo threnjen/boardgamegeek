@@ -125,12 +125,12 @@ class GameEntryParser:
         self.game_base_attributes["BestPlayers"] = self.evaulate_poll(
             "User Suggested Number of Players"
         )  # Best Players poll
-        self.game_base_attributes["ComMinPlaytime"] = self.evaulate_poll(
-            "User Suggested Play Time"
-        )  # Community Min Playtime poll
-        self.game_base_attributes["ComMaxPlaytime"] = self.evaulate_poll(
-            "User Suggested Play Time"
-        )  # Community Max Playtime poll
+        # self.game_base_attributes["ComMinPlaytime"] = self.evaulate_poll(
+        #     "User Suggested Play Time"
+        # )  # Community Min Playtime poll
+        # self.game_base_attributes["ComMaxPlaytime"] = self.evaulate_poll(
+        #     "User Suggested Play Time"
+        # )  # Community Max Playtime poll
 
     def _parse_family_attributes(self) -> dict:
         """Parse the family attributes of the game
@@ -172,15 +172,22 @@ class GameEntryParser:
         poll = self.game_entry.find("poll", title=poll_title)
 
         if not poll:
+            print(f"Poll {poll_title} not found")
             return None
 
         poll_results = poll.find_all("results")
+
+        if not poll_results:
+            print(f"Poll {poll_title} results not found")
+            return None
 
         if len(poll_results) == 1:
             results = {
                 item["value"]: int(item[NUMVOTES_TAG])
                 for item in poll.find_all("result")
             }
+            if not len(results):
+                return None
 
             # give the value from results with the most number of item[NUMVOTES_TAG]
             poll_result = max(results, key=results.get)
