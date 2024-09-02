@@ -13,6 +13,9 @@ from utils.local_file_handler import LocalFileHandler
 
 from config import CONFIGS
 
+from utils.s3_file_handler import S3FileHandler
+from utils.local_file_handler import LocalFileHandler
+
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["game"]
@@ -47,9 +50,7 @@ class XMLFileParser:
         function will return None."""
 
         # list files in data dirty prefix in s3 using awswrangler
-        file_list = wr.s3.list_objects(
-            f"s3://{S3_SCRAPER_BUCKET}/{GAME_CONFIGS['output_xml_directory']}"
-        )
+        file_list = S3FileHandler().list_files(GAME_CONFIGS['output_xml_directory'])
         if not file_list:
             local_files = os.listdir(f"data/{GAME_CONFIGS['output_xml_directory']}")
             file_list = [x for x in local_files if '.gitkeep' not in x]
@@ -62,15 +63,12 @@ class XMLFileParser:
 
             try:
                 # open from local_pile_path
-                local_open = open(local_file_path, encoding="utf8")
-            except FileNotFoundError:
+                local_open = LocalFileHandler().load_file(file_path=local_file_path)
+            except FileNotFoundError as e:
                 # if ENV=="prod" then download the XML from S3
                 print(f"Downloading {file} from S3")
-                wr.s3.download(
-                    path=file,
-                    local_file=local_file_path,
-                )
-                local_open = open(local_file_path, encoding="utf8")
+                local_open = S3FileHandler().load_file(file_path=f"{GAME_CONFIGS['output_xml_directory']}/{file.split("/")[-1]}")
+                LocalFileHandler().save_file(file_path=local_file_path, data=local_open)
 
             game_page = BeautifulSoup(local_open, features="xml")
 
@@ -84,7 +82,7 @@ class XMLFileParser:
                 if not game_parser.check_rating_count_threshold():
                     # print("Skipping game with low user ratings")
                     continue
-                # print(f"Processing game with ID: {game_entry['id']}")
+                print(f"Processing game with ID: {game_entry['id']}")
 
                 game_parser.parse_individual_game()
                 (
@@ -139,14 +137,9 @@ class XMLFileParser:
 
             print(f"Saving {table_name} to disk and uploading to S3")
 
-            table.to_pickle(
-                f"data/game_dfs_dirty/{table_name}.pkl"
-            )
-
-            file_name = f"{table_name}.pkl"
-            s3_path = "game/game_dfs_dirty" if ENV == "prod" else f"test/game/game_dfs_dirty"
-
-            S3FileHandler().save_file(file_path=f"{s3_path}/{file_name}",data=table)
+            LocalFileHandler().save_file(file_path=f"data/games/game_dfs_dirty/{table_name}.pkl", data=table)
+            if ENV == "prod":
+                S3FileHandler().save_file(file_path=f"games/game_dfs_dirty/{table_name}.pkl", data=table)
 
             del table
             gc.collect()
