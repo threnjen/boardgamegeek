@@ -31,6 +31,7 @@ class GameDataCleaner:
     def __init__(self) -> None:
         self.s3_file_handler = S3FileHandler()
         self.local_handler = LocalFileHandler()
+        self.themes = pd.DataFrame()
 
     def cleaning_chain(self) -> pd.DataFrame:
         games_df = self.load_games_data("data/game_dfs_dirty/games.pkl")
@@ -41,14 +42,14 @@ class GameDataCleaner:
         games_df = self._reduce_integers_for_memory_usage(games_df)
         games_df = self._drop_unreleased(games_df)
         games_df = self._set_missing_min_players(games_df)
-        games_df, themes_df = self._breakout_themes_df(games_df)
+        games_df = self._breakout_themes_df(games_df)
 
         # Generally we would save the data to a new file, but for now we will just print the info
         print(games_df.info())
 
         # We can save the Kaggle dataset to S3 here
         self.s3_file_handler.save_file(
-            file_path="games/kaggle_data/games.csv", data=games_df
+            file_path=GAME_CONFIGS["kaggle_games_file"], data=games_df
         )
 
     def load_games_data(self, file_path: str) -> pd.DataFrame:
@@ -57,13 +58,10 @@ class GameDataCleaner:
         return games_df
 
     def _drop_duplicates(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
         df = df.drop_duplicates(subset="BGGId", keep="first")
         return df
 
     def _drop_unneeded_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-
-        df = df.copy()
 
         drop_columns = GAME_CONFIGS["drop_columns"]
 
@@ -75,7 +73,6 @@ class GameDataCleaner:
         return df
 
     def _clean_best_players(self, df):
-        df = df.copy()
 
         # fill in missing values with 0
         df["BestPlayers"] = df["BestPlayers"].fillna("0")
@@ -89,7 +86,6 @@ class GameDataCleaner:
         return df
 
     def _add_binary_category_flags(self, df):
-        df = df.copy()
 
         for field, category in GAME_CONFIGS["binary_flag_fields"].items():
             if field in df.columns:
@@ -100,7 +96,6 @@ class GameDataCleaner:
         return df
 
     def _reduce_integers_for_memory_usage(self, df):
-        df = df.copy()
 
         int_columns = [x for x in GAME_CONFIGS["int_columns"] if x in df.columns]
         rank_columns = [x for x in GAME_CONFIGS["rank_columns"] if x in df.columns]
@@ -112,7 +107,6 @@ class GameDataCleaner:
         return df
 
     def _drop_unreleased(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
 
         # get this year from datetime
         next_year = datetime.now().year + 1
@@ -121,17 +115,14 @@ class GameDataCleaner:
         return df
 
     def _set_missing_min_players(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
         df["MinPlayers"] = df["MinPlayers"].fillna(1)
-        df.loc[df["MinPlayers"] < 1, "MinPlayers"] = 2
+        df.loc[df["MinPlayers"] == 0, "MinPlayers"] = 2
         return df
 
     def _breakout_themes_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        df = df.copy()
-        themes_df = pd.DataFrame(df[["BGGId", "Theme"]])
-        print(themes_df.head())
+        self.themes_df = pd.DataFrame(df[["BGGId", "Theme"]])
         df = df.drop("Theme", axis=1)
-        return df, themes_df
+        return df
 
 
 if __name__ == "__main__":
