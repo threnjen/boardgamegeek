@@ -10,6 +10,8 @@ import json
 from utils.s3_file_handler import S3FileHandler
 from utils.local_file_handler import LocalFileHandler
 
+from typing import Union
+
 
 ENV = os.getenv("ENV", "dev")
 
@@ -27,7 +29,7 @@ import re
 # from nltk.tokenize import word_tokenize
 
 
-def save_file_local_first(path, file_name, data):
+def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):
     file_path = f"{path}/{file_name}"
 
     LocalFileHandler().save_file(file_path=file_path, data=data)
@@ -35,7 +37,7 @@ def save_file_local_first(path, file_name, data):
         S3FileHandler().save_file(file_path=file_path, data=data)
 
 
-def load_file_local_first(path, file_name):
+def load_file_local_first(path: str, file_name: str):
 
     file_path = f"{path}/{file_name}"
     try:
@@ -48,7 +50,7 @@ def load_file_local_first(path, file_name):
     return file
 
 
-def integer_reduce(data, columns, fill_value=0):
+def integer_reduce(data: pd.DataFrame, columns: list[str], fill_value: int = 0):
     """
     Reduces an integer type to its smallest memory size type
 

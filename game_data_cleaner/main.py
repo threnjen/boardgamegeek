@@ -140,7 +140,7 @@ class XMLFileParser:
             del table
             gc.collect()
 
-    def _make_json_game_lookup_file(self, games_df):
+    def _make_json_game_lookup_file(self, games_df: pd.DataFrame):
 
         games_df = games_df.copy()
 

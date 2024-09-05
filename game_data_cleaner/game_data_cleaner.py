@@ -85,7 +85,7 @@ class GameDataCleaner:
 
         return df
 
-    def _clean_best_players(self, df):
+    def _clean_best_players(self, df: pd.DataFrame) -> pd.DataFrame:
 
         # Get rid of all non-integer characters from df["BestPlayers"] using regex
         df["BestPlayers"] = df["BestPlayers"].str.replace(r"\D", "", regex=True)
@@ -102,7 +102,7 @@ class GameDataCleaner:
 
         return df
 
-    def _add_binary_category_flags(self, df):
+    def _add_binary_category_flags(self, df: pd.DataFrame) -> pd.DataFrame:
 
         for field, category in GAME_CONFIGS["binary_flag_fields"].items():
             if field in df.columns:
@@ -112,7 +112,7 @@ class GameDataCleaner:
 
         return df
 
-    def _reduce_integers_for_memory_usage(self, df):
+    def _reduce_integers_for_memory_usage(self, df: pd.DataFrame) -> pd.DataFrame:
 
         int_columns = [x for x in GAME_CONFIGS["int_columns"] if x in df.columns]
         rank_columns = [x for x in GAME_CONFIGS["rank_columns"] if x in df.columns]

@@ -74,7 +74,6 @@ class SecondaryDataCleaner:
 
         columns = mechanics.columns
 
-        # call integer_reduce on the sets
         mechanics = integer_reduce(mechanics, columns, fill_value=0)
 
         melted_df = mechanics.reset_index().melt(
@@ -105,7 +104,6 @@ class SecondaryDataCleaner:
 
         columns = themes_attach.columns
 
-        # call integer_reduce on the sets
         themes_attach = integer_reduce(themes_attach, columns, fill_value=0)
 
         save_file_local_first(
