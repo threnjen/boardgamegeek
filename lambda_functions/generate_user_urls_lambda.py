@@ -43,7 +43,7 @@ def lambda_handler(event, context):
 
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
     try:
-        games = pd.read_pickle(f"data/game_dfs_dirty/games.pkl")
+        games = pd.read_pickle(f'{CONFIGS["game"]["dirty_dfs_directory"]}/games.pkl')
         print("Reading the games.pkl file locally")
 
     except:
