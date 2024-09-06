@@ -36,8 +36,13 @@ class GameDataCleaner:
     def __init__(self) -> None:
         self.s3_file_handler = S3FileHandler()
         self.local_handler = LocalFileHandler()
+        self.game_mappings = LocalFileHandler().load_file(
+            file_path="game_data_cleaner/game_mappings.json"
+        )
 
     def cleaning_chain(self) -> pd.DataFrame:
+
+        print("\nCleaning Games Data")
         games_df = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"], file_name="games.pkl"
         )
@@ -54,16 +59,11 @@ class GameDataCleaner:
             path=GAME_CONFIGS["game_dfs_clean"], file_name="games.pkl", data=games_df
         )
         save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"], file_name="themes.pkl", data=themes_df
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name="themes.pkl",
+            data=themes_df,
         )
-
-        # Generally we would save the data to a new file, but for now we will just print the info
-        print(games_df.info())
-
-        # We can save the Kaggle dataset to S3 here
-        self.s3_file_handler.save_file(
-            file_path=GAME_CONFIGS["kaggle_games_file"], data=games_df
-        )
+        print("Finishes Cleaning Games Data\n")
 
     def load_games_data(self, file_path: str) -> pd.DataFrame:
         """Load games data from a file path"""
@@ -76,7 +76,7 @@ class GameDataCleaner:
 
     def _drop_unneeded_columns(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        drop_columns = GAME_CONFIGS["drop_columns"]
+        drop_columns = self.game_mappings["drop_columns"]
 
         # drop non-boardgame related information
         for column in drop_columns:
@@ -104,7 +104,7 @@ class GameDataCleaner:
 
     def _add_binary_category_flags(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        for field, category in GAME_CONFIGS["binary_flag_fields"].items():
+        for field, category in self.game_mappings["binary_flag_fields"].items():
             if field in df.columns:
                 df.loc[df[field].notna(), category] = 1
 
@@ -114,8 +114,10 @@ class GameDataCleaner:
 
     def _reduce_integers_for_memory_usage(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        int_columns = [x for x in GAME_CONFIGS["int_columns"] if x in df.columns]
-        rank_columns = [x for x in GAME_CONFIGS["rank_columns"] if x in df.columns]
+        int_columns = [x for x in self.game_mappings["int_columns"] if x in df.columns]
+        rank_columns = [
+            x for x in self.game_mappings["rank_columns"] if x in df.columns
+        ]
 
         df = integer_reduce(df, int_columns, fill_value=0)
 

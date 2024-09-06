@@ -17,17 +17,134 @@ ENV = os.getenv("ENV", "dev")
 
 class SecondaryDataCleaner:
     def __init__(self):
-        pass
+        self.game_mappings = LocalFileHandler().load_file(
+            file_path="game_data_cleaner/game_mappings.json"
+        )
 
     def secondary_cleaning_chain(self):
-        self.clean_mechanics()
-        self.clean_themes()
+        (
+            subcategories,
+            mechanics_in_subcats_df,
+            themes_in_subcats_df,
+            big_cats_in_subcats_df,
+        ) = self.clean_subcategories()
+        mechanics = self.clean_mechanics(mechanics_in_subcats_df)
+        themes = self.clean_themes(themes_in_subcats_df)
+        games = self.add_subcat_categories_to_larger_categories(big_cats_in_subcats_df)
+        designers = self.clean_designers()
+        artists = self.clean_artists()
+        publishers = self.clean_publishers()
 
-    def clean_mechanics(self):
+        # We can save the Kaggle dataset to S3 here
+        # self.s3_file_handler.save_file(
+        #     file_path=GAME_CONFIGS["kaggle_games_file"], data=games_df
+        # )
+
+    def strip_low_entries(self, df, column_name, threshold):
+
+        # remove designers with <3 games
+        df_onehot = pd.get_dummies(df, columns=[column_name], drop_first=False).astype(
+            int
+        )
+
+        # Step 1: Identify columns where the sum of their values is <= 3
+        cols_with_low_sum = df_onehot.columns[df_onehot.sum(axis=0) <= threshold]
+
+        # Step 2: Create the "Low Entries" column
+        # If any column in a row has a sum <= 3, mark that row with 1
+        df_onehot["Low Entries"] = (
+            df_onehot[cols_with_low_sum].gt(0).any(axis=1).astype(int)
+        )
+
+        # Step 3: Drop columns where the sum is <= 3
+        df = df_onehot.drop(columns=cols_with_low_sum).reset_index(drop=True)
+
+        df.columns = df.columns.str.replace(f"{column_name}_", "")
+
+        return df
+
+    def clean_publishers(self):
+        print("Cleaning Publishers")
+        publishers = load_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="publishers.pkl"
+        )
+        publishers = publishers.loc[publishers["boardgamepublisher"] != "(Uncredited)"]
+        publishers = publishers.reset_index(drop=True)
+
+        publishers = self.strip_low_entries(
+            df=publishers, column_name="boardgamepublisher", threshold=3
+        )
+
+        save_file_local_first(
+            path=GAME_CONFIGS["game_dfs_clean"],
+            file_name="publishers.pkl",
+            data=publishers,
+        )
+
+        return publishers
+
+    def clean_artists(self):
+        print("Cleaning Artists")
+        artists = load_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="artists.pkl"
+        )
+        artists = artists.loc[artists["boardgameartist"] != "(Uncredited)"]
+        artists = artists.reset_index(drop=True)
+
+        artists = self.strip_low_entries(
+            df=artists, column_name="boardgameartist", threshold=3
+        )
+
+        save_file_local_first(
+            path=GAME_CONFIGS["game_dfs_clean"],
+            file_name="artists.pkl",
+            data=artists,
+        )
+
+        return artists
+
+    def clean_designers(self):
+        print("Cleaning Designers")
+        designers = load_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="designers.pkl"
+        )
+        designers = designers.loc[designers["boardgamedesigner"] != "(Uncredited)"]
+        designers = designers.reset_index(drop=True)
+
+        designers = self.strip_low_entries(
+            df=designers, column_name="boardgamedesigner", threshold=2
+        )
+
+        save_file_local_first(
+            path=GAME_CONFIGS["game_dfs_clean"],
+            file_name="designers.pkl",
+            data=designers,
+        )
+
+        return designers
+
+    def add_subcat_categories_to_larger_categories(self, big_cats_in_subcats_df):
+        print("Adding Subcategories to Larger Categories")
+        games = load_file_local_first(
+            path=GAME_CONFIGS["game_dfs_clean"], file_name="games.pkl"
+        )
+
+        for key, value in self.game_mappings["big_category_mapper"].items():
+            games.loc[
+                games["BGGId"].isin(
+                    big_cats_in_subcats_df.loc[
+                        big_cats_in_subcats_df["boardgamecategory"] == key, "BGGId"
+                    ]
+                ),
+                value,
+            ] = 1
+        return games
+
+    def clean_mechanics(self, mechanics_in_subcats_df):
+        print("Cleaning Mechanics")
         mechanics = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"], file_name="mechanics.pkl"
         )
-        print(mechanics.head())
 
         mechanics = mechanics.drop_duplicates(keep="first")
         mechanics["Count_Column"] = 1
@@ -76,12 +193,25 @@ class SecondaryDataCleaner:
 
         mechanics = integer_reduce(mechanics, columns, fill_value=0)
 
-        melted_df = mechanics.reset_index().melt(
+        mechanics = mechanics.reset_index().melt(
             id_vars="BGGId", var_name="mechanic", value_name="value"
         )
-        melted_df = (
-            melted_df[melted_df["value"] == 1]
+        mechanics = (
+            mechanics[mechanics["value"] == 1]
             .drop("value", axis=1)
+            .sort_values(by="BGGId")
+            .reset_index(drop=True)
+        )
+
+        mechanics_in_subcats_df["boardgamecategory"] = mechanics_in_subcats_df[
+            "boardgamecategory"
+        ].map(self.game_mappings["actually_mechanics"])
+        mechanics_in_subcats_df = mechanics_in_subcats_df.rename(
+            columns={"boardgamecategory": "mechanic"}
+        )
+
+        mechanics = (
+            pd.concat([mechanics, mechanics_in_subcats_df], axis=0)
             .sort_values(by="BGGId")
             .reset_index(drop=True)
         )
@@ -89,31 +219,97 @@ class SecondaryDataCleaner:
         save_file_local_first(
             path=GAME_CONFIGS["game_dfs_clean"],
             file_name="mechanics.pkl",
-            data=melted_df,
+            data=mechanics,
         )
 
-    def clean_themes(self):
+        return mechanics
+
+    def clean_themes(self, themes_in_subcats_df):
+        print("Cleaning Themes")
         themes = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"], file_name="themes.pkl"
         )
 
-        themes_expanded = pd.get_dummies(themes)
-        theme_sort = pd.DataFrame(themes_expanded.sum().sort_values(ascending=False))
-        themes_over_1 = list(theme_sort.loc[theme_sort[0] > 1].index)
-        themes_attach = themes_expanded[themes_over_1]
+        themes = themes.dropna(subset=["Theme"]).sort_values("BGGId")
 
-        columns = themes_attach.columns
+        themes_in_subcats_df = themes_in_subcats_df.rename(
+            columns={"boardgamecategory": "Theme"}
+        )
 
-        themes_attach = integer_reduce(themes_attach, columns, fill_value=0)
+        themes = (
+            pd.concat([themes, themes_in_subcats_df], axis=0)
+            .sort_values(by="BGGId")
+            .reset_index(drop=True)
+        )
 
         save_file_local_first(
             path=GAME_CONFIGS["game_dfs_clean"],
             file_name="themes.pkl",
-            data=themes_attach,
+            data=themes,
         )
 
+        return themes
+
     def clean_subcategories(self):
-        pass
+        print("Extracting Subcategories")
+
+        subcategories = load_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="subcategories.pkl"
+        )
+
+        subcategories = (
+            subcategories.dropna(subset=["boardgamecategory"])
+            .sort_values("BGGId")
+            .reset_index(drop=True)
+        )
+
+        mechanics_in_subcats_df = subcategories[
+            subcategories["boardgamecategory"].isin(
+                self.game_mappings["actually_mechanics"].keys()
+            )
+        ].reset_index(drop=True)
+
+        themes_in_subcats_df = subcategories[
+            subcategories["boardgamecategory"].isin(
+                self.game_mappings["actually_themes"]
+            )
+        ].reset_index(drop=True)
+
+        big_cats_in_subcats_df = subcategories[
+            subcategories["boardgamecategory"].isin(
+                self.game_mappings["actually_major_categories"].keys()
+            )
+        ].reset_index(drop=True)
+
+        # drop rows from subcategories where boardgamecategory is in list drop
+        subcategories = subcategories[
+            ~subcategories["boardgamecategory"].isin(
+                self.game_mappings["drop_subcategories"]
+            )
+        ]
+        subcategories = subcategories[
+            ~subcategories["boardgamecategory"].isin(
+                self.game_mappings["actually_mechanics"].keys()
+            )
+        ]
+        subcategories = subcategories[
+            ~subcategories["boardgamecategory"].isin(
+                self.game_mappings["actually_subcategories"]
+            )
+        ].reset_index(drop=True)
+
+        save_file_local_first(
+            path=GAME_CONFIGS["game_dfs_clean"],
+            file_name="subcategories.pkl",
+            data=subcategories,
+        )
+
+        return (
+            subcategories,
+            mechanics_in_subcats_df,
+            themes_in_subcats_df,
+            big_cats_in_subcats_df,
+        )
 
 
 if __name__ == "__main__":

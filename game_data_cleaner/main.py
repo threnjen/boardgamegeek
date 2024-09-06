@@ -17,6 +17,9 @@ from utils.s3_file_handler import S3FileHandler
 from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import save_file_local_first, load_file_local_first
 
+from game_data_cleaner.primary_data_cleaner import GameDataCleaner
+from game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
+
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["game"]
@@ -157,5 +160,7 @@ class XMLFileParser:
 
 if __name__ == "__main__":
 
-    file_parser = XMLFileParser()
-    file_parser.game_cleaning_chain()
+    # file_parser = XMLFileParser()
+    # file_parser.game_cleaning_chain()
+    GameDataCleaner().cleaning_chain()
+    SecondaryDataCleaner().secondary_cleaning_chain()
