@@ -1,31 +1,16 @@
-import pandas as pd
-import numpy as np
-import requests
-import re
-import time
 import os
-import gc
-import json
 from datetime import datetime
 
-# from statistics import mean
-# NLP tools
-# import spacy
+import pandas as pd
 
-# nlp = spacy.load("en_core_web_sm")
-# import re
-# import nltk
-# from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-# from nltk.tokenize import word_tokenize
-
-from utils.s3_file_handler import S3FileHandler
+from config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import (
     integer_reduce,
-    save_file_local_first,
     load_file_local_first,
+    save_file_local_first,
 )
-from config import CONFIGS
+from utils.s3_file_handler import S3FileHandler
 
 GAME_CONFIGS = CONFIGS["game"]
 ENV = os.getenv("ENV", "dev")
@@ -34,7 +19,6 @@ ENV = os.getenv("ENV", "dev")
 class GameDataCleaner:
 
     def __init__(self) -> None:
-        self.s3_file_handler = S3FileHandler()
         self.local_handler = LocalFileHandler()
         self.game_mappings = LocalFileHandler().load_file(
             file_path="game_data_cleaner/game_mappings.json"

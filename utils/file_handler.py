@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Any, Union
 from datetime import datetime
+from typing import Any, Optional, Union
 
 
 class FileHandler(ABC):

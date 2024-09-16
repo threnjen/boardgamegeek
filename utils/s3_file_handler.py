@@ -1,13 +1,13 @@
-from utils.file_handler import FileHandler
-from typing import Union, Any
 import json
-import pandas as pd
-import boto3
 import os
 import pickle
-import io
 from datetime import datetime
+from typing import Any, Union
 
+import boto3
+import pandas as pd
+
+from utils.file_handler import FileHandler
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 REGION_NAME = "us-west-2"
