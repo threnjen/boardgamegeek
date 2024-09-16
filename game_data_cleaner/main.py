@@ -2,23 +2,15 @@ import gc
 import os
 from collections import defaultdict
 
-import awswrangler as wr
-import boto3
 import pandas as pd
 from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
 
-from utils.s3_file_handler import S3FileHandler
-from utils.local_file_handler import LocalFileHandler
-
 from config import CONFIGS
-
-from utils.s3_file_handler import S3FileHandler
-from utils.local_file_handler import LocalFileHandler
-from utils.processing_functions import save_file_local_first, load_file_local_first
-
 from game_data_cleaner.primary_data_cleaner import GameDataCleaner
 from game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
+from utils.processing_functions import load_file_local_first, save_file_local_first
+from utils.s3_file_handler import S3FileHandler
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]

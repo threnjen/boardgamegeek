@@ -1,17 +1,10 @@
-import pandas as pd
-import numpy as np
-import requests
-import regex as re
-import time
 import os
-import gc
-import json
-
-from utils.s3_file_handler import S3FileHandler
-from utils.local_file_handler import LocalFileHandler
-
 from typing import Union
 
+import pandas as pd
+
+from utils.local_file_handler import LocalFileHandler
+from utils.s3_file_handler import S3FileHandler
 
 ENV = os.getenv("ENV", "dev")
 

@@ -8,10 +8,11 @@ from functools import partial
 import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
-from utils.file_handler import FileHandler
-from utils.s3_file_handler import S3FileHandler
-from utils.local_file_handler import LocalFileHandler
+
 from config import CONFIGS
+from utils.file_handler import FileHandler
+from utils.local_file_handler import LocalFileHandler
+from utils.s3_file_handler import S3FileHandler
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False

@@ -1,6 +1,7 @@
 import os
 import time
 import zipfile
+from os.path import expanduser
 from tempfile import mkdtemp
 
 import awswrangler as wr
@@ -8,8 +9,6 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-
-from os.path import expanduser
 
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
