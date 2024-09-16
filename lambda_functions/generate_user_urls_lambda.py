@@ -7,9 +7,11 @@ import numpy as np
 import pandas as pd
 
 from config import CONFIGS
+from utils.processing_functions import load_file_local_first, save_file_local_first
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+USER_CONFIGS = CONFIGS["user"]
 url_block_size = 20
 number_url_files = 30
 NUMBER_PROCESSES = 30
@@ -42,18 +44,9 @@ def lambda_handler(event, context):
     to pick up."""
 
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
-    try:
-        games = pd.read_pickle(f'{CONFIGS["game"]["dirty_dfs_directory"]}/games.pkl')
-        print("Reading the games.pkl file locally")
-
-    except:
-        print("Reading the games.pkl file from S3")
-        # download the pickle file from S3
-        wr.s3.download(
-            path=f"s3://{S3_SCRAPER_BUCKET}/game_dfs_dirty/games.pkl",
-            local_file="games.pkl",
-        )
-        games = pd.read_pickle("games.pkl")
+    games = load_file_local_first(
+        path=CONFIGS["game"]["dirty_dfs_directory"], file_name="games.pkl"
+    )
 
     ratings_totals = pd.DataFrame(games["BGGId"])
 
@@ -115,8 +108,7 @@ def lambda_handler(event, context):
 
     group_urls = {}
 
-    raw_urls_directory = CONFIGS["user"]["raw_urls_directory"]
-    local_path = "/tmp" if ENV == "prod" else f"data/{raw_urls_directory}"
+    local_path = "/tmp" if ENV == "prod" else USER_CONFIGS["raw_urls_directory"]
 
     total_games_processed = 0
     total_pages_processed = 0
@@ -128,22 +120,11 @@ def lambda_handler(event, context):
         print(f"{len(game_entries[0])} games in {group}")
         group_urls = generate_ratings_urls(game_entries)
 
-        output_urls_json_suffix = CONFIGS["user"]["output_urls_json_suffix"]
-
-        with open(
-            f"{local_path}/{group}{output_urls_json_suffix}",
-            "w",
-        ) as convert_file:
-            convert_file.write(json.dumps(group_urls))
-
-        if ENV == "prod":
-            # upload the json to S3 with boto3
-            s3_client = boto3.client("s3")
-            s3_client.upload_file(
-                f"{local_path}/{group}{output_urls_json_suffix}",
-                S3_SCRAPER_BUCKET,
-                f"{raw_urls_directory}/{group}{output_urls_json_suffix}",
-            )
+        save_file_local_first(
+            path=local_path,
+            file_name=f"{group}{USER_CONFIGS['output_urls_json_suffix']}",
+            data=group_urls,
+        )
 
         total_games_processed += len(game_entries[0])
         total_pages_processed += sum(game_entries[1])
