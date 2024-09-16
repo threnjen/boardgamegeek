@@ -15,6 +15,10 @@ from config import CONFIGS
 
 from utils.s3_file_handler import S3FileHandler
 from utils.local_file_handler import LocalFileHandler
+from utils.processing_functions import save_file_local_first, load_file_local_first
+
+from game_data_cleaner.primary_data_cleaner import GameDataCleaner
+from game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
@@ -41,7 +45,6 @@ class XMLFileParser:
     def game_cleaning_chain(self):
         self._process_file_list()
         self._save_dfs_to_disk_or_s3()
-        
 
     def _process_file_list(self):
         """Process the list of files in the S3 bucket
@@ -50,7 +53,7 @@ class XMLFileParser:
         function will return None."""
 
         # list files in data dirty prefix in s3 using awswrangler
-        file_list = S3FileHandler().list_files(GAME_CONFIGS['output_xml_directory'])
+        file_list = S3FileHandler().list_files(GAME_CONFIGS["output_xml_directory"])
         if not file_list:
             local_files = os.listdir(f"data/{GAME_CONFIGS['output_xml_directory']}")
             file_list = [x for x in local_files if x.endswith(".xml")]
@@ -59,16 +62,10 @@ class XMLFileParser:
 
         for file in file_list:
             print(file)
-            local_file_path = f"data/{GAME_CONFIGS['output_xml_directory']}/{file.split("/")[-1]}"
-
-            try:
-                # open from local_pile_path
-                local_open = LocalFileHandler().load_file(file_path=local_file_path)
-            except FileNotFoundError as e:
-                # if ENV=="prod" then download the XML from S3
-                print(f"Downloading {file} from S3")
-                local_open = S3FileHandler().load_file(file_path=f"{GAME_CONFIGS['output_xml_directory']}/{file.split("/")[-1]}")
-                LocalFileHandler().save_file(file_path=local_file_path, data=local_open)
+            local_open = load_file_local_first(
+                path=GAME_CONFIGS["output_xml_directory"],
+                file_name=file.split("/")[-1],
+            )
 
             game_page = BeautifulSoup(local_open, features="xml")
 
@@ -93,7 +90,7 @@ class XMLFileParser:
                     mechanics,
                     artists,
                     publishers,
-                    expansions
+                    expansions,
                 ) = game_parser.get_single_game_attributes()
 
                 self.entry_storage["games"].append(game.dropna(axis=1))
@@ -137,14 +134,16 @@ class XMLFileParser:
 
             print(f"Saving {table_name} to disk and uploading to S3")
 
-            LocalFileHandler().save_file(file_path=f"{GAME_CONFIGS['dirty_dfs_directory']}/{table_name}.pkl", data=table)
-            if ENV == "prod":
-                S3FileHandler().save_file(file_path=f"{GAME_CONFIGS['dirty_dfs_directory']}.pkl", data=table)
+            save_file_local_first(
+                path=GAME_CONFIGS["dirty_dfs_directory"],
+                file_name=f"{table_name}.pkl",
+                data=table,
+            )
 
             del table
             gc.collect()
-    
-    def _make_json_game_lookup_file(self, games_df):
+
+    def _make_json_game_lookup_file(self, games_df: pd.DataFrame):
 
         games_df = games_df.copy()
 
@@ -155,13 +154,13 @@ class XMLFileParser:
         game_id_lookup = dict(zip(game_ids, game_names))
 
         S3FileHandler().save_file(
-            file_path=GAME_CONFIGS["game_id_lookup_file"],
-            data=game_id_lookup
+            file_path=GAME_CONFIGS["game_id_lookup_file"], data=game_id_lookup
         )
-
 
 
 if __name__ == "__main__":
 
     file_parser = XMLFileParser()
     file_parser.game_cleaning_chain()
+    GameDataCleaner().primary_cleaning_chain()
+    SecondaryDataCleaner().secondary_cleaning_chain()

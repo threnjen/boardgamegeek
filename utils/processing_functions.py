@@ -7,19 +7,50 @@ import os
 import gc
 import json
 
+from utils.s3_file_handler import S3FileHandler
+from utils.local_file_handler import LocalFileHandler
+
+from typing import Union
+
+
+ENV = os.getenv("ENV", "dev")
+
 # from statistics import mean
 
 # # NLP tools
 # import spacy
 
+
 # nlp = spacy.load("en_core_web_sm")
-# import re
+import re
+
 # import nltk
 # from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 # from nltk.tokenize import word_tokenize
 
 
-def integer_reduce(data, columns, fill_value=0):
+def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):
+    file_path = f"{path}/{file_name}"
+
+    LocalFileHandler().save_file(file_path=file_path, data=data)
+    if ENV == "prod":
+        S3FileHandler().save_file(file_path=file_path, data=data)
+
+
+def load_file_local_first(path: str, file_name: str):
+
+    file_path = f"{path}/{file_name}"
+    try:
+        # open from local_pile_path
+        file = LocalFileHandler().load_file(file_path=file_path)
+    except FileNotFoundError as e:
+        print(f"Downloading {file_name} from S3")
+        file = S3FileHandler().load_file(file_path=file_path)
+        LocalFileHandler().save_file(file_path=file_path, data=file)
+    return file
+
+
+def integer_reduce(data: pd.DataFrame, columns: list[str], fill_value: int = 0):
     """
     Reduces an integer type to its smallest memory size type
 
@@ -32,16 +63,17 @@ def integer_reduce(data, columns, fill_value=0):
     data: dataframe with memory reduced data types
     """
     for column in columns:
-        print(data[column].unique())
-        data[column] = data[column].astype("Int64")
-        print(column)
-        data[column].fillna(fill_value, inplace=True)
+        # strip all non integers
+        data[column] = data[column].replace(r"[^0-9]", "", regex=True)
+        data[column] = data[column].fillna(fill_value)
+        data[column] = pd.to_numeric(data[column], errors="coerce", downcast="integer")
+
         if (data[column].max() <= 127) & (data[column].min() >= -128):
-            data[column] = data[column].astype("int8")
+            data[column] = data[column].astype("Int8")
         elif (data[column].max() <= 32767) & (data[column].min() >= -32768):
-            data[column] = data[column].astype("int16")
+            data[column] = data[column].astype("Int16")
         elif (data[column].max() <= 2147483647) & (data[column].min() >= -2147483648):
-            data[column] = data[column].astype("int32")
+            data[column] = data[column].astype("Int32")
 
     return data
 

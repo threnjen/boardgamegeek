@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import requests
-import regex as re
+import re
 import time
 import os
 import gc
@@ -20,10 +20,15 @@ from datetime import datetime
 
 from utils.s3_file_handler import S3FileHandler
 from utils.local_file_handler import LocalFileHandler
-from processing_functions import integer_reduce
+from utils.processing_functions import (
+    integer_reduce,
+    save_file_local_first,
+    load_file_local_first,
+)
 from config import CONFIGS
 
 GAME_CONFIGS = CONFIGS["game"]
+ENV = os.getenv("ENV", "dev")
 
 
 class GameDataCleaner:
@@ -31,10 +36,16 @@ class GameDataCleaner:
     def __init__(self) -> None:
         self.s3_file_handler = S3FileHandler()
         self.local_handler = LocalFileHandler()
-        self.themes = pd.DataFrame()
+        self.game_mappings = LocalFileHandler().load_file(
+            file_path="game_data_cleaner/game_mappings.json"
+        )
 
-    def cleaning_chain(self) -> pd.DataFrame:
-        games_df = self.load_games_data("data/game_dfs_dirty/games.pkl")
+    def primary_cleaning_chain(self) -> pd.DataFrame:
+
+        print("\nCleaning Games Data")
+        games_df = load_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="games.pkl"
+        )
         games_df = self._drop_duplicates(games_df)
         games_df = self._drop_unneeded_columns(games_df)
         games_df = self._clean_best_players(games_df)
@@ -42,15 +53,17 @@ class GameDataCleaner:
         games_df = self._reduce_integers_for_memory_usage(games_df)
         games_df = self._drop_unreleased(games_df)
         games_df = self._set_missing_min_players(games_df)
-        games_df = self._breakout_themes_df(games_df)
-
-        # Generally we would save the data to a new file, but for now we will just print the info
-        print(games_df.info())
-
-        # We can save the Kaggle dataset to S3 here
-        self.s3_file_handler.save_file(
-            file_path=GAME_CONFIGS["kaggle_games_file"], data=games_df
+        themes_df = self._breakout_themes_df(games_df)
+        games_df = self._drop_themes(games_df)
+        save_file_local_first(
+            path=GAME_CONFIGS["game_dfs_clean"], file_name="games.pkl", data=games_df
         )
+        save_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name="themes.pkl",
+            data=themes_df,
+        )
+        print("Finishes Cleaning Games Data\n")
 
     def load_games_data(self, file_path: str) -> pd.DataFrame:
         """Load games data from a file path"""
@@ -63,7 +76,7 @@ class GameDataCleaner:
 
     def _drop_unneeded_columns(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        drop_columns = GAME_CONFIGS["drop_columns"]
+        drop_columns = self.game_mappings["drop_columns"]
 
         # drop non-boardgame related information
         for column in drop_columns:
@@ -72,22 +85,26 @@ class GameDataCleaner:
 
         return df
 
-    def _clean_best_players(self, df):
+    def _clean_best_players(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        # fill in missing values with 0
-        df["BestPlayers"] = df["BestPlayers"].fillna("0")
-
-        # if "+" in BestPlayers, get rid of it
-        df["BestPlayers"] = df["BestPlayers"].str.replace("+", "")
+        # Get rid of all non-integer characters from df["BestPlayers"] using regex
+        df["BestPlayers"] = df["BestPlayers"].str.replace(r"\D", "", regex=True)
 
         # change the datatype of BestPlayers to int8
+        df["BestPlayers"] = pd.to_numeric(
+            df["BestPlayers"], errors="coerce", downcast="integer"
+        )
+
+        # fill in missing values with 0
+        df["BestPlayers"] = df["BestPlayers"].fillna(0)
+
         df["BestPlayers"] = df["BestPlayers"].astype("int8")
 
         return df
 
-    def _add_binary_category_flags(self, df):
+    def _add_binary_category_flags(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        for field, category in GAME_CONFIGS["binary_flag_fields"].items():
+        for field, category in self.game_mappings["binary_flag_fields"].items():
             if field in df.columns:
                 df.loc[df[field].notna(), category] = 1
 
@@ -95,10 +112,12 @@ class GameDataCleaner:
 
         return df
 
-    def _reduce_integers_for_memory_usage(self, df):
+    def _reduce_integers_for_memory_usage(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        int_columns = [x for x in GAME_CONFIGS["int_columns"] if x in df.columns]
-        rank_columns = [x for x in GAME_CONFIGS["rank_columns"] if x in df.columns]
+        int_columns = [x for x in self.game_mappings["int_columns"] if x in df.columns]
+        rank_columns = [
+            x for x in self.game_mappings["rank_columns"] if x in df.columns
+        ]
 
         df = integer_reduce(df, int_columns, fill_value=0)
 
@@ -120,9 +139,10 @@ class GameDataCleaner:
         return df
 
     def _breakout_themes_df(self, df: pd.DataFrame) -> pd.DataFrame:
-        self.themes_df = pd.DataFrame(df[["BGGId", "Theme"]])
-        df = df.drop("Theme", axis=1)
-        return df
+        return pd.DataFrame(df[["BGGId", "Theme"]]).copy()
+
+    def _drop_themes(self, df: pd.DataFrame):
+        return df.drop("Theme", axis=1)
 
 
 if __name__ == "__main__":
