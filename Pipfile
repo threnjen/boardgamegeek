@@ -15,6 +15,8 @@ spacy = "*"
 boto3 = "*"
 awswrangler = "*"
 xmltodict = "*"
+dagster = "*"
+dagster-webserver = "*"
 
 [dev-packages]
 pytest = "*"
