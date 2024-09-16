@@ -40,7 +40,7 @@ class GameDataCleaner:
             file_path="game_data_cleaner/game_mappings.json"
         )
 
-    def cleaning_chain(self) -> pd.DataFrame:
+    def primary_cleaning_chain(self) -> pd.DataFrame:
 
         print("\nCleaning Games Data")
         games_df = load_file_local_first(

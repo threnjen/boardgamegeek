@@ -160,7 +160,7 @@ class XMLFileParser:
 
 if __name__ == "__main__":
 
-    # file_parser = XMLFileParser()
-    # file_parser.game_cleaning_chain()
-    GameDataCleaner().cleaning_chain()
+    file_parser = XMLFileParser()
+    file_parser.game_cleaning_chain()
+    GameDataCleaner().primary_cleaning_chain()
     SecondaryDataCleaner().secondary_cleaning_chain()
