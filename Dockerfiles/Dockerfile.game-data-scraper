@@ -24,7 +24,7 @@ RUN mkdir -p data/users/scraped_xml_raw \
 # COPY data game_data_scraper/data
 COPY game_data_scraper game_data_scraper
 COPY utils utils
-COPY Pipfile* .
+COPY game_data_scraper/Pipfile* .
 COPY config.py .
 
 # Install dependencies with pipenv
