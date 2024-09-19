@@ -21,5 +21,14 @@ COPY pyproject.toml .
 # Install dependencies with pipenv
 RUN pipenv sync
 
+ARG ENV
+ENV ENV=$ENV
+
+ARG ASSET
+ENV ASSET=$ASSET
+
+EXPOSE 3000
+
 # Set the entry point and command
-ENTRYPOINT ["pipenv", "run", "python", "bgg_orchestrator/main.py"]
+ENTRYPOINT ["pipenv", "run", "python", "bgg_orchestrator/bgg_orchestrate.py"]
+CMD ["-env", "$ENV", "-asset", "$ASSET"]

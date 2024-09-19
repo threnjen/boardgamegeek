@@ -1,4 +1,10 @@
-from dagster import Definitions, load_assets_from_modules
+from dagster import (
+    Definitions,
+    load_assets_from_modules,
+    ConfigurableResource,
+    asset,
+    AssetsDefinition,
+)
 import os
 
 from .assets import assets
@@ -9,6 +15,7 @@ from .resources import (
     ECSResource,
     ConfigResource,
 )
+from .jobs import bgg_job
 
 scraper_assets = load_assets_from_modules([assets])
 
@@ -29,4 +36,5 @@ defs = Definitions(
             region_name="us-west-2", bucket=os.environ.get("S3_SCRAPER_BUCKET")
         ),
     },
+    jobs=[bgg_job],
 )
