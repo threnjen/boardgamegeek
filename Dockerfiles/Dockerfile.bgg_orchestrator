@@ -16,7 +16,7 @@ COPY utils utils
 COPY bgg_orchestrator/Pipfile* .
 COPY config.py .
 COPY dagster_cloud.yaml .
-COPY pyproject.toml .
+COPY bgg_orchestrator/pyproject.toml .
 
 # Install dependencies with pipenv
 RUN pipenv sync
