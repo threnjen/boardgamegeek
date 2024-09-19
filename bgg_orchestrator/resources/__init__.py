@@ -104,7 +104,14 @@ class ECSResource(ConfigurableResource):
             .get("revision")
         )
 
-    def launch_ecs_task(self, task_definition, overrides):
+    def get_all_possible_revisions(self, task_definition: str) -> list[str]:
+        return (
+            self.get_ecs_client()
+            .list_task_definitions(familyPrefix=task_definition, maxResults=100)
+            .get("taskDefinitionArns", [])
+        )
+
+    def launch_ecs_task(self, task_definition: str, overrides: dict):
         self.get_ecs_client().run_task(
             taskDefinition=f"{task_definition}:{self.get_latest_task_revision(task_definition)}",
             cluster=ConfigResource()["ecs_task_components"]["cluster"],
