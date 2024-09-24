@@ -29,7 +29,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
-          aws-region: us-west-2
+          aws-region: ${{ secrets.AWS_REGION }}
       - run: |
           cd lambda_functions
           aws lambda update-function-code --function-name=boardgame_scraper_fargate_trigger_dev  --zip-file=fileb://boardgame_scraper_fargate_trigger.zip

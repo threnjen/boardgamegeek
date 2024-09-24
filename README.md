@@ -2,9 +2,10 @@
 
 All projects should be run from within the priamry `boardgamegeek` directory or relative paths will be a problem.
 
-AWS is required for this project to run as presented. Running on the cloud is not a free service. The authors of this repo are not responsible for any costs incurred by your usage of AWS services.
-
 ## Project Requirements
+
+AWS is required for this project to run as presented. Running on the cloud is not a free service. The authors of this repo are not responsible for any costs incurred by your usage of AWS services.
+A separate repo is provided with full instructions to set up the entire ecosystem of this project on AWS. Clone this repo: https://github.com/threnjen/boardgamegeek_terraform and closely follow the installation instructions to create the AWS environment.
 
 This project uses Pipenv as its environment manager. Documentation on pipenv is outside the scope of this repo.
 
@@ -14,6 +15,18 @@ A `.env` must be made in the project root directory. Copy in the variables from 
 ## Project Order
 
 Most steps in this project are explicitly dependent on a prior step. Dependencies are noted and explained.
+
+### Set up GitHub Secrets for your project
+
+For this to be most effective, you'll want to have either set up most of the AWS resources yourself, or use the aforementioned terraform repo to create the project for you. If you use the terraform repo, you'll get to a point where it expectedly errors out. Do this section, then go back to the Terraform repo and finish.
+
+You'll need two items for your repo:
+AWS_REGION: Enter the AWS Region for your AWS resources. example `us-west-2`
+AWS_GITHUB_ROLE: Enter the ARN of the GitHubActions_Push_Role that was created by the terraform tool. This will look something like: `arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubActions_Push_Role`
+
+Create these two secrets in your boardgamegeek repo.
+
+No make ANY petty change in this repo and push it up to Main branch to trigger the write to AWS.
 
 ### Step 01 - get boardgames_ranks.csv file from BGG and save it to S3
 - `bgg_boardgame_file_retrieval.get_bgg_games_file.py`
