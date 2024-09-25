@@ -42,15 +42,15 @@ jobs:
       - name: Build, tag, push image to AWS ECR game_data_scraper
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: boardgamegeek-scraper-dev
+          ECR_REPOSITORY: boardgamegeek_scraper-dev
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-scraper --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
           
-      - name: Build, tag, push image to AWS ECR boardgamegeek-cleaner
+      - name: Build, tag, push image to AWS ECR boardgamegeek_cleaner
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: boardgamegeek-cleaner-dev
+          ECR_REPOSITORY: boardgamegeek_cleaner-dev
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY

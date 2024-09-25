@@ -208,7 +208,7 @@ def game_dfs_dirty(
 
     assert len(raw_game_files) == 30
 
-    ecs_resource.launch_ecs_task("boardgamegeek-cleaner", {})
+    ecs_resource.launch_ecs_task("boardgamegeek_cleaner", {})
 
 
 # @multi_asset(specs=[AssetSpec("asset1"), AssetSpec("asset2")])

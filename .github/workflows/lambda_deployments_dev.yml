@@ -32,5 +32,5 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - run: |
           cd lambda_functions
-          aws lambda update-function-code --function-name=boardgame_scraper_fargate_trigger_dev  --zip-file=fileb://boardgame_scraper_fargate_trigger.zip
-          aws lambda update-function-code --function-name=boardgamegeek_cleaner_fargate_trigger_dev  --zip-file=fileb://boardgame_cleaner_fargate_trigger.zip
+          aws lambda update-function-code --function-name=boardgame_scraper_fargate_trigger_dev  --zip-file=fileb://boardgame_scraper_fargate_trigger.zip > /dev/null 2>&1
+          aws lambda update-function-code --function-name=boardgamegeek_cleaner_fargate_trigger_dev  --zip-file=fileb://boardgame_cleaner_fargate_trigger.zip > /dev/null 2>&1

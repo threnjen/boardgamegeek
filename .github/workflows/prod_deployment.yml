@@ -34,23 +34,23 @@ jobs:
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.bgg_boardgame_file_retrieval -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
       
-      - name: Build, tag, push image to AWS ECR boardgamegeek-scraper
+      - name: Build, tag, push image to AWS ECR boardgamegeek_scraper
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: boardgamegeek-scraper
+          ECR_REPOSITORY: boardgamegeek_scraper
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-scraper --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
 
-      - name: Build, tag, push image to AWS ECR boardgamegeek-cleaner
+      - name: Build, tag, push image to AWS ECR boardgamegeek_cleaner
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: boardgamegeek-cleaner
+          ECR_REPOSITORY: boardgamegeek_cleaner
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
 
-      - name: Build, tag, push image to AWS ECR boardgamegeek-cleaner
+      - name: Build, tag, push image to AWS ECR boardgamegeek_cleaner
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: bgg_orchestrator
