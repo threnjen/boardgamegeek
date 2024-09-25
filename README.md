@@ -26,7 +26,7 @@ AWS_GITHUB_ROLE: Enter the ARN of the GitHubActions_Push_Role that was created b
 
 Create these two secrets in your boardgamegeek repo.
 
-No make ANY petty change in this repo and push it up to Main branch to trigger the write to AWS.
+Now make ANY petty change in this repo and push it up to Main branch to trigger the write to AWS.
 
 ### Step 01 - get boardgames_ranks.csv file from BGG and save it to S3
 - `bgg_boardgame_file_retrieval.get_bgg_games_file.py`
