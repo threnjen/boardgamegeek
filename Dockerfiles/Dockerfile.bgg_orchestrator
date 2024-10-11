@@ -11,12 +11,12 @@ RUN pip3 install pipenv
 
 # Copy the source code into the container
 # COPY data game_data_scraper/data
-COPY bgg_orchestrator bgg_orchestrator
+COPY aws_dagster_bgg aws_dagster_bgg
 COPY utils utils
-COPY bgg_orchestrator/Pipfile* .
+COPY aws_dagster_bgg/Pipfile* .
 COPY config.py .
 COPY dagster_cloud.yaml .
-COPY bgg_orchestrator/pyproject.toml .
+COPY aws_dagster_bgg/pyproject.toml .
 
 # Install dependencies with pipenv
 RUN pipenv sync
@@ -30,5 +30,5 @@ ENV ASSET=$ASSET
 EXPOSE 3000
 
 # Set the entry point and command
-ENTRYPOINT ["pipenv", "run", "python", "bgg_orchestrator/bgg_orchestrate.py"]
+ENTRYPOINT ["pipenv", "run", "python", "aws_dagster_bgg/bgg_orchestrate.py"]
 CMD ["-env", "$ENV", "-asset", "$ASSET"]

@@ -1,4 +1,4 @@
 locations:
   - location_name: boardgamegeek
     code_source:
-      package_name: bgg_orchestrator
+      package_name: aws_dagster_bgg
