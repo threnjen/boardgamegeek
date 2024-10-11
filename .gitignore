@@ -12,3 +12,6 @@
 .ipynb_checkpoints/*
 *.env
 *.DS_STore
+*.tfstate
+*.terraform
+*.tfstate.backup
