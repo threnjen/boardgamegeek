@@ -95,9 +95,10 @@ resource "aws_iam_policy" "boardgamegeekscraper_github_cicd_ecr_policy" {
           "ecr:BatchCheckLayerAvailability",
           "ecr:PutImage"
         ],
-        Resource = [
-          for repo in local.ecr_repositories : format("arn:aws:ecr:${var.REGION}:${data.aws_caller_identity.current.account_id}:repository:%s", repo)
-        ]
+        # Resource = [
+        #   for repo in local.ecr_repositories : format("arn:aws:ecr:${var.REGION}:${data.aws_caller_identity.current.account_id}:repository/%s", repo)
+        # ]
+        Resource = [for repo in local.ecr_repositories: "${repo}"]
       }
     ]
   })
