@@ -1,3 +1,28 @@
+module "bgg_orchestrator_FargateExecutionRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "bgg_orchestrator_FargateExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "S3_Access_bgg_orchestrator_FargateExecutionRole_attach" {
+  role       = module.bgg_orchestrator_FargateExecutionRole_role.name
+  policy_arn = aws_iam_policy.S3_Access_boardgamegeek_scraper_policy.arn
+}
+
+module "bgg_orchestrator_FargateTaskRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "bgg_orchestrator_FargateTaskRole"
+}
+
+resource "aws_iam_role_policy_attachment" "S3_Access_bgg_orchestrator_FargateTaskRole_attach" {
+  role       = module.bgg_orchestrator_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.S3_Access_boardgamegeek_scraper_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metrics_bgg_orchestrator_FargateTaskRole_roleattach" {
+  role       = module.bgg_orchestrator_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.Cloudwatch_Put_Metrics_policy.arn
+}
+
 module "boardgamegeek_cleaner_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
   task_definition = "boardgamegeek_cleaner_FargateExecutionRole"
@@ -41,7 +66,7 @@ resource "aws_iam_role_policy_attachment" "S3_Access_boardgamegeekboardgamegeek_
   policy_arn = aws_iam_policy.S3_Access_boardgamegeek_scraper_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metricsboardgamegeek_scraper_FargateTaskRoleattach" {
+resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metric_boardgamegeek_scraper_FargateTaskRoleattach" {
   role       = module.boardgamegeek_scraper_FargateTaskRole_role.name
   policy_arn = aws_iam_policy.Cloudwatch_Put_Metrics_policy.arn
 }

@@ -34,3 +34,9 @@ variable "boardgamegeek_cleaner" {
   type        = string
   default     = "boardgamegeek_cleaner"
 }
+
+variable "boardgamegeek_orchestrator" {
+  description = "The name of the ECS task definition for the boardgamegeek_orchestrator"
+  type        = string
+  default     = "bgg_orchestrator"
+}

@@ -1,43 +1,75 @@
 # Boardgamegeek
 
-All projects should be run from within the priamry `boardgamegeek` directory or relative paths will be a problem.
+All projects should be run from within the primary `boardgamegeek` directory or relative paths will be a problem.
+
+## Utilized Tech Stack
+- Makefile and Terraform to create AWS resources
+- Pipenv for environment management
+- Docker for project containerization
+- GitHub Actions CI/CD for automated AWS deployment
+- Resources running on Lambda and Fargate ECS
+- Project orchestrated and parallelized by Dagster in Fargate ECS container
+- S3 storage with Athena/Glue data querying
+- Web form automation with Selenium
 
 ## Project Requirements
 
 AWS is required for this project to run as presented. Running on the cloud is not a free service. The authors of this repo are not responsible for any costs incurred by your usage of AWS services.
-A separate repo is provided with full instructions to set up the entire ecosystem of this project on AWS. Clone this repo: https://github.com/threnjen/boardgamegeek_terraform and closely follow the installation instructions to create the AWS environment.
+
+You must have administration level privileges to create these resources in AWS, or at least create/destroy privileges in the following areas: IAM, VPC. S3, ECR, ECS, Lambda
 
 This project uses Pipenv as its environment manager. Documentation on pipenv is outside the scope of this repo.
 
 A `.env` must be made in the project root directory. Copy in the variables from `env.example` and populate as needed for your use case. 
 
-
 ## Project Order
 
 Most steps in this project are explicitly dependent on a prior step. Dependencies are noted and explained.
 
-### Set up GitHub Secrets for your project
+## Install Terraform and Make
 
-For this to be most effective, you'll want to have either set up most of the AWS resources yourself, or use the aforementioned terraform repo to create the project for you. If you use the terraform repo, you'll get to a point where it expectedly errors out. Do this section, then go back to the Terraform repo and finish.
+Terraform installation:
+https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli
 
-You'll need two items for your repo:
+Make installation:
+Mac OS generally has make. For Windows:
+
+### 01 Make your AWS resources
+
+EXPORT YOUR AWS KEYS. How you do this is outside of the scope of the repo.
+
+CD to the `aws_terraform_bgg` directory
+`make terraform`
+Follow all prompts exactly as written.
+When prompted to type yes, type yes :)
+
+!!!!! YOU WILL HAVE ERRORS AT THE LAST STEP. THIS IS EXPECTED !!!!!
+There's a bit of a cart-horse issue at this step.
+
+It's time to set up your GitHub CI/CD so that your project files write to the AWS ECR. The AWS resources cannot complete setup until the project has been uploaded.
+
+### 02 Set up GitHub Secrets for your project
+
+You'll need to create two items in the Github Secrets area of your project fork before continuing:
 AWS_REGION: Enter the AWS Region for your AWS resources. example `us-west-2`
 AWS_GITHUB_ROLE: Enter the ARN of the GitHubActions_Push_Role that was created by the terraform tool. This will look something like: `arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubActions_Push_Role`
 
-Create these two secrets in your boardgamegeek repo.
+### 03 Finish terraform resources
 
-Now make ANY petty change in this repo and push it up to Main branch to trigger the write to AWS.
+Push up the new changes to your repo (terraform files) to trigger the write to AWS.
 
-### Step 01 - get boardgames_ranks.csv file from BGG and save it to S3
+Return to the `aws_terraform_bgg` directory and run `make setup_boardgamegeek`
+
+### 04 Get boardgames_ranks.csv file from BGG and save it to S3
 - `bgg_boardgame_file_retrieval.get_bgg_games_file.py`
 - Gets the `boardgames_ranks.csv` file from BGG and saves it to S3. A BGG account is required for this.
 
-### 02 - Generate GAME scraping URLS
+### 05 Generate GAME scraping URLS
 - `lambda_functions.generate_game_urls_lambda.py`
 - Must have `boardgames_ranks.csv` in directory `data` OR on S3 from the [prior step](#01---get-boardgames_ranks.csv-file-from-bgg-and-save-it-to-s3). Download from BGG or use [Step 01](#01---get-boardgames_ranks.csv-file-from-bgg-and-save-it-to-s3) to write it to S3.
 - Opens the `boardgames_ranks.csv` file and generates urls for the game scraper. Writes URLS locally when run locally, and always writes URLs to S3.
 
-### 03 - Scrape games from URLS
+### 06 Scrape games from URLS
 
 - PROD - `lambda_functions.boardgame_scraper_fargate_trigger` for GAME will trigger process to run and write scraping on S3    
     - Must have generated game urls first with step 02.
@@ -59,24 +91,24 @@ Now make ANY petty change in this repo and push it up to Main branch to trigger 
 
 - TEST LOCAL - `game_data_scraper.main.py` for GAME to test a single file locally
     - Use to test a single specific url file. Must have generated game urls first with step 02.
-    - Run locally and pass both `scraper_type` and an existing filename without directory or suffix from `data/scraper_urls_raw_game`
+    - Run locally and pass the scraper type `game` as an arg, and an existing filename without directory or suffix from `data/scraper_urls_raw_game`
     - Example: `python game_data_scraper/main.py game group1_game_scraper_urls_raw`
     - Only saves data locally to `data/games/scraped_xml_raw`
 
-### 04 - Clean raw scraped GAME data
+### 07 Clean raw scraped GAME data
 
 - `game_data_cleaner.main.py`
     - Takes the scraped files and composes into various dirty data frames of full data. Writes these locally. Will only write to S3 if run on AWS.
     - Step 03 needs to have run at least once for this to work, although two sample files from local will also suffice for testing.
     - If files are present on S3, it will download all of them for this process. If there are no files on S3 yet, it will use files in `data/games/scraped_xml_raw`
 
-### 05 - Generate USER scraping URLS
+### 08 Generate USER scraping URLS
 
 - `lambda_functions.generate_user_urls_lambda.py`
 - Must have `games.pkl` in directory `data/game_dfs_dirty` OR on S3 from prior step.
 - Loads the `games.pkl` file generated by 04 and generates user ratings urls. Will attempt to load games.pkl locally, otherwise will retrieve it from S3.
 
-### 06 - Scrape users from URLS
+### 09 Scrape users from URLS
 
 - PROD - `lambda_functions.boardgame_scraper_fargate_trigger` for USER will trigger process to run and write scraping on S3
     - Must have generated game urls first with step 5.
@@ -85,6 +117,26 @@ Now make ANY petty change in this repo and push it up to Main branch to trigger 
 
 - TEST - `game_data_scraper.main.py` for USER
     - Use to test a single specific url file. Must have generated user urls first with step 05.
-    - Run locally and pass both scraper_type arg, and an existing filename without directory or suffix from `data/scraper_urls_raw_user`
+    - Run locally and pass both scraper type `user` as an arg, and an existing filename without directory or suffix from `data/scraper_urls_raw_user`
     - Example: `python game_data_scraper/main.py user group1_user_scraper_urls_raw`
     - Only saves data locally to `data/users/scraped_xml_raw`
+
+
+
+## I added some new stuff to my deployment. How do I update it?
+
+`make update`
+
+## My IP Address changed! How do I update it in AWS?
+
+Run the following commands:
+`cd modules/vpc`
+`curl ifconfig.me`
+Note down the first 3 numbers in the ip block x.x.x
+
+Run in order:
+- `terraform init -backend-config vpc_backend.conf`
+- `terraform apply`
+
+Wait for the evaluation to prompt you to proceed. Does everything look ok?
+`yes`

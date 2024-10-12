@@ -7,6 +7,21 @@ resource "aws_ecs_cluster" "boardgamegeek" {
   }
 }
 
+module "boardgamegeek_orchestrator_ecs" {
+  source                 = "./modules/ecs_task_definition"
+  task_definition_family = var.boardgamegeek_orchestrator
+  task_definition_name   = var.boardgamegeek_orchestrator
+  registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_orchestrator}:latest"
+  environment            = "prod"
+  env_file               = "arn:aws:s3:::${var.s3_scraper_task_bucket}/${var.boardgamegeek_orchestrator}.env"
+  task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_orchestrator}_FargateTaskRole"
+  execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_orchestrator}_FargateExecutionRole"
+  image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_orchestrator}:latest"
+  cpu                    = "1024"
+  memory                 = "4096"
+  region                 = var.REGION
+}
+
 module "boardgamegeek_cleaner_ecs" {
   source                 = "./modules/ecs_task_definition"
   task_definition_family = var.boardgamegeek_cleaner

@@ -20,7 +20,6 @@ module "bgg_boardgame_file_retrieval_ecr" {
 module "bgg_orchestrator_ecr" {
   source              = "./modules/ecr"
   ecr_repository_name = "bgg_orchestrator"
-
 }
 
 module "boardgamegeek_cleaner_ecr" {

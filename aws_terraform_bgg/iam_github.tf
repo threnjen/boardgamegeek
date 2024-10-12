@@ -1,4 +1,8 @@
 
+
+output "GitHubActions_Push_Role_arn" {
+  value = aws_iam_role.GitHubActions_Push_Role_role.arn
+}
 resource "aws_iam_role" "GitHubActions_Push_Role_role" {
   name = "GitHubActions_Push_Role"
   assume_role_policy = jsonencode({

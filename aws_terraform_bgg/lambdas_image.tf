@@ -10,7 +10,7 @@ resource "aws_lambda_function" "bgg_boardgame_file_retrieval_lambda" {
 
   environment {
     variables = merge(
-      { for tuple in regexall("(.*?)=(.*)", file(".env")) : tuple[0] => tuple[1] },
+      { for tuple in regexall("(.*?)=(.*)", file("../.env")) : tuple[0] => tuple[1] },
       {
         ENV = "prod"
     })

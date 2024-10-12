@@ -1,6 +1,6 @@
 if __name__ == "__main__":
     new_env_file = ""
-    with open(".env", "r") as file:
+    with open("../.env", "r") as file:
         lines = file.readlines()
         print(lines)
         for line in lines:
@@ -14,5 +14,5 @@ if __name__ == "__main__":
                 continue
             new_env_file += line
 
-    with open(".env", "w") as file:
+    with open("../.env", "w") as file:
         file.write(new_env_file)
