@@ -1,5 +1,9 @@
 
 
+module "iam_github_oidc_provider" {
+  source    = "terraform-aws-modules/iam/aws//modules/iam-github-oidc-provider"
+}
+
 output "GitHubActions_Push_Role_arn" {
   value = aws_iam_role.GitHubActions_Push_Role_role.arn
 }
@@ -19,7 +23,7 @@ resource "aws_iam_role" "GitHubActions_Push_Role_role" {
             "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com"
           },
           StringLike = {
-            "token.actions.githubusercontent.com:sub" : "repo:threnjen/*"
+            "token.actions.githubusercontent.com:sub" : "repo:${var.GITHUB_USER_NAME}/*"
           }
         }
       }

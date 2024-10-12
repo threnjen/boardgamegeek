@@ -40,3 +40,8 @@ variable "boardgamegeek_orchestrator" {
   type        = string
   default     = "bgg_orchestrator"
 }
+
+variable "GITHUB_USER_NAME" {
+  description = "The name of the GitHub user"
+  type        = string
+}
