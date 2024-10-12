@@ -1,10 +1,5 @@
-import json
 import math
 import os
-
-import awswrangler as wr
-import boto3
-import pandas as pd
 
 from config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
@@ -13,6 +8,7 @@ from utils.s3_file_handler import S3FileHandler
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 GAME_CONFIGS = CONFIGS["game"]
+IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
 url_block_size = 20
 number_url_files = 30
 
@@ -67,10 +63,12 @@ def lambda_handler(event, context):
             file_path=file_path,
             data=scraper_urls_set,
         )
-        LocalFileHandler().save_file(
-            file_path=file_path,
-            data=scraper_urls_set,
-        )
+
+        if IS_LOCAL:
+            LocalFileHandler().save_file(
+                file_path=file_path,
+                data=scraper_urls_set,
+            )
 
 
 if __name__ == "__main__":
