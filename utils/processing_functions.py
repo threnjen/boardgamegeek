@@ -7,6 +7,7 @@ from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
 
 ENV = os.getenv("ENV", "dev")
+IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
 
 # from statistics import mean
 
@@ -25,7 +26,8 @@ import re
 def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):
     file_path = f"{path}/{file_name}"
 
-    LocalFileHandler().save_file(file_path=file_path, data=data)
+    if IS_LOCAL:
+        LocalFileHandler().save_file(file_path=file_path, data=data)
     if ENV == "prod":
         S3FileHandler().save_file(file_path=file_path, data=data)
 
