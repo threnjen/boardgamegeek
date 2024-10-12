@@ -1,3 +1,9 @@
+resource "aws_s3_object" "file_upload" {
+  bucket = var.S3_SCRAPER_BUCKET
+  key    = "boardgamegeek.env"
+  source = "../.env"
+}
+
 module "bgg_orchestrator_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
   task_definition = "bgg_orchestrator_FargateExecutionRole"

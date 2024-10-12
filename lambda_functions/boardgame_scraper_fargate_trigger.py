@@ -50,6 +50,8 @@ def lambda_handler(event, context):
 
     terraform_state_file = get_terraform_state_file_for_vpc()
 
+    print(terraform_state_file["outputs"])
+
     # TO DO LATER: HAVE THIS TRIGGER OFF OF EACH FILE LANDING AND SPAWN TASKS IN PARALLEL INSTEAD OF READING THE DIRECTORY
 
     # file_prefixes = get_filenames(scraper_type)
@@ -58,7 +60,7 @@ def lambda_handler(event, context):
     )
 
     task_definition = (
-        f"{SCRAPER_TASK_DEFINITION}-dev" if ENV != "prod" else SCRAPER_TASK_DEFINITION
+        f"{SCRAPER_TASK_DEFINITION}_dev" if ENV != "prod" else SCRAPER_TASK_DEFINITION
     )
     print(task_definition)
 
@@ -88,6 +90,9 @@ def lambda_handler(event, context):
                 "awsvpcConfiguration": {
                     "subnets": terraform_state_file["outputs"]["public_subnets"][
                         "value"
+                    ],
+                    "securityGroups": [
+                        terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"]
                     ],
                     "assignPublicIp": "ENABLED",
                 },

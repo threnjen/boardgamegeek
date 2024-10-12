@@ -13,7 +13,7 @@ module "boardgamegeek_orchestrator_ecs" {
   task_definition_name   = var.boardgamegeek_orchestrator
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_orchestrator}:latest"
   environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.s3_scraper_task_bucket}/${var.boardgamegeek_orchestrator}.env"
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_orchestrator}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_orchestrator}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_orchestrator}:latest"
@@ -28,7 +28,7 @@ module "boardgamegeek_cleaner_ecs" {
   task_definition_name   = var.boardgamegeek_cleaner
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_cleaner}:latest"
   environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.s3_scraper_task_bucket}/${var.boardgamegeek_cleaner}.env"
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_cleaner}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_cleaner}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_cleaner}:latest"
@@ -43,7 +43,7 @@ module "boardgamegeek_cleaner_dev_ecs" {
   task_definition_name   = "${var.boardgamegeek_cleaner}_dev"
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_cleaner}_dev:latest"
   environment            = "dev"
-  env_file               = "arn:aws:s3:::${var.s3_scraper_task_bucket}/${var.boardgamegeek_cleaner}.env"
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_cleaner}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_cleaner}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_cleaner}_dev:latest"
@@ -59,7 +59,7 @@ module "boardgamegeek_scraper_ecs" {
   task_definition_name   = var.boardgamegeek_scraper
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_scraper}:latest"
   environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.s3_scraper_task_bucket}/${var.boardgamegeek_scraper}.env"
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_scraper}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_scraper}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_scraper}:latest"
@@ -74,7 +74,7 @@ module "boardgamegeek_scraper_dev_ecs" {
   task_definition_name   = "${var.boardgamegeek_scraper}_dev"
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_scraper}:latest"
   environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.s3_scraper_task_bucket}/${var.boardgamegeek_scraper}.env"
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_scraper}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_scraper}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${var.boardgamegeek_scraper}_dev:latest"
@@ -89,7 +89,7 @@ module "boardgamegeek_scraper_dev_ecs" {
 #     task_definition_name =
 #     registry_name="${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/${}:latest"
 #     environment="prod"
-#     env_file="arn:aws:s3:::${var.s3_scraper_task_bucket}/${}.env"
+#     env_file="arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/${}.env"
 #     task_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${}_FargateTaskRole"
 #     execution_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${}_FargateExecutionRole"
 #     cpu ="2048"
