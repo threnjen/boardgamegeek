@@ -1,6 +1,5 @@
-export USER=""
-export REPO=""
-export BRANCH="master"
+export USER=
+export REPO=
 
 gh api repos/$USER/$REPO/actions/runs | jq -r '.workflow_runs[] | select(.head_branch == "main") | "\(.id)"' | xargs -n1 -I % gh api repos/$USER/$REPO/actions/runs/% -X DELETE > out.log 2> /dev/null
 

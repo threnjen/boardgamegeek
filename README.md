@@ -43,16 +43,17 @@ CD to the `aws_terraform_bgg` directory
 Follow all prompts exactly as written.
 When prompted to type yes, type yes :)
 
-!!!!! YOU WILL HAVE ERRORS AT THE LAST STEP. THIS IS EXPECTED !!!!!
+!!!!! YOU WILL HAVE ERRORS AT THE LAST STEP. THIS IS EXPECTED !!!!! Specifically: `Error: creating Lambda Function (bgg_boardgame_file_retrieval)`
 There's a bit of a cart-horse issue at this step.
 
 It's time to set up your GitHub CI/CD so that your project files write to the AWS ECR. The AWS resources cannot complete setup until the project has been uploaded.
 
 ### 02 Set up GitHub Secrets for your project
 
-You'll need to create two items in the Github Secrets area of your project fork before continuing:
-AWS_REGION: Enter the AWS Region for your AWS resources. example `us-west-2`
-AWS_GITHUB_ROLE: Enter the ARN of the GitHubActions_Push_Role that was created by the terraform tool. This will look something like: `arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubActions_Push_Role`
+Go to Github to your repo. Create two Secrets in the Secrets area of your project fork before continuing. Hint: Go to Repo, Settings along top of repo, "Secrets and Variables" along left menu, "Actions".
+
+AWS_REGION: Enter the AWS Region for your AWS resources, that you used when you set up the terraform. example `us-west-2`
+AWS_GITHUB_ROLE: Enter the ARN of the GitHubActions_Push_Role which is this, replacing YOUR_ACCOUNT_ID with your integer AWS account number: `arn:aws:iam::YOUR_ACCOUNT_ID:role/GitHubActions_Push_Role`
 
 ### 03 Finish terraform resources
 
