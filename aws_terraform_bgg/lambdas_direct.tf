@@ -27,7 +27,7 @@ module "bgg_generate_user_urls" {
   timeout       = 900
   memory_size   = 512
   role          = module.bgg_generate_user_urls_lambda_role.arn
-  handler       = "bgg_generate_user_urls.lambda_handler"
+  handler       = "generate_user_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:us-west-2:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
 }
