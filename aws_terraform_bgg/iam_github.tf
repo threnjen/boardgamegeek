@@ -64,7 +64,7 @@ resource "aws_iam_policy" "boardgamegeekscraper_github_cicd_lambda_functions_pol
           "lambda:GetFunction"
         ],
         Resource = [
-          for repo in local.lambda_functions : format("arn:aws:ecr:${var.REGION}:${data.aws_caller_identity.current.account_id}:repository/%s", repo)
+          for repo in local.lambda_functions : format("arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:%s", repo)
         ]
       }
     ]
