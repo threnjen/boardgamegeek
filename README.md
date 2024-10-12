@@ -121,8 +121,6 @@ Return to the `aws_terraform_bgg` directory and run `make setup_boardgamegeek`
     - Example: `python game_data_scraper/main.py user group1_user_scraper_urls_raw`
     - Only saves data locally to `data/users/scraped_xml_raw`
 
-
-
 ## I added some new stuff to my deployment. How do I update it?
 
 `make update`
