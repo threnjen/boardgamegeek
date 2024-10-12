@@ -41,21 +41,21 @@ resource "aws_iam_policy" "Cloudwatch_Put_Metrics_policy" {
   })
 }
 
-module "bgg_cleaner_fargate_trigger_cloudwatch_policy" {
-  source = "./modules/lambda_ecs_trigger_policies"
-  name   = "${var.boardgamegeek_cleaner}_fargate_trigger_cloudwatch"
-  task_name = var.boardgamegeek_cleaner
-  region = var.REGION
-  account_id = data.aws_caller_identity.current.account_id
-}
+# module "bgg_cleaner_fargate_trigger_cloudwatch_policy" {
+#   source = "./modules/lambda_ecs_trigger_policies"
+#   name   = "${var.boardgamegeek_cleaner}_cloudwatch"
+#   task_name = var.boardgamegeek_cleaner
+#   region = var.REGION
+#   account_id = data.aws_caller_identity.current.account_id
+# }
 
-module "bgg_scraper_fargate_trigger_cloudwatch_policy" {
-  source = "./modules/lambda_ecs_trigger_policies"
-  name   = "${var.boardgamegeek_scraper}_fargate_trigger_cloudwatch"
-  task_name = var.boardgamegeek_scraper
-  region = var.REGION
-  account_id = data.aws_caller_identity.current.account_id
-}
+# module "bgg_scraper_fargate_trigger_cloudwatch_policy" {
+#   source = "./modules/lambda_ecs_trigger_policies"
+#   name   = "${var.boardgamegeek_scraper}_cloudwatch"
+#   task_name = var.boardgamegeek_scraper
+#   region = var.REGION
+#   account_id = data.aws_caller_identity.current.account_id
+# }
 module "bgg_scraper_describe_task_def_policy" {
   source = "./modules/lambda_ecs_trigger_policies"
   name   = "${var.boardgamegeek_scraper}_lambda_ecs_trigger"

@@ -46,12 +46,25 @@ def validated_region(project_region: str) -> Union[bool, str]:
     return True
 
 
-def run_validations(region: str, bucket_name: str) -> str:
+def validated_ip_address(ip_address: str) -> Union[bool, str]:
+    if not ip_address:
+        return "IP address cannot be empty"
+
+    # check that IP address is in the correct format
+    if not re.match("^[0-9]+\.[0-9]+\.[0-9]+$", ip_address):
+        return "IP address must be in the format of #.#.#"
+
+    return True
+
+
+def run_validations(region: str, bucket_name: str, ip_address: str) -> str:
 
     if not validated_project_name(bucket_name):
         return validated_project_name(bucket_name)
     if not validated_region(region):
         return validated_region(region)
+    if not validated_ip_address(ip_address):
+        return validated_ip_address(ip_address)
 
     return "validated"
 
@@ -60,7 +73,8 @@ if __name__ == "__main__":
 
     bucket_name = os.environ.get("TF_VAR_BUCKET")
     region = os.environ.get("TF_VAR_REGION")
+    ip_address = os.environ.get("TF_VAR_MY_IP_FIRST_THREE_BLOCKS")
 
-    validation_report = run_validations(region, bucket_name)
+    validation_report = run_validations(region, bucket_name, ip_address)
 
     print(validation_report)
