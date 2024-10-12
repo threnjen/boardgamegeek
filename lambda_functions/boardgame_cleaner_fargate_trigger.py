@@ -40,7 +40,7 @@ def lambda_handler(event, context):
     )
     print(task_definition)
 
-    ecs_client = boto3.client("ecs", region_name="us-west-2")
+    ecs_client = boto3.client("ecs")
 
     latest_version = (
         ecs_client.describe_task_definition(taskDefinition=task_definition)
