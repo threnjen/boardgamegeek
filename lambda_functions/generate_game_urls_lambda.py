@@ -4,11 +4,12 @@ import os
 from config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
+from utils.processing_functions import load_file_local_first, save_file_local_first
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 GAME_CONFIGS = CONFIGS["game"]
-IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
+
 url_block_size = 20
 number_url_files = 30
 
@@ -35,13 +36,7 @@ def lambda_handler(event, context):
     to pick up.
     """
 
-    csv_filepath = "data/boardgames_ranks.csv"
-    try:
-        print("Reading the file locally")
-        df = LocalFileHandler().load_file(csv_filepath)
-    except:
-        print("Reading the file from S3")
-        df = S3FileHandler().load_file(csv_filepath)
+    df = load_file_local_first(path="data", file_name="boardgames_ranks.csv")
 
     game_ids = df["id"].astype(str).to_list()
     print(f"Number of game ids: {len(game_ids)}")
@@ -58,17 +53,12 @@ def lambda_handler(event, context):
         scraper_urls_set = scraper_urls_raw[
             i * url_block_size : (i + 1) * url_block_size
         ]
-        file_path = f"{GAME_CONFIGS['raw_urls_directory']}/group{i+1}_game_scraper_urls_raw.json"
-        S3FileHandler().save_file(
-            file_path=file_path,
+
+        save_file_local_first(
+            path=f"{GAME_CONFIGS['raw_urls_directory']}",
+            file_name=f"group{i+1}{GAME_CONFIGS['output_urls_json_suffix']}",
             data=scraper_urls_set,
         )
-
-        if IS_LOCAL:
-            LocalFileHandler().save_file(
-                file_path=file_path,
-                data=scraper_urls_set,
-            )
 
 
 if __name__ == "__main__":
