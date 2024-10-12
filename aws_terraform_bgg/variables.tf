@@ -45,3 +45,8 @@ variable "GITHUB_USER_NAME" {
   description = "The name of the GitHub user"
   type        = string
 }
+
+variable "S3_SCRAPER_BUCKET" {
+  description = "The name of the S3 bucket to store the scraper task"
+  type        = string
+}

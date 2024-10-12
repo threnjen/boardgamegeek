@@ -11,7 +11,10 @@ resource "aws_iam_policy" "S3_Access_boardgamegeek_scraper_policy" {
           "s3:GetObject"
         ]
         Effect   = "Allow"
-        Resource = "arn:aws:s3:::boardgamegeek_scraper"
+        Resource = [
+				"arn:aws:s3:::${var.S3_SCRAPER_BUCKET}",
+				"arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/*"
+			]
       },
       { Action = [
         "s3:ListAllMyBuckets"
