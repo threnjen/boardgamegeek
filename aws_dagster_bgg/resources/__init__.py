@@ -3,6 +3,10 @@ import boto3
 import json
 from datetime import datetime
 import pytz
+import os
+
+REGION = os.environ.get("TF_VAR_REGION", "us-west-2")
+TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 
 class DynamoDBResource(ConfigurableResource):
@@ -10,7 +14,7 @@ class DynamoDBResource(ConfigurableResource):
     table_name: str
 
     def get_dynamodb_client(self):
-        return boto3.client("dynamodb", region_name="us-west-2")
+        return boto3.client("dynamodb", region_name=REGION)
 
     def get_last_modified(self, key):
         print(f"Key: {key}")
@@ -35,7 +39,7 @@ class LambdaHandlerResource(ConfigurableResource):
     region_name: str
 
     def get_lambda_handler(self):
-        return boto3.client("lambda", region_name="us-west-2")
+        return boto3.client("lambda", region_name=REGION)
 
     def invoke_lambda(self, function):
         return self.get_lambda_handler().invoke(FunctionName=function)
@@ -93,6 +97,13 @@ class ConfigResource(ConfigurableResource):
 class ECSResource(ConfigurableResource):
     region_name: str
 
+    def get_terraform_state_file_for_vpc(self):
+        """Get the terraform state file for the VPC"""
+
+        return S3Resource(region_name=REGION).load_json(
+            bucket=TERRAFORM_STATE_BUCKET, key="vpc.tfstate"
+        )
+
     def get_ecs_client(self):
         return boto3.client("ecs", region_name=self.region_name)
 
@@ -111,7 +122,10 @@ class ECSResource(ConfigurableResource):
             .get("taskDefinitionArns", [])
         )
 
-    def launch_ecs_task(self, task_definition: str, overrides: dict):
+    def launch_ecs_task(self, task_definition: str, overrides: dict = {}):
+
+        terraform_state_file = self.get_terraform_state_file_for_vpc()
+
         self.get_ecs_client().run_task(
             taskDefinition=f"{task_definition}:{self.get_latest_task_revision(task_definition)}",
             cluster=ConfigResource()["ecs_task_components"]["cluster"],
@@ -121,9 +135,14 @@ class ECSResource(ConfigurableResource):
             enableECSManagedTags=False,
             networkConfiguration={
                 "awsvpcConfiguration": {
-                    "subnets": ConfigResource()["ecs_task_components"]["subnets"],
-                    "securityGroups": ConfigResource()["ecs_task_components"][
-                        "securitygroups"
+                    "subnets": terraform_state_file["outputs"]["public_subnets"][
+                        "value"
+                    ],
+                    "securityGroups": [
+                        terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"],
+                        terraform_state_file["outputs"]["sg_ec2_dagster_port_access"][
+                            "value"
+                        ],
                     ],
                     "assignPublicIp": "ENABLED",
                 },
@@ -132,6 +151,6 @@ class ECSResource(ConfigurableResource):
         )
 
 
-# s3_resource = S3Resource(region_name="us-west-2")
-# dynamodb_resource = DynamoDBResource(region_name="us-west-2")
-# lambda_resource = LambdaHandlerResource(region_name="us-west-2")
+# s3_resource = S3Resource(region_name=REGION)
+# dynamodb_resource = DynamoDBResource(region_name=REGION)
+# lambda_resource = LambdaHandlerResource(region_name=REGION)
