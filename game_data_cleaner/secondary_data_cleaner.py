@@ -21,7 +21,7 @@ class SecondaryDataCleaner:
             file_path="game_data_cleaner/game_mappings.json"
         )
 
-    def save_set(self, data, table):
+    def save_file_set(self, data, table):
         save_file_local_first(
             path=GAME_CONFIGS["game_dfs_clean"],
             file_name=f"{table}_clean.pkl",
@@ -46,11 +46,6 @@ class SecondaryDataCleaner:
         self.clean_designers()
         self.clean_artists()
         self.clean_publishers()
-
-        # We can save the Kaggle dataset to S3 here
-        # self.s3_file_handler.save_file(
-        #     file_path=GAME_CONFIGS["kaggle_games_file"], data=games_df
-        # )
 
     def strip_low_entries_and_pivot(self, df, column_name, threshold):
 
@@ -97,7 +92,7 @@ class SecondaryDataCleaner:
 
         print(publishers.head())
 
-        self.save_set(
+        self.save_file_set(
             data=publishers,
             table="publishers",
         )
@@ -116,7 +111,7 @@ class SecondaryDataCleaner:
 
         print(artists.head())
 
-        self.save_set(
+        self.save_file_set(
             data=artists,
             table="artists",
         )
@@ -134,7 +129,7 @@ class SecondaryDataCleaner:
         )
         print(designers.head())
 
-        self.save_set(
+        self.save_file_set(
             data=designers,
             table="designers",
         )
@@ -157,7 +152,7 @@ class SecondaryDataCleaner:
 
         print(games.head())
 
-        self.save_set(
+        self.save_file_set(
             data=games,
             table="games",
         )
@@ -240,7 +235,7 @@ class SecondaryDataCleaner:
 
         print(mechanics.head())
 
-        self.save_set(data=mechanics, table="mechanics")
+        self.save_file_set(data=mechanics, table="mechanics")
 
     def clean_themes(self, themes_in_subcats_df):
         print("\nCleaning Themes")
@@ -261,7 +256,7 @@ class SecondaryDataCleaner:
         )
 
         print(themes.head())
-        self.save_set(data=themes, table="themes")
+        self.save_file_set(data=themes, table="themes")
 
     def clean_subcategories(self):
         print("\nExtracting Subcategories")
@@ -313,7 +308,7 @@ class SecondaryDataCleaner:
 
         print(subcategories.head())
 
-        self.save_set(data=subcategories, table="subcategories")
+        self.save_file_set(data=subcategories, table="subcategories")
 
         return (
             mechanics_in_subcats_df,

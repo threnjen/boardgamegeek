@@ -33,6 +33,19 @@ class DirtyDataExtractor:
         dirty_storage = self._organize_raw_storage(raw_storage)
         self._save_dfs_to_disk_or_s3(dirty_storage)
 
+    def save_file_set(self, data, table):
+        save_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=f"{table}_dirty.pkl",
+            data=data,
+        )
+        save_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=f"{table}_dirty.csv",
+            data=data,
+        )
+        save_to_aws_glue(data=data, table=f"{table}_dirty")
+
     def _get_file_list(self) -> list[str]:
         # list files in data dirty prefix in s3 using awswrangler
         xml_directory = GAME_CONFIGS["output_xml_directory"]
@@ -168,13 +181,7 @@ class DirtyDataExtractor:
 
             print(table.dtypes)
 
-            save_file_local_first(
-                path=GAME_CONFIGS["dirty_dfs_directory"],
-                file_name=f"{table_name}.pkl",
-                data=table,
-            )
-
-            save_to_aws_glue(data=table, table=f"{table_name}_dirty")
+            self.save_file_set(data=table, table=table_name)
 
             del table
             gc.collect()

@@ -25,6 +25,19 @@ class GameDataCleaner:
             file_path="game_data_cleaner/game_mappings.json"
         )
 
+    def save_file_set(self, data, table):
+        save_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=f"{table}_dirty.pkl",
+            data=data,
+        )
+        save_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=f"{table}_dirty.csv",
+            data=data,
+        )
+        save_to_aws_glue(data=data, table=f"{table}_dirty")
+
     def primary_cleaning_chain(self) -> pd.DataFrame:
 
         print("\nCleaning Games Data")
@@ -43,13 +56,8 @@ class GameDataCleaner:
         save_file_local_first(
             path=GAME_CONFIGS["game_dfs_clean"], file_name="games.pkl", data=games_df
         )
-        save_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"],
-            file_name="themes.pkl",
-            data=themes_df,
-        )
 
-        save_to_aws_glue(data=themes_df, table="themes_dirty")
+        self.save_file_set(data=themes_df, table="themes")
 
         print("Finishes Cleaning Games Data\n")
 
