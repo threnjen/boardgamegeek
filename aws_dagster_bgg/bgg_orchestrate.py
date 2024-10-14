@@ -1,18 +1,12 @@
-import argparse
-import os
 import subprocess
 import time
+import sys
+import os
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description='BGG Orchestrator')
-    parser.add_argument("-asset", type=str, help="Asset to run", default="all")
-    parser.add_argument('-env', type=str, help='Environment? Defaults to dev'), default=os.environ.get('ENV', 'dev')
-    return parser.parse_args()
 
 if __name__ == "__main__":
-    args = parse_arguments()
-    ENV = args.__dict__.get('env')
-    asset = args.__dict__.get('asset')
+    ENV = sys.argv[1]
+    asset = sys.argv[2]
 
     subprocess.Popen("dagster-webserver -h 0.0.0.0 -p 3000".split(" "))
     print("Started webserver")
@@ -20,11 +14,17 @@ if __name__ == "__main__":
     time.sleep(5)
     print("Launching BGG Orchestrator...")
 
-    if args.asset == "all":
+    if asset == "all":
         print("Executing all assets...")
-        subprocess.run(f"dagster job execute --package-name bgg_orchestrator -j bgg_job".split(" "))
+        subprocess.run(
+            f"dagster job execute --package-name aws_dagster_bgg -j bgg_job".split(" ")
+        )
     else:
         print(f"Executing asset: {asset}...")
-        subprocess.run(f"dagster asset materialize --select {asset} --package-name bgg_orchestrator".split(" "))
+        subprocess.run(
+            f"dagster asset materialize --select {asset} --package-name aws_dagster_bgg".split(
+                " "
+            )
+        )
 
     print("Orchestration complete.")

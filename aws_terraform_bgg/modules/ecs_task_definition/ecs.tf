@@ -8,10 +8,6 @@ resource "aws_ecs_task_definition" "task_definition" {
       cpu   = 0,
       portMappings = [
         {
-          containerPort = 80,
-          hostPort      = 80
-        },
-        {
           containerPort = 3000,
           hostPort      = 3000
         }
@@ -44,30 +40,30 @@ resource "aws_ecs_task_definition" "task_definition" {
       },
       systemControls = []
     },
-    {
-      name  = "aws-otel-collector",
-      image = "public.ecr.aws/aws-observability/aws-otel-collector:v0.40.1",
-      cpu   = 0,
-      portMappings = [],
-      essential    = true,
-      command      = [
-        "--config=/etc/ecs/ecs-cloudwatch.yaml"
-      ],
-      environment    = [],
-      mountPoints    = [],
-      volumesFrom    = [],
-      logConfiguration = {
-        logDriver = "awslogs",
-        options = {
-          "awslogs-group"         = "/ecs/ecs-aws-otel-sidecar-collector",
-          "awslogs-create-group"  = "true",
-          "awslogs-region"        = var.region,
-          "awslogs-stream-prefix" = "ecs"
-        },
-        secretOptions = []
-      },
-      systemControls = []
-    }
+    # {
+    #   name  = "aws-otel-collector",
+    #   image = "public.ecr.aws/aws-observability/aws-otel-collector:v0.40.1",
+    #   cpu   = 0,
+    #   portMappings = [],
+    #   essential    = true,
+    #   command      = [
+    #     "--config=/etc/ecs/ecs-cloudwatch.yaml"
+    #   ],
+    #   environment    = [],
+    #   mountPoints    = [],
+    #   volumesFrom    = [],
+    #   logConfiguration = {
+    #     logDriver = "awslogs",
+    #     options = {
+    #       "awslogs-group"         = "/ecs/ecs-aws-otel-sidecar-collector",
+    #       "awslogs-create-group"  = "true",
+    #       "awslogs-region"        = var.region,
+    #       "awslogs-stream-prefix" = "ecs"
+    #     },
+    #     secretOptions = []
+    #   },
+    #   systemControls = []
+    # }
   ])
   
   task_role_arn     = var.task_role_arn

@@ -1,12 +1,16 @@
-from dagster import EnvVar, ConfigurableResource
+from dagster import EnvVar, ConfigurableResource, get_dagster_logger
 import boto3
 import json
 from datetime import datetime
 import pytz
 import os
+import logging
+
+logger = get_dagster_logger()
 
 REGION = os.environ.get("TF_VAR_REGION", "us-west-2")
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 
 
 class DynamoDBResource(ConfigurableResource):
@@ -17,7 +21,7 @@ class DynamoDBResource(ConfigurableResource):
         return boto3.client("dynamodb", region_name=REGION)
 
     def get_last_modified(self, key):
-        print(f"Key: {key}")
+        logger.info(f"Key: {key}")
         return self.get_dynamodb_client().get_item(
             TableName=self.table_name,
             Key={
@@ -28,7 +32,7 @@ class DynamoDBResource(ConfigurableResource):
         )["Item"]["last_modified"]["S"]
 
     def update_last_modified(self, key, timestamp):
-        print(f"Key: {key}, Timestamp: {timestamp}")
+        logger.info(f"Key: {key}, Timestamp: {timestamp}")
         self.get_dynamodb_client().put_item(
             TableName=self.table_name,
             Item={"filename": {"S": key}, "last_modified": {"S": timestamp}},
@@ -52,12 +56,12 @@ class S3Resource(ConfigurableResource):
         return boto3.client("s3", region_name=self.region_name)
 
     def get_last_modified(self, bucket: str, key):
-        print(f"Bucket: {bucket}, Key: {key}")
         try:
             return self.get_s3_client().get_object_attributes(
                 Bucket=bucket, Key=key, ObjectAttributes=["ObjectParts"]
             )["LastModified"]
-        except:
+        except Exception as e:
+            logger.info(f"Error: {e}")
             return datetime(1970, 1, 1, 0, 0, 0, 0, pytz.UTC)
 
     def list_file_keys(self, bucket: str, key):
@@ -67,7 +71,7 @@ class S3Resource(ConfigurableResource):
         return [x["Key"] for x in raw_files]
 
     def load_json(self, bucket: str, key):
-        print(f"Loading data from S3: {key}")
+        logger.info(f"Loading data from S3: {key}")
         object = (
             self.get_s3_client()
             .get_object(Bucket=bucket, Key=key)["Body"]
@@ -86,7 +90,7 @@ class ConfigResource(ConfigurableResource):
         try:
             return json.loads(open("config.json"))
         except:
-            print("No config file found")
+            logger.info("No config file found")
             configs = S3Resource(region_name=self.region_name).load_json(
                 bucket=self.bucket, key="config.json"
             )
@@ -126,26 +130,37 @@ class ECSResource(ConfigurableResource):
 
         terraform_state_file = self.get_terraform_state_file_for_vpc()
 
-        self.get_ecs_client().run_task(
-            taskDefinition=f"{task_definition}:{self.get_latest_task_revision(task_definition)}",
-            cluster=ConfigResource()["ecs_task_components"]["cluster"],
-            launchType="FARGATE",
-            count=1,
-            platformVersion="LATEST",
-            enableECSManagedTags=False,
-            networkConfiguration={
-                "awsvpcConfiguration": {
-                    "subnets": terraform_state_file["outputs"]["public_subnets"][
-                        "value"
-                    ],
-                    "securityGroups": [
-                        terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"],
-                    ],
-                    "assignPublicIp": "ENABLED",
-                },
-            },
-            overrides=overrides,
+        logger.info(
+            f"Got terraform state file. Launching ECS task for {task_definition}"
         )
+
+        try:
+            self.get_ecs_client().run_task(
+                taskDefinition=f"{task_definition}:{self.get_latest_task_revision(task_definition)}",
+                cluster=ConfigResource(
+                    region_name=REGION, bucket=S3_SCRAPER_BUCKET
+                ).get_config_file()["ecs_cluster"],
+                launchType="FARGATE",
+                count=1,
+                platformVersion="LATEST",
+                enableECSManagedTags=False,
+                networkConfiguration={
+                    "awsvpcConfiguration": {
+                        "subnets": terraform_state_file["outputs"]["public_subnets"][
+                            "value"
+                        ],
+                        "securityGroups": [
+                            terraform_state_file["outputs"]["sg_ec2_ssh_access"][
+                                "value"
+                            ],
+                        ],
+                        "assignPublicIp": "ENABLED",
+                    },
+                },
+                overrides=overrides,
+            )
+        except Exception as e:
+            logger.info(f"Error: {e}")
 
 
 # s3_resource = S3Resource(region_name=REGION)

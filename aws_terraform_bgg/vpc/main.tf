@@ -52,7 +52,7 @@ resource "aws_security_group" "ec2_dagster_port_access" {
                   "${var.MY_IP_FIRST_THREE_BLOCKS}.0/24"
                 ],
                 "description": "",
-                "from_port": 22,
+                "from_port": 3000,
                 "ipv6_cidr_blocks": [],
                 "prefix_list_ids": [],
                 "protocol": "tcp",

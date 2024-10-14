@@ -8,6 +8,9 @@ if __name__ == "__main__":
                 "TF_VAR_BUCKET" in line
                 or "TF_VAR_REGION" in line
                 or "TF_VAR_MY_IP_FIRST_THREE_BLOCKS" in line
+                or "PYTHONPATH" in line
+                or "IS_LOCAL" in line
+                or "ENV" in line
             ):
                 continue
             if line == "\n":

@@ -3,11 +3,13 @@
     "game_dfs_dirty": "game_dfs_dirty",
     "scraper_task_definition": "boardgamegeek_scraper",
     "cleaner_task_definition": "boardgamegeek_cleaner",
+    "ecs_cluster": "boardgamegeek",
     "orchestrator_task_definition": "bgg_orchestrator",
     "boardgamegeek_csv_filename": "boardgames_ranks.csv",
     "file_retrieval_lambda": "bgg_boardgame_file_retrieval",
     "user": {
         "scrapy_bot_name": "bggscraper_users",
+        "test_subdirectory": "test",
         "raw_urls_directory": "data/users/scraper_urls_raw",
         "output_xml_directory": "data/users/scraped_xml_raw",
         "output_urls_json_suffix": "_user_scraper_urls_raw.json",
@@ -15,6 +17,7 @@
     },
     "game": {
         "scrapy_bot_name": "bggscraper_games",
+        "test_subdirectory": "test",
         "raw_urls_directory": "data/games/scraper_urls_raw",
         "output_xml_directory": "data/games/scraped_xml_raw",
         "dirty_dfs_directory": "data/games/game_dfs_dirty",

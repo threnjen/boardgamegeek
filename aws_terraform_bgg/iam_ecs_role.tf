@@ -82,8 +82,13 @@ resource "aws_iam_role_policy_attachment" "trigger_bgg_lambda_run_attach_to_orch
   policy_arn = aws_iam_policy.lambda_direct_permissions.arn
 }
 
-resource "aws_iam_role_policy_attachment" "trigger_lambda_triggers_run_attach_to_orchestrator" {
+resource "aws_iam_role_policy_attachment" "ecs_run_attach_cleaner_to_orchestrator" {
   role       = module.bgg_orchestrator_FargateTaskRole_role.name
-  policy_arn = aws_iam_policy.lambda_trigger_permissions.arn
+  policy_arn = aws_iam_policy.ecs_run_permissions_bgg_cleaner.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_run_attach_scraper_to_orchestrator" {
+  role       = module.bgg_orchestrator_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.ecs_run_permissions_bgg_scraper.arn
 }
 

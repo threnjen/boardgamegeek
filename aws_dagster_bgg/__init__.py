@@ -29,9 +29,9 @@ defs = Definitions(
         "s3_resource": S3Resource(
             region_name=REGION,
         ),
-        "dynamodb_resource": DynamoDBResource(
-            region_name=REGION, table_name="boardgamegeek"
-        ),
+        # "dynamodb_resource": DynamoDBResource(
+        #     region_name=REGION, table_name="boardgamegeek"
+        # ),
         "lambda_resource": LambdaHandlerResource(region_name=REGION),
         "ecs_resource": ECSResource(region_name=REGION),
         "config_resource": ConfigResource(

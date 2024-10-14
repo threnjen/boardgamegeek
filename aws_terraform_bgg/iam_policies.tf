@@ -8,7 +8,8 @@ resource "aws_iam_policy" "S3_Access_boardgamegeek_scraper_policy" {
         Action = [
           "s3:ListBucket",
           "s3:PutObject",
-          "s3:GetObject"
+          "s3:GetObject",
+          "s3:GetObjectAttributes"
         ]
         Effect   = "Allow"
         Resource = [
@@ -98,26 +99,117 @@ module "trigger_bgg_generate_user_urls_lambda" {
 }
 
 
-resource "aws_iam_policy" "lambda_trigger_permissions" {
-  name        = "lambda_trigger_run_permissions"
-  description = "Policy to allow triggering of the Lambda trigger functions"
+# resource "aws_iam_policy" "lambda_trigger_permissions" {
+#   name        = "lambda_trigger_run_permissions"
+#   description = "Policy to allow triggering of the Lambda trigger functions"
+
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Sid = "TriggerLambdaFunction"
+#         Action = [
+#           "lambda:InvokeFunction*",
+#         ]
+#         Effect   = "Allow"
+#         Resource = [
+#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgame_scraper_fargate_trigger.function_name}",
+#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgame_scraper_fargate_trigger_dev.function_name}",
+#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgamegeek_cleaner_fargate_trigger.function_name}",
+#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgamegeek_cleaner_fargate_trigger_dev.function_name}"
+#         ]
+#       },
+#     ]
+#   })
+# }
+
+resource "aws_iam_policy" "ecs_run_permissions_bgg_cleaner" {
+  name        = "ecs_run_permissions_bgg_cleaner"
+  description = "Policy to allow running the BGG ECS tasks"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid = "TriggerLambdaFunction"
-        Action = [
-          "lambda:InvokeFunction*",
-        ]
-        Effect   = "Allow"
+        Sid    = "VisualEditor0",
+        Effect = "Allow",
+        Action = "ecs:DescribeTasks",
         Resource = [
-        "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgame_scraper_fargate_trigger.function_name}",
-        "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgame_scraper_fargate_trigger_dev.function_name}",
-        "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgamegeek_cleaner_fargate_trigger.function_name}",
-        "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgamegeek_cleaner_fargate_trigger_dev.function_name}"
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.boardgamegeek_cleaner}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.boardgamegeek_cleaner}_dev",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_cleaner}_dev:*",
         ]
       },
+      {
+        Sid      = "VisualEditor1",
+        Effect   = "Allow",
+        Action   = "ecs:DescribeTaskDefinition",
+        Resource = "*"
+      },
+      {
+        Sid    = "VisualEditor2",
+        Effect = "Allow",
+        Action = "ecs:RunTask",
+        Resource = [
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_cleaner}_dev:*",
+        ]
+      },
+      {
+        Sid    = "VisualEditor3",
+        Effect = "Allow",
+        Action = "iam:PassRole",
+        Resource = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_cleaner}_FargateExecutionRole",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_cleaner}_FargateTaskRole"
+        ]
+      }
+    ]
+  })
+}
+resource "aws_iam_policy" "ecs_run_permissions_bgg_scraper" {
+  name        = "ecs_run_permissions_bgg_scraper"
+  description = "Policy to allow running the BGG ECS tasks"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "VisualEditor0",
+        Effect = "Allow",
+        Action = "ecs:DescribeTasks",
+        Resource = [
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.boardgamegeek_scraper}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_scraper}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.boardgamegeek_scraper}_dev",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_scraper}_dev:*"
+        ]
+      },
+      {
+        Sid      = "VisualEditor1",
+        Effect   = "Allow",
+        Action   = "ecs:DescribeTaskDefinition",
+        Resource = "*"
+      },
+      {
+        Sid    = "VisualEditor2",
+        Effect = "Allow",
+        Action = "ecs:RunTask",
+        Resource = [
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_scraper}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_scraper}_dev:*"
+        ]
+      },
+      {
+        Sid    = "VisualEditor3",
+        Effect = "Allow",
+        Action = "iam:PassRole",
+        Resource = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_scraper}_FargateExecutionRole",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_scraper}_FargateTaskRole"
+        ]
+      }
     ]
   })
 }

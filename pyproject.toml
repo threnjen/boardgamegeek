@@ -3,4 +3,4 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.dagster]
-module_name = "bgg_orchestrator"
+module_name = "aws_dagster_bgg"

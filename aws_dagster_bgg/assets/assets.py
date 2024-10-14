@@ -1,7 +1,10 @@
-from dagster import asset, ConfigurableResource, op
+from dagster import asset, ConfigurableResource, op, get_dagster_logger
 import time
 import os
 from datetime import datetime
+import logging
+
+logger = get_dagster_logger()
 
 
 @asset
@@ -12,17 +15,22 @@ def bgg_games_csv(
 ) -> bool:
     f"""Triggers the lambda to get the games file from the BoardGameGeek website"""
 
+    logger.info("Getting the games csv file from BoardGameGeek")
+
     configs = config_resource.get_config_file()
 
     s3_scraper_bucket = configs["s3_scraper_bucket"]
 
-    original_timestamps = get_original_timestamps(
-        s3_resource,
-        bucket=s3_scraper_bucket,
-        keys=[configs["boardgamegeek_csv_filename"]],
-    )
+    original_timestamps = {
+        configs["boardgamegeek_csv_filename"]: s3_resource.get_last_modified(
+            bucket=s3_scraper_bucket,
+            key=configs["boardgamegeek_csv_filename"],
+        )
+    }
 
     lambda_resource.invoke_lambda(function=configs["file_retrieval_lambda"])
+
+    logger.info("Lambda invoked. Beginning timestamp checks...")
 
     return compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
@@ -51,6 +59,8 @@ def game_scraper_urls(
     Update the last modified timestamp of the keys in s3
     """
 
+    logger.info("Generating game scraper urls")
+
     configs = config_resource.get_config_file()
 
     s3_scraper_bucket = configs["s3_scraper_bucket"]
@@ -61,13 +71,15 @@ def game_scraper_urls(
         f"{raw_urls_directory}/group{i}{output_urls_json_suffix}" for i in range(1, 31)
     ]
 
-    return create_new_urls(
+    create_new_urls(
         lambda_resource,
         s3_resource,
         s3_scraper_bucket,
         game_scraper_url_filenames,
         lambda_function_name="bgg_generate_game_urls",
     )
+
+    return True
 
 
 @asset(deps=["game_scraper_urls"])
@@ -118,13 +130,15 @@ def game_dfs_dirty(
         for key in data_set_file_names
     }
 
-    return compare_timestamps_for_refresh(
+    compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
         file_list_to_check=data_set_file_names,
         location_bucket=bucket,
         sleep_timer=300,
         s3_resource=s3_resource,
     )
+
+    return True
 
 
 @asset(deps=["game_dfs_dirty"])
@@ -155,7 +169,7 @@ def user_scraper_urls(
         f"{raw_urls_directory}/group{i}{output_urls_json_suffix}" for i in range(1, 31)
     ]
 
-    return create_new_urls(
+    create_new_urls(
         lambda_resource,
         s3_resource,
         s3_scraper_bucket,
@@ -163,23 +177,7 @@ def user_scraper_urls(
         lambda_function_name="bgg_generate_user_urls",
     )
 
-
-@op
-def get_original_timestamps(
-    s3_resource: ConfigurableResource,
-    bucket: str,
-    keys: list[str],
-) -> dict:
-    try:
-        return {
-            key: s3_resource.get_last_modified(
-                bucket=bucket,
-                key=key,
-            )
-            for key in keys
-        }
-    except:
-        return {key: datetime(1970, 1, 1, 0, 0, 0, 0) for key in keys}
+    return True
 
 
 @op
@@ -194,8 +192,12 @@ def compare_timestamps_for_refresh(
 
     time.sleep(sleep_timer)
 
+    logger.info("Checking timestamps...")
+
     while len(file_list_to_check):
+        logger.info(f"Files to check: {file_list_to_check}")
         for key in file_list_to_check:
+            logger.info(f"Checking key: {key}")
             new_timestamp_tracker[key] = s3_resource.get_last_modified(
                 bucket=location_bucket,
                 key=key,
@@ -205,7 +207,7 @@ def compare_timestamps_for_refresh(
             new_date = new_timestamp_tracker[key]
             old_date = original_timestamps[key]
             if new_date > old_date:
-                print(
+                logger.info(
                     f"new timestamp {new_date} is greater than old timestamp {old_date}"
                 )
                 if key in file_list_to_check:
@@ -225,21 +227,25 @@ def create_new_urls(
     lambda_function_name: str,
 ) -> bool:
 
-    original_timestamps = get_original_timestamps(
-        s3_resource=s3_resource,
-        bucket=s3_scraper_bucket,
-        keys=scraper_url_filenames,
-    )
+    original_timestamps = {
+        key: s3_resource.get_last_modified(
+            bucket=s3_scraper_bucket,
+            key=key,
+        )
+        for key in scraper_url_filenames
+    }
 
     lambda_resource.invoke_lambda(function=lambda_function_name)
 
-    return compare_timestamps_for_refresh(
+    compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
         file_list_to_check=scraper_url_filenames,
         location_bucket=s3_scraper_bucket,
         sleep_timer=15,
         s3_resource=s3_resource,
     )
+
+    return True
 
 
 @op
@@ -259,11 +265,13 @@ def scrape_data(
         f"{output_key_directory}/{output_key_suffix.format(i)}" for i in range(1, 31)
     ]
 
-    original_timestamps = get_original_timestamps(
-        s3_resource=s3_resource,
-        bucket=bucket,
-        keys=scraper_raw_data_filenames,
-    )
+    original_timestamps = {
+        key: s3_resource.get_last_modified(
+            bucket=bucket,
+            key=key,
+        )
+        for key in scraper_raw_data_filenames
+    }
 
     game_scraper_url_filenames = s3_resource.list_file_keys(
         bucket=bucket, key=input_urls_key
@@ -286,14 +294,17 @@ def scrape_data(
             ]
         }
         ecs_resource.launch_ecs_task(task_definition, overrides)
+        logger.info(f"Launched ECS for filename: {filename}")
 
-    return compare_timestamps_for_refresh(
+    compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
         file_list_to_check=scraper_raw_data_filenames,
         location_bucket=bucket,
         sleep_timer=300,
         s3_resource=s3_resource,
     )
+
+    return True
 
 
 # @multi_asset(specs=[AssetSpec("asset1"), AssetSpec("asset2")])

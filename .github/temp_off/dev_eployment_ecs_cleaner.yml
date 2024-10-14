@@ -1,4 +1,4 @@
-name: DEV deployment to boardgamegeek scraper
+name: DEV deployment to boardgamegeek cleaner
 
 on:
   push:
@@ -30,14 +30,6 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-          
-      - name: Build, tag, push image to AWS ECR game_data_scraper
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: boardgamegeek_scraper_dev
-        run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-scraper --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY
           
       - name: Build, tag, push image to AWS ECR boardgamegeek_cleaner
         env:

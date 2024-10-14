@@ -46,6 +46,15 @@ def lambda_handler(event, context):
         .get("revision")
     )
 
+    subnets = terraform_state_file["outputs"]["public_subnets"]["value"]
+    print(subnets)
+
+    security_groups = [
+        terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"],
+        terraform_state_file["outputs"]["sg_ec2_dagster_port_access"]["value"],
+    ]
+    print(security_groups)
+
     response = ecs_client.run_task(
         taskDefinition=f"{task_definition}:{latest_version}",
         cluster="boardgamegeek",
@@ -55,15 +64,21 @@ def lambda_handler(event, context):
         enableECSManagedTags=False,
         networkConfiguration={
             "awsvpcConfiguration": {
-                "subnets": terraform_state_file["outputs"]["public_subnets"]["value"],
-                "securityGroups": [
-                    terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"],
-                    terraform_state_file["outputs"]["sg_ec2_dagster_port_access"][
-                        "value"
-                    ],
-                ],
+                "subnets": subnets,
+                "securityGroups": security_groups,
                 "assignPublicIp": "ENABLED",
             },
+        },
+        overrides={
+            "containerOverrides": [
+                {
+                    "name": task_definition,
+                    "environment": [
+                        {"name": "ENV", "value": os.environ.get("ENV", "dev")},
+                        {"name": "ASSET", "value": "all"},
+                    ],
+                }
+            ]
         },
     )
 

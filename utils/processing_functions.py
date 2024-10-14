@@ -29,10 +29,13 @@ import re
 
 def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):
     file_path = f"{path}/{file_name}"
+    print(file_path)
 
     if IS_LOCAL:
+        print(f"Saving {file_name} to local")
         LocalFileHandler().save_file(file_path=file_path, data=data)
     if ENV == "prod":
+        print(f"Saving {file_name} to S3")
         S3FileHandler().save_file(file_path=file_path, data=data)
 
 
@@ -45,7 +48,9 @@ def load_file_local_first(path: str, file_name: str):
     except FileNotFoundError as e:
         print(f"Downloading {file_name} from S3")
         file = S3FileHandler().load_file(file_path=file_path)
-        LocalFileHandler().save_file(file_path=file_path, data=file)
+        if IS_LOCAL:
+            print(f"Saving {file_name} to local")
+            LocalFileHandler().save_file(file_path=file_path, data=file)
     return file
 
 

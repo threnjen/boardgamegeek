@@ -10,25 +10,25 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install pipenv
 
 # Copy the source code into the container
-# COPY data game_data_scraper/data
 COPY aws_dagster_bgg aws_dagster_bgg
-COPY utils utils
 COPY aws_dagster_bgg/Pipfile* .
+COPY utils utils
 COPY config.py .
-COPY dagster_cloud.yaml .
-COPY aws_dagster_bgg/pyproject.toml .
+COPY pyproject.toml .
 
 # Install dependencies with pipenv
 RUN pipenv sync
 
+# Set environment variables with ARG for build-time and ENV for runtime
 ARG ENV
 ENV ENV=$ENV
 
 ARG ASSET
 ENV ASSET=$ASSET
 
+# Expose the port (if needed for the service)
 EXPOSE 3000
 
 # Set the entry point and command
 ENTRYPOINT ["pipenv", "run", "python", "aws_dagster_bgg/bgg_orchestrate.py"]
-CMD ["-env", "$ENV", "-asset", "$ASSET"]
+CMD ["$ENV", "$ASSET"]

@@ -6,7 +6,8 @@ locals {
     module.bgg_generate_game_urls.function_name,
     module.bgg_generate_user_urls.function_name,
     module.boardgamegeek_cleaner_fargate_trigger.function_name,
-    module.boardgamegeek_cleaner_fargate_trigger_dev.function_name
+    module.boardgamegeek_cleaner_fargate_trigger_dev.function_name,
+    module.bgg_orchestrator_fargate_trigger.function_name
   ]
 }
 
@@ -14,7 +15,7 @@ module "bgg_generate_game_urls" {
   source        = "./modules/lambda_function_direct"
   function_name = "bgg_generate_game_urls"
   timeout       = 900
-  memory_size   = 512
+  memory_size   = 1024
   role          = module.bgg_generate_game_urls_lambda_role.arn
   handler       = "generate_game_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
@@ -25,7 +26,7 @@ module "bgg_generate_user_urls" {
   source        = "./modules/lambda_function_direct"
   function_name = "bgg_generate_user_urls"
   timeout       = 900
-  memory_size   = 512
+  memory_size   = 1024
   role          = module.bgg_generate_user_urls_lambda_role.arn
   handler       = "generate_user_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
