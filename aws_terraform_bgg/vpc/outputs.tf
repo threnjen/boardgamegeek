@@ -13,3 +13,7 @@ output "sg_ec2_ssh_access" {
   value       = aws_security_group.ec2_ssh_access.id
 }
 
+output "public_subnets" {
+  description = "Subnets in the VPC"
+  value       = module.vpc.public_subnets
+}

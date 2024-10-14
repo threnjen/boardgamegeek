@@ -2,6 +2,7 @@ output "lambda_ecs_trigger_arn" {
   value = aws_iam_policy.lambda_ecs_trigger.arn
 }
 
+
 output "cloudwatch_arn" {
   value = aws_iam_policy.fargate_trigger_cloudwatch.arn
 }

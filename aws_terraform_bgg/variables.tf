@@ -18,12 +18,6 @@ variable "MY_IP_FIRST_THREE_BLOCKS" {
   }
 }
 
-variable "s3_scraper_task_bucket" {
-  description = "The name of the S3 bucket to store the scraper task"
-  type        = string
-  default     = "boardgamegeek_scraper"
-}
-
 variable "boardgamegeek_scraper" {
   description = "The name of the ECS task definition for the boardgamegeek_scraper"
   type        = string
@@ -39,4 +33,14 @@ variable "boardgamegeek_orchestrator" {
   description = "The name of the ECS task definition for the boardgamegeek_orchestrator"
   type        = string
   default     = "bgg_orchestrator"
+}
+
+variable "GITHUB_USER_NAME" {
+  description = "The name of the GitHub user"
+  type        = string
+}
+
+variable "S3_SCRAPER_BUCKET" {
+  description = "The name of the S3 bucket to store the scraper task"
+  type        = string
 }

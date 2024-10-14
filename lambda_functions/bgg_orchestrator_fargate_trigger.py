@@ -7,7 +7,7 @@ from config import CONFIGS
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-SCRAPER_TASK_DEFINITION = CONFIGS["cleaner_task_definition"]
+SCRAPER_TASK_DEFINITION = CONFIGS["orchestrator_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 
@@ -31,13 +31,11 @@ def get_terraform_state_file_for_vpc():
 def lambda_handler(event, context):
     """Trigger the Fargate task to process the files in the S3 bucket"""
 
-    print(f"Running Game Data Cleaner task")
+    print(f"Running BGGeek Orchestrator task")
 
     terraform_state_file = get_terraform_state_file_for_vpc()
 
-    task_definition = (
-        f"{SCRAPER_TASK_DEFINITION}_dev" if ENV != "prod" else SCRAPER_TASK_DEFINITION
-    )
+    task_definition = SCRAPER_TASK_DEFINITION
     print(task_definition)
 
     ecs_client = boto3.client("ecs")
@@ -59,8 +57,12 @@ def lambda_handler(event, context):
             "awsvpcConfiguration": {
                 "subnets": terraform_state_file["outputs"]["public_subnets"]["value"],
                 "securityGroups": [
-                    terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"]
+                    terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"],
+                    terraform_state_file["outputs"]["sg_ec2_dagster_port_access"][
+                        "value"
+                    ],
                 ],
+                "assignPublicIp": "ENABLED",
             },
         },
     )

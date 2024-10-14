@@ -10,7 +10,7 @@ import pandas as pd
 from utils.file_handler import FileHandler
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-REGION_NAME = "us-west-2"
+REGION_NAME = os.environ.get("TF_VAR_REGION", "us-west-2")
 
 
 class S3FileHandler(FileHandler):

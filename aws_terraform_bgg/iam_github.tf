@@ -1,5 +1,9 @@
 
 
+module "iam_github_oidc_provider" {
+  source    = "terraform-aws-modules/iam/aws//modules/iam-github-oidc-provider"
+}
+
 output "GitHubActions_Push_Role_arn" {
   value = aws_iam_role.GitHubActions_Push_Role_role.arn
 }
@@ -19,7 +23,7 @@ resource "aws_iam_role" "GitHubActions_Push_Role_role" {
             "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com"
           },
           StringLike = {
-            "token.actions.githubusercontent.com:sub" : "repo:threnjen/*"
+            "token.actions.githubusercontent.com:sub" : "repo:${var.GITHUB_USER_NAME}/*"
           }
         }
       }
@@ -60,7 +64,7 @@ resource "aws_iam_policy" "boardgamegeekscraper_github_cicd_lambda_functions_pol
           "lambda:GetFunction"
         ],
         Resource = [
-          for repo in local.lambda_functions : format("arn:aws:ecr:${var.REGION}:${data.aws_caller_identity.current.account_id}:repository/%s", repo)
+          for repo in local.lambda_functions : format("arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:%s", repo)
         ]
       }
     ]
@@ -91,9 +95,10 @@ resource "aws_iam_policy" "boardgamegeekscraper_github_cicd_ecr_policy" {
           "ecr:BatchCheckLayerAvailability",
           "ecr:PutImage"
         ],
-        Resource = [
-          for repo in local.ecr_repositories : format("arn:aws:ecr:${var.REGION}:${data.aws_caller_identity.current.account_id}:repository/%s", repo)
-        ]
+        # Resource = [
+        #   for repo in local.ecr_repositories : format("arn:aws:ecr:${var.REGION}:${data.aws_caller_identity.current.account_id}:repository/%s", repo)
+        # ]
+        Resource = [for repo in local.ecr_repositories: "${repo}"]
       }
     ]
   })

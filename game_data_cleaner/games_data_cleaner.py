@@ -9,6 +9,7 @@ from utils.processing_functions import (
     integer_reduce,
     load_file_local_first,
     save_file_local_first,
+    save_to_aws_glue,
 )
 from utils.s3_file_handler import S3FileHandler
 
@@ -23,6 +24,19 @@ class GameDataCleaner:
         self.game_mappings = LocalFileHandler().load_file(
             file_path="game_data_cleaner/game_mappings.json"
         )
+
+    def save_file_set(self, data, table):
+        save_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=f"{table}_dirty.pkl",
+            data=data,
+        )
+        save_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=f"{table}_dirty.csv",
+            data=data,
+        )
+        save_to_aws_glue(data=data, table=f"{table}_dirty")
 
     def primary_cleaning_chain(self) -> pd.DataFrame:
 
@@ -42,11 +56,9 @@ class GameDataCleaner:
         save_file_local_first(
             path=GAME_CONFIGS["game_dfs_clean"], file_name="games.pkl", data=games_df
         )
-        save_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"],
-            file_name="themes.pkl",
-            data=themes_df,
-        )
+
+        self.save_file_set(data=themes_df, table="themes")
+
         print("Finishes Cleaning Games Data\n")
 
     def load_games_data(self, file_path: str) -> pd.DataFrame:
@@ -130,4 +142,4 @@ class GameDataCleaner:
 
 
 if __name__ == "__main__":
-    cleaner = GameDataCleaner().cleaning_chain()
+    cleaner = GameDataCleaner().primary_cleaning_chain()

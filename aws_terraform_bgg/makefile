@@ -20,7 +20,7 @@ create_env:
 	pipenv install --dev
 
 # Require a confirmation that the .env file is ready
-require_confirmation_env:  
+require_confirmation_env: create_env
 	@echo "\nDid you prepare your .env file in the root directory with all of the vars from .env.example?"
 	@read -p "Type 'yes' to continue: " response; \
 	if [ "$$response" != "yes" ]; then \
@@ -34,7 +34,7 @@ get_region: cleanup_env_files
 	@echo "\nType the region you want to deploy to in format us-region-#. EXAMPLE us-west-2" ; \
 	read -p "Enter region: " response; \
 	TF_VAR_REGION=$$response; \
-	echo "TF_VAR_REGION=$$response" >> ../.env && \
+	echo "\nTF_VAR_REGION=$$response" >> ../.env && \
 	echo "region=\"$$response\"" > backend.conf && \
 	echo "region=\"$$response\"" > vpc/vpc_backend.conf && \
 	export TF_VAR_REGION
@@ -63,7 +63,7 @@ backend_config: get_current_ip
 
 # A target that runs the Python script and checks the output
 terraform: backend_config
-	@echo "\nRunning Python script to validate project name and region"
+	@echo "\nRunning Python script to validate entries"
 	@output=$$(pipenv run python scripts/validate.py $(TF_VAR_BUCKET) $(TF_VAR_REGION)) || { echo "Script execution failed"; exit 1; }; \
 	echo "\nOutput from script: $$output"; \
 	if [ "$$output" = "validated" ]; then \
