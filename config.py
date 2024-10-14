@@ -3,7 +3,8 @@ import os
 from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
 
-IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
+IS_LOCAL = True if os.environ.get("IS_LOCAL", "True") == "True" else False
+print(f"IS_LOCAL: {IS_LOCAL}")
 
 print(f"\nChecking for local config file and evaluating for updates from S3.")
 

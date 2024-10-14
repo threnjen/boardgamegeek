@@ -21,6 +21,16 @@
         "game_id_lookup_file": "data/games/game_id_lookup.json",
         "output_urls_json_suffix": "_game_scraper_urls_raw.json",
         "output_raw_xml_suffix": "master_group{}_game_raw.xml",
-        "kaggle_games_file": "data/games/kaggle_data/games.csv"
+        "kaggle_games_file": "data/games/kaggle_data/games.csv",
+        "data_sets": [
+            "games",
+            "designers",
+            "categories",
+            "mechanics",
+            "artists",
+            "publishers",
+            "subcategories",
+            "expansions"
+        ]
     }
 }
