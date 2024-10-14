@@ -17,7 +17,7 @@ module "bgg_generate_game_urls" {
   memory_size   = 512
   role          = module.bgg_generate_game_urls_lambda_role.arn
   handler       = "generate_game_urls_lambda.lambda_handler"
-  layers        = ["arn:aws:lambda:us-west-2:336392948345:layer:AWSSDKPandas-Python312:13"]
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
 }
 
@@ -28,7 +28,7 @@ module "bgg_generate_user_urls" {
   memory_size   = 512
   role          = module.bgg_generate_user_urls_lambda_role.arn
   handler       = "generate_user_urls_lambda.lambda_handler"
-  layers        = ["arn:aws:lambda:us-west-2:336392948345:layer:AWSSDKPandas-Python312:13"]
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
 }
 
@@ -39,7 +39,7 @@ module "boardgame_scraper_fargate_trigger" {
   memory_size   = 128
   role          = module.boardgamegeek_scraper_fargate_trigger_role.arn
   handler       = "boardgame_scraper_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:us-west-2:336392948345:layer:AWSSDKPandas-Python312:13"]
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
 }
 
@@ -51,7 +51,7 @@ module "boardgame_scraper_fargate_trigger_dev" {
   memory_size   = 128
   role          = module.boardgamegeek_scraper_fargate_trigger_role.arn
   handler       = "boardgame_scraper_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:us-west-2:336392948345:layer:AWSSDKPandas-Python312:13"]
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
 }
 
@@ -62,7 +62,7 @@ module "boardgamegeek_cleaner_fargate_trigger" {
   memory_size   = 128
   role          = module.boardgamegeek_cleaner_fargate_trigger_role.arn
   handler       = "boardgame_cleaner_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:us-west-2:336392948345:layer:AWSSDKPandas-Python312:13"]
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
 }
 
@@ -74,7 +74,7 @@ module "boardgamegeek_cleaner_fargate_trigger_dev" {
   memory_size   = 128
   role          = module.boardgamegeek_cleaner_fargate_trigger_role.arn
   handler       = "boardgame_cleaner_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:us-west-2:336392948345:layer:AWSSDKPandas-Python312:13"]
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
 }
 
