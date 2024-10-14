@@ -8,6 +8,7 @@ from utils.processing_functions import (
     integer_reduce,
     load_file_local_first,
     save_file_local_first,
+    save_to_aws_glue,
 )
 
 GAME_CONFIGS = CONFIGS["game"]
@@ -20,26 +21,38 @@ class SecondaryDataCleaner:
             file_path="game_data_cleaner/game_mappings.json"
         )
 
+    def save_set(self, data, table):
+        save_file_local_first(
+            path=GAME_CONFIGS["game_dfs_clean"],
+            file_name=f"{table}_clean.pkl",
+            data=data,
+        )
+        save_file_local_first(
+            path=GAME_CONFIGS["game_dfs_clean"],
+            file_name=f"{table}_clean.csv",
+            data=data,
+        )
+        save_to_aws_glue(data=data, table=f"{table}_clean")
+
     def secondary_cleaning_chain(self):
         (
-            subcategories,
             mechanics_in_subcats_df,
             themes_in_subcats_df,
             big_cats_in_subcats_df,
         ) = self.clean_subcategories()
-        mechanics = self.clean_mechanics(mechanics_in_subcats_df)
-        themes = self.clean_themes(themes_in_subcats_df)
-        games = self.add_subcat_categories_to_larger_categories(big_cats_in_subcats_df)
-        designers = self.clean_designers()
-        artists = self.clean_artists()
-        publishers = self.clean_publishers()
+        self.clean_mechanics(mechanics_in_subcats_df)
+        self.clean_themes(themes_in_subcats_df)
+        self.add_subcat_categories_to_games(big_cats_in_subcats_df)
+        self.clean_designers()
+        self.clean_artists()
+        self.clean_publishers()
 
         # We can save the Kaggle dataset to S3 here
         # self.s3_file_handler.save_file(
         #     file_path=GAME_CONFIGS["kaggle_games_file"], data=games_df
         # )
 
-    def strip_low_entries(self, df, column_name, threshold):
+    def strip_low_entries_and_pivot(self, df, column_name, threshold):
 
         # remove designers with <3 games
         df_onehot = pd.get_dummies(df, columns=[column_name], drop_first=False).astype(
@@ -60,70 +73,74 @@ class SecondaryDataCleaner:
 
         df.columns = df.columns.str.replace(f"{column_name}_", "")
 
+        # Melt the DataFrame
+        df = df.melt(id_vars="BGGId", var_name=column_name, value_name="Value")
+
+        # Filter for rows where the value is 1
+        df = df[df["Value"] == 1].drop(columns="Value").sort_values(by="BGGId")
+
+        df = df[df[column_name] != "Low Entries"]
+
         return df
 
     def clean_publishers(self):
-        print("Cleaning Publishers")
+        print("\nCleaning Publishers")
         publishers = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"], file_name="publishers.pkl"
         )
         publishers = publishers.loc[publishers["boardgamepublisher"] != "(Uncredited)"]
         publishers = publishers.reset_index(drop=True)
 
-        publishers = self.strip_low_entries(
+        publishers = self.strip_low_entries_and_pivot(
             df=publishers, column_name="boardgamepublisher", threshold=3
         )
 
-        save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"],
-            file_name="publishers.pkl",
+        print(publishers.head())
+
+        self.save_set(
             data=publishers,
+            table="publishers",
         )
 
-        return publishers
-
     def clean_artists(self):
-        print("Cleaning Artists")
+        print("\nCleaning Artists")
         artists = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"], file_name="artists.pkl"
         )
         artists = artists.loc[artists["boardgameartist"] != "(Uncredited)"]
         artists = artists.reset_index(drop=True)
 
-        artists = self.strip_low_entries(
+        artists = self.strip_low_entries_and_pivot(
             df=artists, column_name="boardgameartist", threshold=3
         )
 
-        save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"],
-            file_name="artists.pkl",
+        print(artists.head())
+
+        self.save_set(
             data=artists,
+            table="artists",
         )
 
-        return artists
-
     def clean_designers(self):
-        print("Cleaning Designers")
+        print("\nCleaning Designers")
         designers = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"], file_name="designers.pkl"
         )
         designers = designers.loc[designers["boardgamedesigner"] != "(Uncredited)"]
         designers = designers.reset_index(drop=True)
 
-        designers = self.strip_low_entries(
+        designers = self.strip_low_entries_and_pivot(
             df=designers, column_name="boardgamedesigner", threshold=2
         )
+        print(designers.head())
 
-        save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"],
-            file_name="designers.pkl",
+        self.save_set(
             data=designers,
+            table="designers",
         )
 
-        return designers
-
-    def add_subcat_categories_to_larger_categories(self, big_cats_in_subcats_df):
-        print("Adding Subcategories to Larger Categories")
+    def add_subcat_categories_to_games(self, big_cats_in_subcats_df):
+        print("\nAdding Subcategories to Games data")
         games = load_file_local_first(
             path=GAME_CONFIGS["game_dfs_clean"], file_name="games.pkl"
         )
@@ -137,10 +154,16 @@ class SecondaryDataCleaner:
                 ),
                 value,
             ] = 1
-        return games
+
+        print(games.head())
+
+        self.save_set(
+            data=games,
+            table="games",
+        )
 
     def clean_mechanics(self, mechanics_in_subcats_df):
-        print("Cleaning Mechanics")
+        print("\nCleaning Mechanics")
         mechanics = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"], file_name="mechanics.pkl"
         )
@@ -215,16 +238,12 @@ class SecondaryDataCleaner:
             .reset_index(drop=True)
         )
 
-        save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"],
-            file_name="mechanics.pkl",
-            data=mechanics,
-        )
+        print(mechanics.head())
 
-        return mechanics
+        self.save_set(data=mechanics, table="mechanics")
 
     def clean_themes(self, themes_in_subcats_df):
-        print("Cleaning Themes")
+        print("\nCleaning Themes")
         themes = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"], file_name="themes.pkl"
         )
@@ -241,16 +260,11 @@ class SecondaryDataCleaner:
             .reset_index(drop=True)
         )
 
-        save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"],
-            file_name="themes.pkl",
-            data=themes,
-        )
-
-        return themes
+        print(themes.head())
+        self.save_set(data=themes, table="themes")
 
     def clean_subcategories(self):
-        print("Extracting Subcategories")
+        print("\nExtracting Subcategories")
 
         subcategories = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"], file_name="subcategories.pkl"
@@ -297,14 +311,11 @@ class SecondaryDataCleaner:
             )
         ].reset_index(drop=True)
 
-        save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"],
-            file_name="subcategories.pkl",
-            data=subcategories,
-        )
+        print(subcategories.head())
+
+        self.save_set(data=subcategories, table="subcategories")
 
         return (
-            subcategories,
             mechanics_in_subcats_df,
             themes_in_subcats_df,
             big_cats_in_subcats_df,

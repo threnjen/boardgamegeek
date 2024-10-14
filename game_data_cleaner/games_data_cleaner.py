@@ -9,6 +9,7 @@ from utils.processing_functions import (
     integer_reduce,
     load_file_local_first,
     save_file_local_first,
+    save_to_aws_glue,
 )
 from utils.s3_file_handler import S3FileHandler
 
@@ -47,6 +48,9 @@ class GameDataCleaner:
             file_name="themes.pkl",
             data=themes_df,
         )
+
+        save_to_aws_glue(data=themes_df, table="themes_dirty")
+
         print("Finishes Cleaning Games Data\n")
 
     def load_games_data(self, file_path: str) -> pd.DataFrame:
@@ -130,4 +134,4 @@ class GameDataCleaner:
 
 
 if __name__ == "__main__":
-    cleaner = GameDataCleaner().cleaning_chain()
+    cleaner = GameDataCleaner().primary_cleaning_chain()

@@ -7,9 +7,13 @@ from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
 
 from config import CONFIGS
-from game_data_cleaner.primary_data_cleaner import GameDataCleaner
+from game_data_cleaner.games_data_cleaner import GameDataCleaner
 from game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
-from utils.processing_functions import load_file_local_first, save_file_local_first
+from utils.processing_functions import (
+    load_file_local_first,
+    save_file_local_first,
+    save_to_aws_glue,
+)
 from utils.s3_file_handler import S3FileHandler
 
 ENV = os.environ.get("ENV", "dev")
@@ -18,11 +22,33 @@ GAME_CONFIGS = CONFIGS["game"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
 
 
-class XMLFileParser:
+class DirtyDataExtractor:
 
     def __init__(self) -> None:
+        pass
 
-        self.entry_storage = {
+    def data_extraction_chain(self):
+        file_list_to_process = self._get_file_list()
+        raw_storage = self._process_file_list(file_list_to_process)
+        dirty_storage = self._organize_raw_storage(raw_storage)
+        self._save_dfs_to_disk_or_s3(dirty_storage)
+
+    def _get_file_list(self) -> list[str]:
+        # list files in data dirty prefix in s3 using awswrangler
+        xml_directory = GAME_CONFIGS["output_xml_directory"]
+        file_list_to_process = S3FileHandler().list_files(xml_directory)
+        if not file_list_to_process:
+            local_files = os.listdir(f"data/{xml_directory}")
+            file_list_to_process = [x for x in local_files if x.endswith(".xml")]
+        return file_list_to_process
+
+    def _process_file_list(self, file_list_to_process: list) -> dict[list]:
+        """Process the list of files in the S3 bucket
+        This function will process the list of files in the S3 bucket
+        and extract the necessary information from the XML files. The
+        function will return None."""
+
+        raw_storage = {
             "games": [],
             "designers": [],
             "categories": [],
@@ -30,30 +56,11 @@ class XMLFileParser:
             "artists": [],
             "publishers": [],
             "subcategories": [],
-            "comments": [],
+            # "comments": [],
             "expansions": [],
         }
 
-    def game_cleaning_chain(self):
-        self._process_file_list()
-        self._save_dfs_to_disk_or_s3()
-
-    def _process_file_list(self):
-        """Process the list of files in the S3 bucket
-        This function will process the list of files in the S3 bucket
-        and extract the necessary information from the XML files. The
-        function will return None."""
-
-        # list files in data dirty prefix in s3 using awswrangler
-        file_list = S3FileHandler().list_files(GAME_CONFIGS["output_xml_directory"])
-        if not file_list:
-            local_files = os.listdir(f"data/{GAME_CONFIGS['output_xml_directory']}")
-            file_list = [x for x in local_files if x.endswith(".xml")]
-
-        # download items in file_list to local path
-
-        for file in file_list:
-            print(file)
+        for file in file_list_to_process:
             local_open = load_file_local_first(
                 path=GAME_CONFIGS["output_xml_directory"],
                 file_name=file.split("/")[-1],
@@ -61,15 +68,12 @@ class XMLFileParser:
 
             game_page = BeautifulSoup(local_open, features="xml")
 
-            # make entry for each game item on page
             game_entries = game_page.find_all("item")
-            # print(f"Number of game entries in this file: {len(game_entries)}")
 
             for game_entry in game_entries:
                 game_parser = GameEntryParser(game_entry=game_entry)
 
                 if not game_parser.check_rating_count_threshold():
-                    # print("Skipping game with low user ratings")
                     continue
                 print(f"Processing game with ID: {game_entry['id']}")
 
@@ -85,25 +89,26 @@ class XMLFileParser:
                     expansions,
                 ) = game_parser.get_single_game_attributes()
 
-                self.entry_storage["games"].append(game.dropna(axis=1))
-                self.entry_storage["designers"].append(designers)
-                self.entry_storage["categories"].append(subcategories)
-                self.entry_storage["mechanics"].append(mechanics)
-                self.entry_storage["artists"].append(artists)
-                self.entry_storage["publishers"].append(publishers)
-                self.entry_storage["subcategories"].append(categories)
-                self.entry_storage["expansions"].append(expansions)
+                raw_storage["games"].append(game)
+                raw_storage["designers"].append(designers)
+                raw_storage["categories"].append(subcategories)
+                raw_storage["mechanics"].append(mechanics)
+                raw_storage["artists"].append(artists)
+                raw_storage["publishers"].append(publishers)
+                raw_storage["subcategories"].append(categories)
+                raw_storage["expansions"].append(expansions)
 
-        if not self.entry_storage["games"]:
+        if not raw_storage["games"]:
             return
 
-    def _save_dfs_to_disk_or_s3(self):
-        """Save all files as pkl files. Save to local drive in ENV==env, or
-        copy pkl to s3 if ENV==prod"""
+        return raw_storage
 
+    def _organize_raw_storage(self, raw_storage: dict[list]) -> dict[pd.DataFrame]:
         print("Crafting data frames")
 
-        for table_name, list_of_entries in self.entry_storage.items():
+        dirty_storage = {}
+
+        for table_name, list_of_entries in raw_storage.items():
             print(f"Len of {table_name}: {len(list_of_entries)}")
 
             if not list_of_entries:
@@ -111,26 +116,65 @@ class XMLFileParser:
 
             print(f"Creating table for {table_name}")
             if table_name != "games":
+                print(table_name)
+                print(list_of_entries[:10])
                 combined_entries = defaultdict(list)
                 for d in list_of_entries:
                     for key, value in d.items():
                         combined_entries[key].extend(value)
                 list_of_entries = dict(combined_entries)
                 table = pd.DataFrame.from_dict(list_of_entries)
+
             else:
-                table = pd.concat(list_of_entries, ignore_index=True)
+                print(table_name)
+                print(list_of_entries[:10])
+                table = pd.DataFrame(list_of_entries)
                 self._make_json_game_lookup_file(table)
 
             print(f"Deleting {table_name} from memory")
             del list_of_entries
 
+            if None in table.columns:
+                table = table.drop(columns=[None])
+            else:
+                pass
+
+            table = table.sort_values(by="BGGId").reset_index(drop=True)
+
+            dirty_storage[table_name] = table
+
+        del raw_storage
+        return dirty_storage
+
+    def _save_dfs_to_disk_or_s3(self, dirty_storage: dict[pd.DataFrame]):
+        """Save all files as pkl files. Save to local drive in ENV==env, or
+        copy pkl to s3 if ENV==prod"""
+
+        for table_name, table in dirty_storage.items():
+
             print(f"Saving {table_name} to disk and uploading to S3")
+
+            print(table.dtypes)
+
+            save_file_local_first(
+                path=GAME_CONFIGS["dirty_dfs_directory"],
+                file_name=f"{table_name}.csv",
+                data=table,
+            )
+
+            table = load_file_local_first(
+                path=GAME_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
+            )
+
+            print(table.dtypes)
 
             save_file_local_first(
                 path=GAME_CONFIGS["dirty_dfs_directory"],
                 file_name=f"{table_name}.pkl",
                 data=table,
             )
+
+            save_to_aws_glue(data=table, table=f"{table_name}_dirty")
 
             del table
             gc.collect()
@@ -152,7 +196,6 @@ class XMLFileParser:
 
 if __name__ == "__main__":
 
-    file_parser = XMLFileParser()
-    file_parser.game_cleaning_chain()
+    DirtyDataExtractor().data_extraction_chain()
     GameDataCleaner().primary_cleaning_chain()
     SecondaryDataCleaner().secondary_cleaning_chain()

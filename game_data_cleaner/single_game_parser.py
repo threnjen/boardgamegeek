@@ -10,22 +10,20 @@ ENV = os.environ.get("ENV", "dev")
 GAME_ATTRIBUTES = json.load(open(f"game_data_cleaner/find_config.json"))[
     "GAME_ATTRIBUTES"
 ]
-MIN_USER_RATINGS = 10
+MIN_USER_RATINGS = 30
 
 
 class GameEntryParser:
     def __init__(self, game_entry: BeautifulSoup = None) -> None:
         self.game_entry = game_entry
-
         self.game_base_attributes = {}
-
-        self.subcategories = pd.DataFrame()
-        self.designers = pd.DataFrame()
-        self.catogories = pd.DataFrame()
-        self.mechanics = pd.DataFrame()
-        self.artists = pd.DataFrame()
-        self.publishers = pd.DataFrame()
-        self.expansions = pd.DataFrame()
+        self.subcategories = {}
+        self.designers = {}
+        self.categories = {}
+        self.mechanics = {}
+        self.artists = {}
+        self.publishers = {}
+        self.expansions = {}
 
     def check_rating_count_threshold(
         self,
@@ -45,13 +43,13 @@ class GameEntryParser:
         self._parse_family_attributes()
         self._create_game_data()
 
-    def get_single_game_attributes(self) -> tuple:
+    def get_single_game_attributes(self) -> tuple[dict]:
         """Return the game data and ancillary data"""
         return (
-            self.game_entry_df,
+            self.game_base_attributes,
             self.subcategories,
             self.designers,
-            self.catogories,
+            self.categories,
             self.mechanics,
             self.artists,
             self.publishers,
@@ -93,7 +91,16 @@ class GameEntryParser:
             else 0
         )
         for rank, score in self._get_rank().items():
-            self.game_base_attributes[rank] = score
+            if rank not in [
+                "rpgitem",
+                "boardgameaccessory",
+                "videogame",
+                "amiga",
+                "commodore64",
+                "arcade",
+                "atarist",
+            ]:
+                self.game_base_attributes[rank] = score
         for component, value in self._get_components().items():
             self.game_base_attributes[component] = value
         for player, value in self._get_player_counts().items():
@@ -159,7 +166,7 @@ class GameEntryParser:
         overall (coded as 'boardgame'), etc.
         """
         return {
-            f"Rank:{ item['name'] }": item.get("value", 999999.0)
+            f"Rank:{item['name']}": item.get("value", 999999.0)
             for item in self.game_entry.find_all("rank")
         }
 
@@ -315,8 +322,6 @@ class GameEntryParser:
         Also creates ancillary datasets (as dictionaries) for the non-core game data.
         """
 
-        self.game_entry_df = pd.DataFrame([self.game_base_attributes])
-
         game_id = self.game_entry["id"]
 
         self.subcategories = self.get_subcategories(game_id)
@@ -325,7 +330,7 @@ class GameEntryParser:
         self.designers = self.create_thing_of_type(
             game_id, find_type_str="boardgamedesigner"
         )
-        self.catogories = self.create_thing_of_type(
+        self.categories = self.create_thing_of_type(
             game_id, find_type_str="boardgamecategory"
         )
         self.mechanics = self.get_game_mechanics(game_id)
@@ -438,6 +443,6 @@ class GameEntryParser:
         all_subcategories = self.game_entry.find_all("link", type="boardgamecategory")
 
         return {
-            "BGGID": [game_id for _ in range(len(all_subcategories))],
+            "BGGId": [game_id for _ in range(len(all_subcategories))],
             "subcategory": [item["value"] for item in all_subcategories],
         }

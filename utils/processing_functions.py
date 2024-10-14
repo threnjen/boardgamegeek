@@ -1,13 +1,17 @@
 import os
 from typing import Union
+from datetime import datetime
 
 import pandas as pd
 
 from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
 
+import awswrangler as wr
+
 ENV = os.getenv("ENV", "dev")
 IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
+S3_SCRAPER_BUCKET = os.getenv("S3_SCRAPER_BUCKET")
 
 # from statistics import mean
 
@@ -43,6 +47,23 @@ def load_file_local_first(path: str, file_name: str):
         file = S3FileHandler().load_file(file_path=file_path)
         LocalFileHandler().save_file(file_path=file_path, data=file)
     return file
+
+
+def save_to_aws_glue(data: pd.DataFrame, table: str, database: str = "boardgamegeek"):
+
+    data = wr.catalog.sanitize_dataframe_columns_names(data)
+
+    # data["load_time"] = datetime.now().strftime("%Y%m%d")
+
+    wr.s3.to_parquet(
+        df=data,
+        path=f"s3://{S3_SCRAPER_BUCKET}/bgg-data-lake/{database}/{table}/",
+        dataset=True,
+        database=database,
+        table=table,
+        mode="overwrite",
+        # partition_cols=["load_time"],
+    )
 
 
 def integer_reduce(data: pd.DataFrame, columns: list[str], fill_value: int = 0):
