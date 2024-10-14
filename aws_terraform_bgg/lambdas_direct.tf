@@ -78,5 +78,16 @@ module "boardgamegeek_cleaner_fargate_trigger_dev" {
   environment   = "dev"
 }
 
+module "bgg_orchestrator_fargate_trigger" {
+  source        = "./modules/lambda_function_direct"
+  function_name = "bgg_orchestrator_fargate_trigger"
+  timeout       = 600
+  memory_size   = 128
+  role          = module.bgg_orchestrator_fargate_trigger_role.arn
+  handler       = "bgg_orchestrator_fargate_trigger.lambda_handler"
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
+  environment   = "dev"
+}
+
 
 

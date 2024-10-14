@@ -76,3 +76,14 @@ resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metric_boardgamegeek_s
   role       = module.boardgamegeek_scraper_FargateTaskRole_role.name
   policy_arn = aws_iam_policy.Cloudwatch_Put_Metrics_policy.arn
 }
+
+resource "aws_iam_role_policy_attachment" "trigger_bgg_lambda_run_attach_to_orchestrator" {
+  role       = module.bgg_orchestrator_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.lambda_direct_permissions.arn
+}
+
+resource "aws_iam_role_policy_attachment" "trigger_lambda_triggers_run_attach_to_orchestrator" {
+  role       = module.bgg_orchestrator_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.lambda_trigger_permissions.arn
+}
+
