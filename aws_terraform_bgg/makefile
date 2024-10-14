@@ -34,7 +34,7 @@ get_region: cleanup_env_files
 	@echo "\nType the region you want to deploy to in format us-region-#. EXAMPLE us-west-2" ; \
 	read -p "Enter region: " response; \
 	TF_VAR_REGION=$$response; \
-	echo "TF_VAR_REGION=$$response" >> ../.env && \
+	echo "\nTF_VAR_REGION=$$response" >> ../.env && \
 	echo "region=\"$$response\"" > backend.conf && \
 	echo "region=\"$$response\"" > vpc/vpc_backend.conf && \
 	export TF_VAR_REGION
