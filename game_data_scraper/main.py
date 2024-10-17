@@ -16,7 +16,7 @@ from utils.s3_file_handler import S3FileHandler
 from utils.processing_functions import (
     load_file_local_first,
     save_file_local_first,
-    get_directory_keys_based_on_env,
+    get_local_keys_based_on_env,
 )
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
@@ -134,13 +134,15 @@ class GameScraper:
         """Combine the XML files into a single XML file"""
 
         print(f"Combining XML files for {self.file_group}")
-        print(self.scraped_games_folder)
+
+        print(get_local_keys_based_on_env(self.scraped_games_folder))
 
         saved_files = [
             x
-            for x in get_directory_keys_based_on_env(self.scraped_games_folder)
+            for x in get_local_keys_based_on_env(self.scraped_games_folder)
             if self.file_group in x and "combined" not in x
         ]
+        print(saved_files)
 
         # Parse the first XML file to get the root and header
         tree = ET.parse(saved_files[0])

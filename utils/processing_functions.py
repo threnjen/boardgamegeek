@@ -29,11 +29,14 @@ import re
 # from nltk.tokenize import word_tokenize
 
 
-def get_directory_keys_based_on_env(directory: str):
+def get_s3_keys_based_on_env(directory: str):
+    directory = f"{WORKING_DIR}{directory}"
+    return [f"{directory}/{x}" for x in S3FileHandler().list_files(directory)]
 
-    return [
-        f"{WORKING_DIR}{directory}/{x}" for x in os.listdir(f"{WORKING_DIR}{directory}")
-    ]
+
+def get_local_keys_based_on_env(directory: str):
+    directory = f"{WORKING_DIR}{directory}"
+    return [f"{directory}/{x}" for x in LocalFileHandler().list_files(directory)]
 
 
 def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):

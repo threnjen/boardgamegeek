@@ -78,4 +78,4 @@ class LocalFileHandler(FileHandler):
         return os.path.exists(file_path)
 
     def list_files(self, directory: str) -> list[str]:
-        return [file for file in os.listdir(directory) if os.path.isfile(file)]
+        return [file for file in os.listdir(directory)]

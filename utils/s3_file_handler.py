@@ -11,6 +11,7 @@ from utils.file_handler import FileHandler
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 REGION_NAME = os.environ.get("TF_VAR_REGION", "us-west-2")
+ENV = os.environ.get("ENV", "dev")
 
 
 class S3FileHandler(FileHandler):
