@@ -22,6 +22,17 @@ module "bgg_generate_game_urls" {
   environment   = "prod"
 }
 
+module "bgg_generate_game_urls_dev" {
+  source        = "./modules/lambda_function_direct"
+  function_name = "bgg_generate_game_urls_dev"
+  timeout       = 900
+  memory_size   = 1024
+  role          = module.bgg_generate_game_urls_lambda_role.arn
+  handler       = "generate_game_urls_lambda.lambda_handler"
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
+  environment   = "dev"
+}
+
 module "bgg_generate_user_urls" {
   source        = "./modules/lambda_function_direct"
   function_name = "bgg_generate_user_urls"
@@ -31,6 +42,17 @@ module "bgg_generate_user_urls" {
   handler       = "generate_user_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
+}
+
+module "bgg_generate_user_urls_dev" {
+  source        = "./modules/lambda_function_direct"
+  function_name = "bgg_generate_user_urls_dev"
+  timeout       = 900
+  memory_size   = 1024
+  role          = module.bgg_generate_user_urls_lambda_role.arn
+  handler       = "generate_user_urls_lambda.lambda_handler"
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
+  environment   = "dev"
 }
 
 module "boardgame_scraper_fargate_trigger" {
@@ -43,7 +65,6 @@ module "boardgame_scraper_fargate_trigger" {
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
 }
-
 
 module "boardgame_scraper_fargate_trigger_dev" {
   source        = "./modules/lambda_function_direct"
