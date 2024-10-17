@@ -43,8 +43,10 @@ def lambda_handler(event, context):
 
     scraper_urls_raw = generate_raw_urls(game_ids)
 
-    print(len(scraper_urls_raw))
-    url_block_size = math.ceil(len(scraper_urls_raw) / number_url_files)
+    print(f"Number of scraper urls: {len(scraper_urls_raw)}")
+    url_block_size = (
+        math.ceil(len(scraper_urls_raw) / number_url_files) if ENV == "prod" else 10
+    )
     print(f"URL block size: {url_block_size}")
 
     for i in range(number_url_files):
@@ -59,6 +61,9 @@ def lambda_handler(event, context):
             file_name=f"group{i+1}{GAME_CONFIGS['output_urls_json_suffix']}",
             data=scraper_urls_set,
         )
+
+        if ENV == "dev":
+            break
 
 
 if __name__ == "__main__":

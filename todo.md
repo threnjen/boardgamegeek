@@ -1,0 +1,2 @@
+- Add descriptions to Lambda functions
+- Add descriptions to Dagster tasks

@@ -6,6 +6,7 @@ import pandas as pd
 
 from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
+from config import CONFIGS
 
 import awswrangler as wr
 
@@ -29,14 +30,19 @@ import re
 
 def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):
     file_path = f"{path}/{file_name}"
-    print(file_path)
+
+    save_path = (
+        f"{CONFIGS['dev_directory']}{file_path}"
+        if ENV == "dev"
+        else f"{CONFIGS['prod_directory']}{file_path}"
+    )
+    print(save_path)
 
     if IS_LOCAL:
         print(f"Saving {file_name} to local")
-        LocalFileHandler().save_file(file_path=file_path, data=data)
-    if ENV == "prod":
-        print(f"Saving {file_name} to S3")
-        S3FileHandler().save_file(file_path=file_path, data=data)
+        LocalFileHandler().save_file(file_path=save_path, data=data)
+    print(f"Saving {file_name} to S3")
+    S3FileHandler().save_file(file_path=save_path, data=data)
 
 
 def load_file_local_first(path: str, file_name: str):
