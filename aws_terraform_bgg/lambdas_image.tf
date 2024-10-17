@@ -5,6 +5,7 @@ resource "aws_lambda_function" "bgg_boardgame_file_retrieval_lambda" {
   memory_size   = 512
   image_uri     = "${module.bgg_boardgame_file_retrieval_ecr.repository_url}:latest"
   package_type  = "Image"
+  description    = "Lambda function to retrieve the ranks csv from boardgamegeek"
 
   role = module.bgg_boardgame_file_retrieval_role.arn
 

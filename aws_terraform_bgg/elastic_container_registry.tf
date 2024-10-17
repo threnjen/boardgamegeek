@@ -6,9 +6,9 @@ locals {
     module.bgg_boardgame_file_retrieval_ecr.ecr_repository_name,
     module.bgg_orchestrator_ecr.ecr_repository_name,
     module.boardgamegeek_cleaner_ecr.ecr_repository_name,
-    module.boardgamegeek_cleaner_dev_ecr.ecr_repository_name,
+    module.dev_boardgamegeek_cleaner_ecr.ecr_repository_name,
     module.boardgamegeek_scraper_ecr.ecr_repository_name,
-    module.boardgamegeek_scraper_dev_ecr.ecr_repository_name
+    module.dev_boardgamegeek_scraper_ecr.ecr_repository_name
   ]
 }
 
@@ -27,9 +27,9 @@ module "boardgamegeek_cleaner_ecr" {
   ecr_repository_name = "boardgamegeek_cleaner"
 }
 
-module "boardgamegeek_cleaner_dev_ecr" {
+module "dev_boardgamegeek_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "boardgamegeek_cleaner_dev"
+  ecr_repository_name = "dev_boardgamegeek_cleaner"
 }
 
 module "boardgamegeek_scraper_ecr" {
@@ -37,7 +37,7 @@ module "boardgamegeek_scraper_ecr" {
   ecr_repository_name = "boardgamegeek_scraper"
 }
 
-module "boardgamegeek_scraper_dev_ecr" {
+module "dev_boardgamegeek_scraper_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "boardgamegeek_scraper_dev"
+  ecr_repository_name = "dev_boardgamegeek_scraper"
 }

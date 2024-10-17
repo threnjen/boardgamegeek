@@ -15,3 +15,5 @@
 *.tfstate
 *.terraform
 *.tfstate.backup
+*.conf
+*.lock.hcl
