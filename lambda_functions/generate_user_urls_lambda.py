@@ -45,7 +45,8 @@ def lambda_handler(event, context):
 
     # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
     games = load_file_local_first(
-        path=CONFIGS["game"]["dirty_dfs_directory"], file_name="games.pkl"
+        path=f'{CONFIGS['prod_directory']}{CONFIGS["game"]["dirty_dfs_directory"]}',
+        file_name="games.pkl",
     )
 
     ratings_totals = pd.DataFrame(games["BGGId"])
@@ -75,12 +76,15 @@ def lambda_handler(event, context):
 
     # turn ratings total into a dictionary
     ratings_totals = ratings_totals.to_dict(orient="records")
-    print(ratings_totals)
-
     # END SETUP METRICS
 
-    df_groups = {}
+    file_groups = {}
     group_counter = 1
+
+    if ENV == "dev":
+        ratings_totals = ratings_totals[-10:]
+
+    print(ratings_totals)
 
     print(f"Splitting the games into groups of ~{max_ratings_pages} ratings pages\n")
     while len(ratings_totals) > 0:
@@ -100,7 +104,7 @@ def lambda_handler(event, context):
             if len(ratings_totals) == 0:
                 break
 
-        df_groups[f"group{group_counter}"] = [bgg_id_lists, ratings_lists]
+        file_groups[f"group{group_counter}"] = [bgg_id_lists, ratings_lists]
         print(
             f"group{group_counter} Complete - {len(bgg_id_lists)} games with {chunk_size} ratings pages"
         )
@@ -108,20 +112,18 @@ def lambda_handler(event, context):
 
     group_urls = {}
 
-    local_path = "/tmp" if ENV == "prod" else USER_CONFIGS["raw_urls_directory"]
-
     total_games_processed = 0
     total_pages_processed = 0
 
     print(f"\nWriting the urls to json files\n")
 
-    for group, game_entries in df_groups.items():
+    for group, game_entries in file_groups.items():
 
         print(f"{len(game_entries[0])} games in {group}")
         group_urls = generate_ratings_urls(game_entries)
 
         save_file_local_first(
-            path=local_path,
+            path=USER_CONFIGS["raw_urls_directory"],
             file_name=f"{group}{USER_CONFIGS['output_urls_json_suffix']}",
             data=group_urls,
         )
