@@ -111,6 +111,11 @@ def lambda_handler(event, context):
         path=f"s3://{S3_SCRAPER_BUCKET}/data/boardgames_ranks.csv",
     )
 
+    wr.s3.upload(
+        local_file=f"{extract_directory}/boardgames_ranks.csv",
+        path=f"s3://{S3_SCRAPER_BUCKET}/test_data/boardgames_ranks.csv",
+    )
+
 
 if __name__ == "__main__":
 
