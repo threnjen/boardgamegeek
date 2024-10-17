@@ -37,7 +37,7 @@ module "boardgamegeek_cleaner_ecs" {
   region                 = var.REGION
 }
 
-module "boardgamegeek_cleaner_dev_ecs" {
+module "dev_boardgamegeek_cleaner_ecs" {
   source                 = "./modules/ecs_task_definition"
   task_definition_family = "${var.boardgamegeek_cleaner}_dev"
   task_definition_name   = "${var.boardgamegeek_cleaner}_dev"
@@ -68,7 +68,7 @@ module "boardgamegeek_scraper_ecs" {
   region                 = var.REGION
 }
 
-module "boardgamegeek_scraper_dev_ecs" {
+module "dev_boardgamegeek_scraper_ecs" {
   source                 = "./modules/ecs_task_definition"
   task_definition_family = "${var.boardgamegeek_scraper}_dev"
   task_definition_name   = "${var.boardgamegeek_scraper}_dev"

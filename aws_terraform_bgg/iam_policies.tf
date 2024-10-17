@@ -113,10 +113,10 @@ module "trigger_bgg_generate_user_urls_lambda" {
 #         ]
 #         Effect   = "Allow"
 #         Resource = [
-#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgame_scraper_fargate_trigger.function_name}",
-#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgame_scraper_fargate_trigger_dev.function_name}",
-#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgamegeek_cleaner_fargate_trigger.function_name}",
-#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.boardgamegeek_cleaner_fargate_trigger_dev.function_name}"
+#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.bgg_scraper_fargate_trigger.function_name}",
+#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.dev_bgg_scraper_fargate_trigger.function_name}",
+#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.bgg_cleaner_fargate_trigger.function_name}",
+#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.dev_bgg_cleaner_fargate_trigger.function_name}"
 #         ]
 #       },
 #     ]

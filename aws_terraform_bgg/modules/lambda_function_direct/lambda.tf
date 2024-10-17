@@ -6,7 +6,7 @@ resource "aws_lambda_function" "lambda" {
   role             = var.role
   handler          = var.handler
   runtime = "python3.12"
-
+  description = var.description
   layers = var.layers
 
   source_code_hash = filebase64sha256("lambda_function.zip")

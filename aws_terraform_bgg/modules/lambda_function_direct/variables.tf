@@ -27,3 +27,8 @@ variable "layers" {
   type = list(string)
   default = []
 }
+
+variable "description" {
+  type = string
+  default = ""
+}
