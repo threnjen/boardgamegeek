@@ -13,11 +13,16 @@ from config import CONFIGS
 from utils.file_handler import FileHandler
 from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
-from utils.processing_functions import load_file_local_first, save_file_local_first
+from utils.processing_functions import (
+    load_file_local_first,
+    save_file_local_first,
+    get_directory_keys_based_on_env,
+)
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 ENV = os.environ.get("ENV", "dev")
+WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
 
 
 class BGGSpider(scrapy.Spider):
@@ -28,6 +33,7 @@ class BGGSpider(scrapy.Spider):
         name: str,
         scraper_urls_raw: list[str],
         save_file_path: str,
+        group: str,
         file_handler: FileHandler,
     ):
         """
@@ -44,6 +50,7 @@ class BGGSpider(scrapy.Spider):
         self.scraper_urls_raw = scraper_urls_raw
         self.save_file_path = save_file_path
         self.file_handler = file_handler
+        self.group = group
 
     def start_requests(self):
         for i, url in enumerate(self.scraper_urls_raw):
@@ -54,9 +61,9 @@ class BGGSpider(scrapy.Spider):
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-        save_file_local_first(
-            path=self.save_file_path,
-            file_name=f"{response_id}_{timestamp}.xml",
+        save_file_path = f"{WORKING_DIR}{self.save_file_path}/{self.group}_{response_id}_{timestamp}.xml"
+        self.file_handler.save_file(
+            file_path=save_file_path,
             data=response.body,
         )
 
@@ -86,9 +93,11 @@ class GameScraper:
         )
         self._run_scrapy_scraper(scraper_urls_raw)
         raw_xml = self._combine_xml_files_to_master()
-        self._write_combined_xml_file(
-            raw_xml,
-            combined_xml_filename=f"combined_{self.file_group}_{self.scraper_type}_raw.xml",
+
+        save_file_local_first(
+            path=self.scraped_games_folder,
+            file_name=f"combined_{self.file_group}_{self.scraper_type}_raw.xml",
+            data=raw_xml,
         )
 
     def _run_scrapy_scraper(self, scraper_urls_raw) -> None:
@@ -111,7 +120,8 @@ class GameScraper:
             BGGSpider,
             name="bgg_raw",
             scraper_urls_raw=scraper_urls_raw,
-            save_file_path=f"{self.scraped_games_folder}/{self.urls_filename}",
+            save_file_path=self.scraped_games_folder,
+            group=self.file_group,
             file_handler=LocalFileHandler(),
         )
 
@@ -124,11 +134,12 @@ class GameScraper:
         """Combine the XML files into a single XML file"""
 
         print(f"Combining XML files for {self.file_group}")
+        print(self.scraped_games_folder)
 
         saved_files = [
-            f"{self.scraped_games_folder}/{file_name}"
-            for file_name in os.listdir(self.scraped_games_folder)
-            if self.file_group in file_name and "master" not in file_name
+            x
+            for x in get_directory_keys_based_on_env(self.scraped_games_folder)
+            if self.file_group in x and "combined" not in x
         ]
 
         # Parse the first XML file to get the root and header
@@ -162,12 +173,6 @@ class GameScraper:
                 os.remove(xml_file)
 
         return xml_bytes
-
-    def _write_combined_xml_file(self, xml: bytes, combined_xml_filename=str) -> None:
-
-        save_file_local_first(
-            path=self.scraped_games_folder, file_name=combined_xml_filename, data=xml
-        )
 
 
 def parse_args():

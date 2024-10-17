@@ -13,6 +13,7 @@ import awswrangler as wr
 ENV = os.getenv("ENV", "dev")
 IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
 S3_SCRAPER_BUCKET = os.getenv("S3_SCRAPER_BUCKET")
+WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
 
 # from statistics import mean
 
@@ -28,14 +29,17 @@ import re
 # from nltk.tokenize import word_tokenize
 
 
+def get_directory_keys_based_on_env(directory: str):
+
+    return [
+        f"{WORKING_DIR}{directory}/{x}" for x in os.listdir(f"{WORKING_DIR}{directory}")
+    ]
+
+
 def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):
     file_path = f"{path}/{file_name}"
 
-    save_path = (
-        f"{CONFIGS['dev_directory']}{file_path}"
-        if ENV == "dev"
-        else f"{CONFIGS['prod_directory']}{file_path}"
-    )
+    save_path = f"{WORKING_DIR}{file_path}"
     print(save_path)
 
     if IS_LOCAL:
@@ -45,16 +49,13 @@ def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, d
     S3FileHandler().save_file(file_path=save_path, data=data)
 
 
-def load_file_local_first(path: str, file_name: str):
+def load_file_local_first(path: str = None, file_name: str = ""):
 
-    file_path = f"{path}/{file_name}"
+    file_path = f"{path}/{file_name}" if path else file_name
     print(file_path)
 
-    load_path = (
-        f"{CONFIGS['dev_directory']}{file_path}"
-        if ENV == "dev"
-        else f"{CONFIGS['prod_directory']}{file_path}"
-    )
+    load_path = f"{WORKING_DIR}{file_path}"
+
     print(load_path)
 
     try:
