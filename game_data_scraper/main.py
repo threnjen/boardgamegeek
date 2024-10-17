@@ -61,9 +61,8 @@ class BGGSpider(scrapy.Spider):
     def _save_response(self, response: scrapy.http.Response, response_id: int):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
 
-        save_file_path = f"{WORKING_DIR}{self.save_file_path}/{self.group}_{response_id}_{timestamp}.xml"
         self.file_handler.save_file(
-            file_path=save_file_path,
+            file_path=f"{WORKING_DIR}{self.save_file_path}/{self.group}_{response_id}_{timestamp}.xml",
             data=response.body,
         )
 
@@ -77,15 +76,6 @@ class GameScraper:
         self.raw_urls_folder = CONFIGS[scraper_type]["raw_urls_directory"]
         self.scraped_games_folder = CONFIGS[scraper_type]["output_xml_directory"]
         self.scraper_type = scraper_type
-
-    def set_save_folders(self, configs):
-        base_dir = (
-            configs["dev_directory"] if ENV == "dev" else configs["prod_directory"]
-        )
-        raw_urls_folder = f'{base_dir}{configs["raw_urls_directory"]}'
-        scraped_games_folder = f'{base_dir}{configs["output_xml_directory"]}'
-
-        return raw_urls_folder, scraped_games_folder
 
     def run_game_scraper_processes(self):
         scraper_urls_raw = load_file_local_first(

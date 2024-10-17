@@ -5,7 +5,7 @@ import sys
 import boto3
 
 from config import CONFIGS
-from utils.s3_file_handler import S3FileHandler
+from utils.processing_functions import get_s3_keys_based_on_env
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
@@ -13,19 +13,6 @@ SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
-
-
-def get_filenames(scraper_type):
-    """Get the filenames of the files to be processed by the scraper"""
-
-    s3_client = boto3.client("s3")
-    raw_files = s3_client.list_objects_v2(
-        Bucket=S3_SCRAPER_BUCKET,
-        Prefix=f'{WORKING_DIR}{CONFIGS[scraper_type]["raw_urls_directory"]}',
-    )["Contents"]
-    file_prefixes = [x["Key"] for x in raw_files]
-
-    return file_prefixes
 
 
 def get_terraform_state_file_for_vpc():
@@ -56,8 +43,8 @@ def lambda_handler(event, context):
 
     print(terraform_state_file["outputs"])
 
-    file_prefixes = S3FileHandler().list_files(
-        directory=f'{WORKING_DIR}{CONFIGS[scraper_type]["raw_urls_directory"]}'
+    file_prefixes = get_s3_keys_based_on_env(
+        directory=f'{CONFIGS[scraper_type]["raw_urls_directory"]}'
     )
 
     task_definition = (
