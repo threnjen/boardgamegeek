@@ -18,15 +18,15 @@ variable "MY_IP_FIRST_THREE_BLOCKS" {
   }
 }
 
-variable "boardgamegeek_scraper" {
-  description = "The name of the ECS task definition for the boardgamegeek_scraper"
+variable "bgg_scraper" {
+  description = "The name of the ECS task definition for the bgg_scraper"
   type        = string
-  default     = "boardgamegeek_scraper"
+  default     = "bgg_scraper"
 }
-variable "boardgamegeek_cleaner" {
-  description = "The name of the ECS task definition for the boardgamegeek_cleaner"
+variable "bgg_cleaner" {
+  description = "The name of the ECS task definition for the bgg_cleaner"
   type        = string
-  default     = "boardgamegeek_cleaner"
+  default     = "bgg_cleaner"
 }
 
 variable "boardgamegeek_orchestrator" {

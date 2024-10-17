@@ -14,6 +14,8 @@ TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
 
+print(SCRAPER_TASK_DEFINITION)
+
 
 def get_terraform_state_file_for_vpc():
     """Get the terraform state file for the VPC"""
@@ -48,7 +50,7 @@ def lambda_handler(event, context):
     )
 
     task_definition = (
-        f"{SCRAPER_TASK_DEFINITION}_dev" if ENV != "prod" else SCRAPER_TASK_DEFINITION
+        f"dev_{SCRAPER_TASK_DEFINITION}" if ENV != "prod" else SCRAPER_TASK_DEFINITION
     )
     print(task_definition)
 
@@ -79,6 +81,7 @@ def lambda_handler(event, context):
                     "securityGroups": [
                         terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"]
                     ],
+                    "assignPublicIp": "ENABLED",
                 },
             },
             overrides={

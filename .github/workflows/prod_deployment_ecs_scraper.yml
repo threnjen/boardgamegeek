@@ -26,10 +26,10 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, push image to AWS ECR boardgamegeek_scraper
+      - name: Build, tag, push image to AWS ECR bgg_scraper
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: boardgamegeek_scraper
+          ECR_REPOSITORY: bgg_scraper
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-scraper --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY

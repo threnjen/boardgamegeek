@@ -34,7 +34,7 @@ jobs:
       - name: Build, tag, push image to AWS ECR game_data_scraper
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev_boardgamegeek_scraper
+          ECR_REPOSITORY: dev_bgg_scraper
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-scraper --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY

@@ -17,6 +17,7 @@ awswrangler = "*"
 xmltodict = "*"
 dagster = "*"
 dagster-webserver = "*"
+tzlocal = "*"
 
 [dev-packages]
 pytest = "*"

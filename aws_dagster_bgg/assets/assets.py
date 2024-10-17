@@ -117,7 +117,7 @@ def game_dfs_dirty(
 
     assert len(raw_game_files) == 30
 
-    ecs_resource.launch_ecs_task(task_definition="boardgamegeek_cleaner")
+    ecs_resource.launch_ecs_task(task_definition="bgg_cleaner")
 
     data_set_file_names = [
         f"{configs['games']['dirty_dfs_directory']}/{x}_dirty.pkl" for x in data_sets
