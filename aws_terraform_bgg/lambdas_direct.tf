@@ -4,7 +4,9 @@ locals {
     module.boardgame_scraper_fargate_trigger.function_name,
     module.boardgame_scraper_fargate_trigger_dev.function_name,
     module.bgg_generate_game_urls.function_name,
+    module.bgg_generate_game_urls_dev.function_name,
     module.bgg_generate_user_urls.function_name,
+    module.bgg_generate_user_urls_dev.function_name,
     module.boardgamegeek_cleaner_fargate_trigger.function_name,
     module.boardgamegeek_cleaner_fargate_trigger_dev.function_name,
     module.bgg_orchestrator_fargate_trigger.function_name
