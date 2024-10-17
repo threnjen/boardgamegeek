@@ -14,7 +14,7 @@ BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
+IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
