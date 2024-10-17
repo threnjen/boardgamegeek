@@ -19,7 +19,7 @@ from utils.s3_file_handler import S3FileHandler
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["game"]
-IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
+IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
 class DirtyDataExtractor:

@@ -48,15 +48,24 @@ def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, d
 def load_file_local_first(path: str, file_name: str):
 
     file_path = f"{path}/{file_name}"
+    print(file_path)
+
+    load_path = (
+        f"{CONFIGS['dev_directory']}{file_path}"
+        if ENV == "dev"
+        else f"{CONFIGS['prod_directory']}{file_path}"
+    )
+    print(load_path)
+
     try:
         # open from local_pile_path
-        file = LocalFileHandler().load_file(file_path=file_path)
+        file = LocalFileHandler().load_file(file_path=load_path)
     except FileNotFoundError as e:
         print(f"Downloading {file_name} from S3")
-        file = S3FileHandler().load_file(file_path=file_path)
+        file = S3FileHandler().load_file(file_path=load_path)
         if IS_LOCAL:
             print(f"Saving {file_name} to local")
-            LocalFileHandler().save_file(file_path=file_path, data=file)
+            LocalFileHandler().save_file(file_path=load_path, data=file)
     return file
 
 

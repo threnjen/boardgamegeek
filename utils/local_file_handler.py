@@ -55,7 +55,7 @@ class LocalFileHandler(FileHandler):
     def save_xml(self, file_path: str, data: str):
         self.make_directory(Path(file_path).parent)
         with open(file_path, "wb") as f:
-            f.write(data.encode("utf-8"))
+            f.write(data)
 
     def load_csv(self, file_path: str) -> pd.DataFrame:
         return pd.read_csv(file_path, low_memory=False, on_bad_lines="skip")

@@ -11,13 +11,16 @@ S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
+WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
+
 
 def get_filenames(scraper_type):
     """Get the filenames of the files to be processed by the scraper"""
 
     s3_client = boto3.client("s3")
     raw_files = s3_client.list_objects_v2(
-        Bucket=S3_SCRAPER_BUCKET, Prefix=CONFIGS[scraper_type]["raw_urls_directory"]
+        Bucket=S3_SCRAPER_BUCKET,
+        Prefix=f'{WORKING_DIR}{CONFIGS[scraper_type]["raw_urls_directory"]}',
     )["Contents"]
     file_prefixes = [x["Key"] for x in raw_files]
 
@@ -56,7 +59,7 @@ def lambda_handler(event, context):
 
     # file_prefixes = get_filenames(scraper_type)
     file_prefixes = S3FileHandler().list_files(
-        directory=CONFIGS[scraper_type]["raw_urls_directory"]
+        directory=f'{WORKING_DIR}{CONFIGS[scraper_type]["raw_urls_directory"]}'
     )
 
     task_definition = (
@@ -71,9 +74,6 @@ def lambda_handler(event, context):
         .get("taskDefinition")
         .get("revision")
     )
-
-    if ENV == "dev":
-        file_prefixes = file_prefixes[:1]
 
     for file in file_prefixes:
         filename = file.split("/")[-1].split(".")[0]

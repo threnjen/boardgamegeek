@@ -45,7 +45,7 @@ def lambda_handler(event, context):
 
     print(f"Number of scraper urls: {len(scraper_urls_raw)}")
     url_block_size = (
-        math.ceil(len(scraper_urls_raw) / number_url_files) if ENV == "prod" else 10
+        math.ceil(len(scraper_urls_raw) / number_url_files) if ENV == "prod" else 3
     )
     print(f"URL block size: {url_block_size}")
 
