@@ -1,8 +1,9 @@
-from dagster import asset, ConfigurableResource, op, get_dagster_logger
-import time
-import os
-from datetime import datetime
 import logging
+import os
+import time
+from datetime import datetime
+
+from dagster import ConfigurableResource, asset, get_dagster_logger, op
 
 logger = get_dagster_logger()
 

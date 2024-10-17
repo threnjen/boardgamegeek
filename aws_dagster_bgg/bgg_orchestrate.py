@@ -1,8 +1,7 @@
-import subprocess
-import time
-import sys
 import os
-
+import subprocess
+import sys
+import time
 
 if __name__ == "__main__":
     ENV = sys.argv[1]

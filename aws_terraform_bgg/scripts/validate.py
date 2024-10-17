@@ -1,7 +1,9 @@
-import re
 import os
-import boto3, botocore
+import re
 from typing import Union
+
+import boto3
+import botocore
 
 
 def check_bucket(bucket_name: str) -> Union[bool, str]:

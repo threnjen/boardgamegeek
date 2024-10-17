@@ -1,21 +1,22 @@
-from dagster import (
-    Definitions,
-    load_assets_from_modules,
-    ConfigurableResource,
-    asset,
-    AssetsDefinition,
-)
 import os
 
-from .assets import assets
-from .resources import (
-    S3Resource,
-    DynamoDBResource,
-    LambdaHandlerResource,
-    ECSResource,
-    ConfigResource,
+from dagster import (
+    AssetsDefinition,
+    ConfigurableResource,
+    Definitions,
+    asset,
+    load_assets_from_modules,
 )
+
+from .assets import assets
 from .jobs import bgg_job
+from .resources import (
+    ConfigResource,
+    DynamoDBResource,
+    ECSResource,
+    LambdaHandlerResource,
+    S3Resource,
+)
 
 scraper_assets = load_assets_from_modules([assets])
 
