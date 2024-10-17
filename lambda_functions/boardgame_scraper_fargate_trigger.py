@@ -1,27 +1,18 @@
+import json
 import os
 import sys
-import json
+
 import boto3
 
 from config import CONFIGS
-from utils.s3_file_handler import S3FileHandler
+from utils.processing_functions import get_s3_keys_based_on_env
 
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
-
-def get_filenames(scraper_type):
-    """Get the filenames of the files to be processed by the scraper"""
-
-    s3_client = boto3.client("s3")
-    raw_files = s3_client.list_objects_v2(
-        Bucket=S3_SCRAPER_BUCKET, Prefix=CONFIGS[scraper_type]["raw_urls_directory"]
-    )["Contents"]
-    file_prefixes = [x["Key"] for x in raw_files]
-
-    return file_prefixes
+WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
 
 
 def get_terraform_state_file_for_vpc():
@@ -52,11 +43,8 @@ def lambda_handler(event, context):
 
     print(terraform_state_file["outputs"])
 
-    # TO DO LATER: HAVE THIS TRIGGER OFF OF EACH FILE LANDING AND SPAWN TASKS IN PARALLEL INSTEAD OF READING THE DIRECTORY
-
-    # file_prefixes = get_filenames(scraper_type)
-    file_prefixes = S3FileHandler().list_files(
-        directory=CONFIGS[scraper_type]["raw_urls_directory"]
+    file_prefixes = get_s3_keys_based_on_env(
+        directory=f'{CONFIGS[scraper_type]["raw_urls_directory"]}'
     )
 
     task_definition = (
@@ -71,9 +59,6 @@ def lambda_handler(event, context):
         .get("taskDefinition")
         .get("revision")
     )
-
-    if ENV == "dev":
-        file_prefixes = file_prefixes[:1]
 
     for file in file_prefixes:
         filename = file.split("/")[-1].split(".")[0]

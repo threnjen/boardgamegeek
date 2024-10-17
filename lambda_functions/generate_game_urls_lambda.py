@@ -2,8 +2,6 @@ import math
 import os
 
 from config import CONFIGS
-from utils.local_file_handler import LocalFileHandler
-from utils.s3_file_handler import S3FileHandler
 from utils.processing_functions import load_file_local_first, save_file_local_first
 
 ENV = os.environ.get("ENV", "dev")
@@ -36,7 +34,7 @@ def lambda_handler(event, context):
     to pick up.
     """
 
-    df = load_file_local_first(path="data", file_name="boardgames_ranks.csv")
+    df = load_file_local_first(file_name="boardgames_ranks.csv")
 
     game_ids = df["id"].astype(str).to_list()
     print(f"Number of game ids: {len(game_ids)}")
@@ -45,7 +43,7 @@ def lambda_handler(event, context):
 
     print(f"Number of scraper urls: {len(scraper_urls_raw)}")
     url_block_size = (
-        math.ceil(len(scraper_urls_raw) / number_url_files) if ENV == "prod" else 10
+        math.ceil(len(scraper_urls_raw) / number_url_files) if ENV == "prod" else 2
     )
     print(f"URL block size: {url_block_size}")
 

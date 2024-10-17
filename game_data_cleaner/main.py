@@ -10,6 +10,8 @@ from config import CONFIGS
 from game_data_cleaner.games_data_cleaner import GameDataCleaner
 from game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
 from utils.processing_functions import (
+    get_local_keys_based_on_env,
+    get_s3_keys_based_on_env,
     load_file_local_first,
     save_file_local_first,
     save_to_aws_glue,
@@ -19,7 +21,7 @@ from utils.s3_file_handler import S3FileHandler
 ENV = os.environ.get("ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["game"]
-IS_LOCAL = True if os.environ.get("IS_LOCAL", "False") == "True" else False
+IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
 class DirtyDataExtractor:
@@ -33,25 +35,12 @@ class DirtyDataExtractor:
         dirty_storage = self._organize_raw_storage(raw_storage)
         self._save_dfs_to_disk_or_s3(dirty_storage)
 
-    def save_file_set(self, data, table):
-        save_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"],
-            file_name=f"{table}_dirty.pkl",
-            data=data,
-        )
-        save_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"],
-            file_name=f"{table}_dirty.csv",
-            data=data,
-        )
-        save_to_aws_glue(data=data, table=f"{table}_dirty")
-
     def _get_file_list(self) -> list[str]:
         # list files in data dirty prefix in s3 using awswrangler
         xml_directory = GAME_CONFIGS["output_xml_directory"]
-        file_list_to_process = S3FileHandler().list_files(xml_directory)
+        file_list_to_process = get_s3_keys_based_on_env(xml_directory)
         if not file_list_to_process:
-            local_files = os.listdir(f"data/{xml_directory}")
+            local_files = get_local_keys_based_on_env(xml_directory)
             file_list_to_process = [x for x in local_files if x.endswith(".xml")]
         return file_list_to_process
 
@@ -158,6 +147,19 @@ class DirtyDataExtractor:
 
         del raw_storage
         return dirty_storage
+
+    def save_file_set(self, data, table):
+        save_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=f"{table}_dirty.pkl",
+            data=data,
+        )
+        save_file_local_first(
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=f"{table}_dirty.csv",
+            data=data,
+        )
+        save_to_aws_glue(data=data, table=f"{table}_dirty")
 
     def _save_dfs_to_disk_or_s3(self, dirty_storage: dict[pd.DataFrame]):
         """Save all files as pkl files. Save to local drive in ENV==env, or

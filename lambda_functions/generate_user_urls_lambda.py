@@ -1,8 +1,5 @@
-import json
 import os
 
-import awswrangler as wr
-import boto3
 import numpy as np
 import pandas as pd
 
@@ -27,7 +24,6 @@ def generate_ratings_urls(game_entries):
         current_bgg_id = bgg_ids[i]
         max_page_number = ratings_pages[i]
         page_numbers = range(1, max_page_number + 1)
-        # print(f"{current_bgg_id} - {max_page_number} pages")
 
         for page_number in page_numbers:
             path = f"https://www.boardgamegeek.com/xmlapi2/thing?id={current_bgg_id}&ratingcomments=1&page={str(page_number)}&pagesize=100"
@@ -43,7 +39,6 @@ def lambda_handler(event, context):
     will be split into blocks and saved to S3 for the scraper
     to pick up."""
 
-    # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
     games = load_file_local_first(
         path=f'{CONFIGS['prod_directory']}{CONFIGS["game"]["dirty_dfs_directory"]}',
         file_name="games.pkl",
@@ -74,9 +69,7 @@ def lambda_handler(event, context):
         f"Max ratings pages per process to spawn {NUMBER_PROCESSES} processes: {max_ratings_pages}\n"
     )
 
-    # turn ratings total into a dictionary
     ratings_totals = ratings_totals.to_dict(orient="records")
-    # END SETUP METRICS
 
     file_groups = {}
     group_counter = 1

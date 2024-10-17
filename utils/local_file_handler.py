@@ -55,7 +55,7 @@ class LocalFileHandler(FileHandler):
     def save_xml(self, file_path: str, data: str):
         self.make_directory(Path(file_path).parent)
         with open(file_path, "wb") as f:
-            f.write(data.encode("utf-8"))
+            f.write(data)
 
     def load_csv(self, file_path: str) -> pd.DataFrame:
         return pd.read_csv(file_path, low_memory=False, on_bad_lines="skip")
@@ -78,4 +78,4 @@ class LocalFileHandler(FileHandler):
         return os.path.exists(file_path)
 
     def list_files(self, directory: str) -> list[str]:
-        return [file for file in os.listdir(directory) if os.path.isfile(file)]
+        return [file for file in os.listdir(directory)]

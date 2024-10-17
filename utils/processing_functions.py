@@ -1,18 +1,18 @@
 import os
-from typing import Union
 from datetime import datetime
-
-import pandas as pd
-
-from utils.local_file_handler import LocalFileHandler
-from utils.s3_file_handler import S3FileHandler
-from config import CONFIGS
+from typing import Union
 
 import awswrangler as wr
+import pandas as pd
+
+from config import CONFIGS
+from utils.local_file_handler import LocalFileHandler
+from utils.s3_file_handler import S3FileHandler
 
 ENV = os.getenv("ENV", "dev")
 IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
 S3_SCRAPER_BUCKET = os.getenv("S3_SCRAPER_BUCKET")
+WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
 
 # from statistics import mean
 
@@ -28,14 +28,20 @@ import re
 # from nltk.tokenize import word_tokenize
 
 
+def get_s3_keys_based_on_env(directory: str):
+    directory = f"{WORKING_DIR}{directory}"
+    return [f"{directory}/{x}" for x in S3FileHandler().list_files(directory)]
+
+
+def get_local_keys_based_on_env(directory: str):
+    directory = f"{WORKING_DIR}{directory}"
+    return [f"{directory}/{x}" for x in LocalFileHandler().list_files(directory)]
+
+
 def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):
     file_path = f"{path}/{file_name}"
 
-    save_path = (
-        f"{CONFIGS['dev_directory']}{file_path}"
-        if ENV == "dev"
-        else f"{CONFIGS['prod_directory']}{file_path}"
-    )
+    save_path = f"{WORKING_DIR}{file_path}"
     print(save_path)
 
     if IS_LOCAL:
@@ -45,18 +51,24 @@ def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, d
     S3FileHandler().save_file(file_path=save_path, data=data)
 
 
-def load_file_local_first(path: str, file_name: str):
+def load_file_local_first(path: str = None, file_name: str = ""):
 
-    file_path = f"{path}/{file_name}"
+    file_path = f"{path}/{file_name}" if path else file_name
+    print(file_path)
+
+    load_path = f"{WORKING_DIR}{file_path}"
+
+    print(load_path)
+
     try:
         # open from local_pile_path
-        file = LocalFileHandler().load_file(file_path=file_path)
+        file = LocalFileHandler().load_file(file_path=load_path)
     except FileNotFoundError as e:
         print(f"Downloading {file_name} from S3")
-        file = S3FileHandler().load_file(file_path=file_path)
+        file = S3FileHandler().load_file(file_path=load_path)
         if IS_LOCAL:
             print(f"Saving {file_name} to local")
-            LocalFileHandler().save_file(file_path=file_path, data=file)
+            LocalFileHandler().save_file(file_path=load_path, data=file)
     return file
 
 
