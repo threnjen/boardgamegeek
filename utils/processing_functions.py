@@ -1,14 +1,13 @@
 import os
-from typing import Union
 from datetime import datetime
-
-import pandas as pd
-
-from utils.local_file_handler import LocalFileHandler
-from utils.s3_file_handler import S3FileHandler
-from config import CONFIGS
+from typing import Union
 
 import awswrangler as wr
+import pandas as pd
+
+from config import CONFIGS
+from utils.local_file_handler import LocalFileHandler
+from utils.s3_file_handler import S3FileHandler
 
 ENV = os.getenv("ENV", "dev")
 IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True

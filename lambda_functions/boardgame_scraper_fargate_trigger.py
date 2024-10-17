@@ -1,6 +1,7 @@
+import json
 import os
 import sys
-import json
+
 import boto3
 
 from config import CONFIGS
@@ -55,9 +56,6 @@ def lambda_handler(event, context):
 
     print(terraform_state_file["outputs"])
 
-    # TO DO LATER: HAVE THIS TRIGGER OFF OF EACH FILE LANDING AND SPAWN TASKS IN PARALLEL INSTEAD OF READING THE DIRECTORY
-
-    # file_prefixes = get_filenames(scraper_type)
     file_prefixes = S3FileHandler().list_files(
         directory=f'{WORKING_DIR}{CONFIGS[scraper_type]["raw_urls_directory"]}'
     )

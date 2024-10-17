@@ -10,11 +10,11 @@ from config import CONFIGS
 from game_data_cleaner.games_data_cleaner import GameDataCleaner
 from game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
 from utils.processing_functions import (
+    get_local_keys_based_on_env,
+    get_s3_keys_based_on_env,
     load_file_local_first,
     save_file_local_first,
     save_to_aws_glue,
-    get_local_keys_based_on_env,
-    get_s3_keys_based_on_env,
 )
 from utils.s3_file_handler import S3FileHandler
 
