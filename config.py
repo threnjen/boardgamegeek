@@ -14,7 +14,6 @@ if LocalFileHandler().check_file_exists(file_path="config.json"):
 else:
     print("Local config not found")
     NOT_FOUND = True
-
 if (
     NOT_FOUND
     or S3FileHandler().get_last_modified(file_path="config.json") > local_datetime

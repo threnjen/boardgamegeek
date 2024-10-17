@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Union
-
 import pandas as pd
 import pytz
 
@@ -23,8 +22,12 @@ class LocalFileHandler(FileHandler):
         return os.path.exists(file_path)
 
     def get_last_modified(self, file_path: str) -> datetime:
-        last_modified_timestamp = os.path.getmtime(file_path)
-        return datetime.fromtimestamp(last_modified_timestamp).astimezone(pytz.utc)
+        last_modified_timestamp = datetime.fromtimestamp(os.path.getmtime(file_path))
+
+        timezone = pytz.timezone("America/New_York")
+        last_modified_timestamp = last_modified_timestamp.astimezone(timezone)
+
+        return last_modified_timestamp.astimezone(pytz.utc)
 
     def get_file_path(self, file_path: str) -> str:
         return file_path

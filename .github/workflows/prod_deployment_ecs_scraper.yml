@@ -1,4 +1,4 @@
-name: PROD deployment to boardgamegeek cleaner
+name: PROD deployment to boardgamegeek scraper
 
 on:
   push:
@@ -15,18 +15,21 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
+        
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      - name: Build, tag, push image to AWS ECR boardgamegeek_cleaner
+
+      - name: Build, tag, push image to AWS ECR bgg_scraper
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: boardgamegeek_cleaner
+          ECR_REPOSITORY: bgg_scraper
         run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-scraper --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY

@@ -40,8 +40,8 @@ def lambda_handler(event, context):
     to pick up."""
 
     games = load_file_local_first(
-        path=f'{CONFIGS['prod_directory']}{CONFIGS["game"]["dirty_dfs_directory"]}',
-        file_name="games.pkl",
+        path=f'{CONFIGS["game"]["dirty_dfs_directory"]}',
+        file_name="games_dirty.pkl",
     )
 
     ratings_totals = pd.DataFrame(games["BGGId"])
@@ -73,9 +73,6 @@ def lambda_handler(event, context):
 
     file_groups = {}
     group_counter = 1
-
-    if ENV == "dev":
-        ratings_totals = ratings_totals[-10:]
 
     print(ratings_totals)
 
@@ -115,6 +112,9 @@ def lambda_handler(event, context):
         print(f"{len(game_entries[0])} games in {group}")
         group_urls = generate_ratings_urls(game_entries)
 
+        if ENV != "prod":
+            group_urls = group_urls[:3]
+
         save_file_local_first(
             path=USER_CONFIGS["raw_urls_directory"],
             file_name=f"{group}{USER_CONFIGS['output_urls_json_suffix']}",
@@ -123,6 +123,9 @@ def lambda_handler(event, context):
 
         total_games_processed += len(game_entries[0])
         total_pages_processed += sum(game_entries[1])
+
+        if ENV != "prod":
+            break
 
     print(f"\nTotal games processed: {total_games_processed}")
     print(f"Total pages processed: {total_pages_processed}")

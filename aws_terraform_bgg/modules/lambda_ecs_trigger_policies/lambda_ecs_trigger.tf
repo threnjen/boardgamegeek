@@ -20,8 +20,8 @@ resource "aws_iam_policy" "lambda_ecs_trigger" {
         Resource = [
           "arn:aws:ecs:${var.region}:${var.account_id}:task/*/${var.task_name}",
           "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_name}:*",
-          "arn:aws:ecs:${var.region}:${var.account_id}:task/*/${var.task_name}_dev",
-          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_name}_dev:*"
+          "arn:aws:ecs:${var.region}:${var.account_id}:task/*/dev_${var.task_name}",
+          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/dev_${var.task_name}:*"
         ]
       },
       {
@@ -36,7 +36,7 @@ resource "aws_iam_policy" "lambda_ecs_trigger" {
         Action = "ecs:RunTask",
         Resource = [
           "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_name}:*",
-          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_name}_dev:*"
+          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/dev_${var.task_name}:*"
         ]
       },
       {

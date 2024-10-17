@@ -1,5 +1,5 @@
-resource "aws_iam_policy" "S3_Access_boardgamegeek_scraper_policy" {
-  name = "S3_Access_boardgamegeek_scraper"
+resource "aws_iam_policy" "S3_Access_bgg_scraper_policy" {
+  name = "S3_Access_bgg_scraper"
   path = "/"
   policy = jsonencode({
     Version = "2012-10-17"
@@ -9,7 +9,8 @@ resource "aws_iam_policy" "S3_Access_boardgamegeek_scraper_policy" {
           "s3:ListBucket",
           "s3:PutObject",
           "s3:GetObject",
-          "s3:GetObjectAttributes"
+          "s3:GetObjectAttributes",
+          "s3:DeleteObject"
         ]
         Effect   = "Allow"
         Resource = [
@@ -47,32 +48,17 @@ resource "aws_iam_policy" "Cloudwatch_Put_Metrics_policy" {
   })
 }
 
-# module "bgg_cleaner_fargate_trigger_cloudwatch_policy" {
-#   source = "./modules/lambda_ecs_trigger_policies"
-#   name   = "${var.boardgamegeek_cleaner}_cloudwatch"
-#   task_name = var.boardgamegeek_cleaner
-#   region = var.REGION
-#   account_id = data.aws_caller_identity.current.account_id
-# }
-
-# module "bgg_scraper_fargate_trigger_cloudwatch_policy" {
-#   source = "./modules/lambda_ecs_trigger_policies"
-#   name   = "${var.boardgamegeek_scraper}_cloudwatch"
-#   task_name = var.boardgamegeek_scraper
-#   region = var.REGION
-#   account_id = data.aws_caller_identity.current.account_id
-# }
 module "bgg_scraper_describe_task_def_policy" {
   source = "./modules/lambda_ecs_trigger_policies"
-  name   = "${var.boardgamegeek_scraper}_lambda_ecs_trigger"
-  task_name = var.boardgamegeek_scraper
+  name   = "${var.bgg_scraper}_lambda_ecs_trigger"
+  task_name = var.bgg_scraper
   region = var.REGION
   account_id = data.aws_caller_identity.current.account_id
 }
 module "bgg_cleaner_describe_task_def_policy" {
   source = "./modules/lambda_ecs_trigger_policies"
-  name   = "${var.boardgamegeek_cleaner}_lambda_ecs_trigger"
-  task_name = var.boardgamegeek_cleaner
+  name   = "${var.bgg_cleaner}_lambda_ecs_trigger"
+  task_name = var.bgg_cleaner
   region = var.REGION
   account_id = data.aws_caller_identity.current.account_id
 }
@@ -97,32 +83,6 @@ module "trigger_bgg_generate_user_urls_lambda" {
   region = var.REGION
   account_id = data.aws_caller_identity.current.account_id
 }
-
-
-# resource "aws_iam_policy" "lambda_trigger_permissions" {
-#   name        = "lambda_trigger_run_permissions"
-#   description = "Policy to allow triggering of the Lambda trigger functions"
-
-#   policy = jsonencode({
-#     Version = "2012-10-17"
-#     Statement = [
-#       {
-#         Sid = "TriggerLambdaFunction"
-#         Action = [
-#           "lambda:InvokeFunction*",
-#         ]
-#         Effect   = "Allow"
-#         Resource = [
-#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.bgg_scraper_fargate_trigger.function_name}",
-#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.dev_bgg_scraper_fargate_trigger.function_name}",
-#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.bgg_cleaner_fargate_trigger.function_name}",
-#         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.dev_bgg_cleaner_fargate_trigger.function_name}"
-#         ]
-#       },
-#     ]
-#   })
-# }
-
 resource "aws_iam_policy" "ecs_run_permissions_bgg_cleaner" {
   name        = "ecs_run_permissions_bgg_cleaner"
   description = "Policy to allow running the BGG ECS tasks"
@@ -135,10 +95,10 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_cleaner" {
         Effect = "Allow",
         Action = "ecs:DescribeTasks",
         Resource = [
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.boardgamegeek_cleaner}",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_cleaner}:*",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.boardgamegeek_cleaner}_dev",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_cleaner}_dev:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.bgg_cleaner}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/dev_${var.bgg_cleaner}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_cleaner}:*",
         ]
       },
       {
@@ -152,8 +112,8 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_cleaner" {
         Effect = "Allow",
         Action = "ecs:RunTask",
         Resource = [
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_cleaner}:*",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_cleaner}_dev:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_cleaner}:*",
         ]
       },
       {
@@ -161,8 +121,8 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_cleaner" {
         Effect = "Allow",
         Action = "iam:PassRole",
         Resource = [
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_cleaner}_FargateExecutionRole",
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_cleaner}_FargateTaskRole"
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_cleaner}_FargateExecutionRole",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_cleaner}_FargateTaskRole"
         ]
       }
     ]
@@ -180,10 +140,10 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_scraper" {
         Effect = "Allow",
         Action = "ecs:DescribeTasks",
         Resource = [
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.boardgamegeek_scraper}",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_scraper}:*",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.boardgamegeek_scraper}_dev",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_scraper}_dev:*"
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.bgg_scraper}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_scraper}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/dev_${var.bgg_scraper}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_scraper}:*"
         ]
       },
       {
@@ -197,8 +157,8 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_scraper" {
         Effect = "Allow",
         Action = "ecs:RunTask",
         Resource = [
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_scraper}:*",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.boardgamegeek_scraper}_dev:*"
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_scraper}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_scraper}:*"
         ]
       },
       {
@@ -206,8 +166,8 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_scraper" {
         Effect = "Allow",
         Action = "iam:PassRole",
         Resource = [
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_scraper}_FargateExecutionRole",
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_scraper}_FargateTaskRole"
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_scraper}_FargateExecutionRole",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_scraper}_FargateTaskRole"
         ]
       }
     ]
@@ -233,6 +193,48 @@ resource "aws_iam_policy" "lambda_direct_permissions" {
         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.bgg_generate_game_urls.function_name}",
         "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.bgg_generate_user_urls.function_name}",
         "${aws_lambda_function.bgg_boardgame_file_retrieval_lambda.arn}"
+        ]
+      },
+    ]
+  })
+}
+
+
+resource "aws_iam_policy" "glue_table_access" {
+  name        = "glue_access_permissions"
+  description = "Policy to allow running access to Glue tables for BGG Scraper/Cleaner tasks"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid = "GlueTableAccess"
+        Action = [
+          "glue:CreateTable",
+                "glue:GetTable",
+                "glue:GetTables",                
+                "glue:UpdateTable",
+                "glue:DeleteTable",
+                "glue:BatchDeleteTable",
+                "glue:GetTableVersion",
+                "glue:GetTableVersions",
+                "glue:DeleteTableVersion",
+                "glue:BatchDeleteTableVersion",
+                "glue:CreatePartition",
+                "glue:BatchCreatePartition",
+                "glue:GetPartition",
+                "glue:GetPartitions",
+                "glue:BatchGetPartition",
+                "glue:UpdatePartition",
+                "glue:DeletePartition",
+                "glue:BatchDeletePartition"
+        ]
+        Effect   = "Allow"
+        Resource = [
+        "arn:aws:glue:${var.REGION}:${data.aws_caller_identity.current.account_id}:catalog",
+        "arn:aws:glue:${var.REGION}:${data.aws_caller_identity.current.account_id}:database/boardgamegeek",
+        "arn:aws:glue:${var.REGION}:${data.aws_caller_identity.current.account_id}:table/boardgamegeek/*"
+
         ]
       },
     ]

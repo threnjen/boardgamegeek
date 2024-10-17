@@ -17,6 +17,10 @@ resource "aws_ecs_task_definition" "task_definition" {
         {
           name  = "ENV",
           value = var.environment
+        },
+        {
+          name = "IS_LOCAL",
+          value = "false"
         }
       ],
       environmentFiles = [

@@ -66,7 +66,7 @@ module "bgg_scraper_fargate_trigger" {
   function_name = "bgg_scraper_fargate_trigger"
   timeout       = 600
   memory_size   = 128
-  role          = module.boardgamegeek_scraper_fargate_trigger_role.arn
+  role          = module.bgg_scraper_fargate_trigger_role.arn
   handler       = "bgg_scraper_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
@@ -78,7 +78,7 @@ module "dev_bgg_scraper_fargate_trigger" {
   function_name = "dev_bgg_scraper_fargate_trigger"
   timeout       = 600
   memory_size   = 128
-  role          = module.boardgamegeek_scraper_fargate_trigger_role.arn
+  role          = module.bgg_scraper_fargate_trigger_role.arn
   handler       = "bgg_scraper_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
@@ -91,7 +91,7 @@ module "bgg_cleaner_fargate_trigger" {
   timeout       = 600
   memory_size   = 128
   role          = module.bgg_cleaner_fargate_trigger_role.arn
-  handler       = "boardgame_cleaner_fargate_trigger.lambda_handler"
+  handler       = "bgg_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
   description = "Lambda function to trigger the boardgamegeek cleaner fargate task"
@@ -104,7 +104,7 @@ module "dev_bgg_cleaner_fargate_trigger" {
   timeout       = 600
   memory_size   = 128
   role          = module.bgg_cleaner_fargate_trigger_role.arn
-  handler       = "boardgame_cleaner_fargate_trigger.lambda_handler"
+  handler       = "bgg_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
   description = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
