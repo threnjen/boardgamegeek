@@ -14,7 +14,9 @@ def bgg_games_csv(
     lambda_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
 ) -> bool:
-    f"""Triggers the lambda to get the games file from the BoardGameGeek website"""
+    """
+    Triggers the lambda to get the games file from the BoardGameGeek website
+    """
 
     logger.info("Getting the games csv file from BoardGameGeek")
 
@@ -23,11 +25,13 @@ def bgg_games_csv(
     s3_scraper_bucket = configs["s3_scraper_bucket"]
 
     original_timestamps = {
-        configs["boardgamegeek_csv_filename"]: s3_resource.get_last_modified(
+        f'data/{configs["boardgamegeek_csv_filename"]}': s3_resource.get_last_modified(
             bucket=s3_scraper_bucket,
-            key=configs["boardgamegeek_csv_filename"],
+            key=f'data/{configs["boardgamegeek_csv_filename"]}',
         )
     }
+
+    logger.info("Invoking lambda to refresh file...")
 
     lambda_resource.invoke_lambda(function=configs["file_retrieval_lambda"])
 
@@ -35,7 +39,7 @@ def bgg_games_csv(
 
     return compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
-        file_list_to_check=[configs["boardgamegeek_csv_filename"]],
+        file_list_to_check=[f'data/{configs["boardgamegeek_csv_filename"]}'],
         location_bucket=s3_scraper_bucket,
         sleep_timer=15,
         s3_resource=s3_resource,
@@ -49,15 +53,15 @@ def game_scraper_urls(
     config_resource: ConfigurableResource,
 ) -> bool:
     """
-    Generates the game scraper keys that should exist
-    Gets the last modified timestamp of each keys from s3
-    Runs the lambda function to generate the urls
-    Waits for the urls to be generated
-    Polls S3 for the last modified timestamp of the keys
-    If the last modified timestamp of the keys is greater than the last modified timestamp of the keys in s3
-    Then the keys have been updated and the asset is materialized
-    Every time a timestamp is found to be greater than the last modified timestamp in s3, remove that key from the check dictionary so it is not checked again
-    Update the last modified timestamp of the keys in s3
+    Generates the game scraper keys that should exist.
+    Gets the last modified timestamp of each keys from s3.
+    Runs the lambda function to generate the urls.
+    Waits for the urls to be generated.
+    Polls S3 for the last modified timestamp of the keys.
+    If the last modified timestamp of the keys is greater than the last modified timestamp of the keys in s3.
+    Then the keys have been updated and the asset is materialized.
+    Every time a timestamp is found to be greater than the last modified timestamp in s3, remove that key from the check dictionary so it is not checked again.
+    Update the last modified timestamp of the keys in s3.
     """
 
     logger.info("Generating game scraper urls")
@@ -84,11 +88,14 @@ def game_scraper_urls(
 
 
 @asset(deps=["game_scraper_urls"])
-def scrape_game_data(
+def scraped_game_xmls(
     ecs_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
 ) -> bool:
+    """
+    Scrapes the BGG website for game data, using the URLs generated in the previous step
+    """
 
     configs = config_resource.get_config_file()
 
@@ -97,20 +104,20 @@ def scrape_game_data(
     return True
 
 
-@asset(deps=["scrape_game_data"])
-def game_dfs_dirty(
+@asset(deps=["scraped_game_xmls"])
+def game_dfs_clean(
     s3_resource: ConfigurableResource,
     ecs_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
 ) -> bool:
     """
-    Creates dirty dataframes for the game data
+    Creates dirty dataframes for the game data from the scraped XML
     """
 
     configs = config_resource.get_config_file()
 
     bucket = configs["s3_scraper_bucket"]
-    key = configs["game"]["output_xml_directory"]
+    key = f'data/{configs["game"]["output_xml_directory"]}'
     data_sets = configs["game"]["data_sets"]
 
     raw_game_files = s3_resource.list_file_keys(bucket=bucket, key=key)
@@ -119,9 +126,13 @@ def game_dfs_dirty(
 
     ecs_resource.launch_ecs_task(task_definition="bgg_cleaner")
 
+    logger.info(data_sets)
+
     data_set_file_names = [
-        f"{configs['games']['dirty_dfs_directory']}/{x}_dirty.pkl" for x in data_sets
+        f"data/{configs['game']['clean_dfs_directory']}/{x}_clean.pkl"
+        for x in data_sets
     ]
+    logger.info(data_set_file_names)
 
     original_timestamps = {
         key: s3_resource.get_last_modified(
@@ -142,22 +153,22 @@ def game_dfs_dirty(
     return True
 
 
-@asset(deps=["game_dfs_dirty"])
+@asset(deps=["game_dfs_clean"])
 def user_scraper_urls(
     lambda_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
 ) -> bool:
     """
-    Generates the user scraper keys that should exist
-    Gets the last modified timestamp of each keys from s3
-    Runs the lambda function to generate the urls
-    Waits for the urls to be generated
-    Polls S3 for the last modified timestamp of the keys
-    If the last modified timestamp of the keys is greater than the last modified timestamp of the keys in s3
-    Then the keys have been updated and the asset is materialized
-    Every time a timestamp is found to be greater than the last modified timestamp in s3, remove that key from the check dictionary so it is not checked again
-    Update the last modified timestamp of the keys in s3
+    Generates the user scraper keys that should exist.
+    Gets the last modified timestamp of each keys from s3.
+    Runs the lambda function to generate the urls.
+    Waits for the urls to be generated.
+    Polls S3 for the last modified timestamp of the keys.
+    If the last modified timestamp of the keys is greater than the last modified timestamp of the keys in s3.
+    Then the keys have been updated and the asset is materialized.
+    Every time a timestamp is found to be greater than the last modified timestamp in s3, remove that key from the check dictionary so it is not checked again.
+    Update the last modified timestamp of the keys in s3.
     """
 
     configs = config_resource.get_config_file()
@@ -181,6 +192,23 @@ def user_scraper_urls(
     return True
 
 
+@asset(deps=["user_scraper_urls"])
+def scraped_user_xmls(
+    ecs_resource: ConfigurableResource,
+    s3_resource: ConfigurableResource,
+    config_resource: ConfigurableResource,
+) -> bool:
+    """
+    Scrapes the BGG website for user data, using the URLs generated in the previous step
+    """
+
+    configs = config_resource.get_config_file()
+
+    scrape_data(ecs_resource, s3_resource, configs, scraper_type="user")
+
+    return True
+
+
 @op
 def compare_timestamps_for_refresh(
     original_timestamps: dict,
@@ -191,11 +219,12 @@ def compare_timestamps_for_refresh(
 ) -> bool:
     new_timestamp_tracker = {}
 
-    time.sleep(sleep_timer)
-
     logger.info("Checking timestamps...")
 
     while len(file_list_to_check):
+
+        time.sleep(sleep_timer)
+
         logger.info(f"Files to check: {file_list_to_check}")
         for key in file_list_to_check:
             logger.info(f"Checking key: {key}")
@@ -214,8 +243,6 @@ def compare_timestamps_for_refresh(
                 if key in file_list_to_check:
                     file_list_to_check.remove(key)
 
-        time.sleep(sleep_timer)
-
     return True
 
 
@@ -228,6 +255,9 @@ def create_new_urls(
     lambda_function_name: str,
 ) -> bool:
 
+    scraper_url_filenames = [f"data/{x}" for x in scraper_url_filenames]
+    logger.info(f"Created location urls for {scraper_url_filenames}")
+
     original_timestamps = {
         key: s3_resource.get_last_modified(
             bucket=s3_scraper_bucket,
@@ -235,6 +265,7 @@ def create_new_urls(
         )
         for key in scraper_url_filenames
     }
+    logger.info(f"Original timestamps: {original_timestamps}")
 
     lambda_resource.invoke_lambda(function=lambda_function_name)
 
@@ -262,8 +293,11 @@ def scrape_data(
     output_key_directory = configs[scraper_type]["output_xml_directory"]
     output_key_suffix = configs[scraper_type]["output_raw_xml_suffix"]
 
+    input_urls_key = f"data/{input_urls_key}"
+
     scraper_raw_data_filenames = [
-        f"{output_key_directory}/{output_key_suffix.format(i)}" for i in range(1, 31)
+        f"data/{output_key_directory}/{output_key_suffix.format(i)}"
+        for i in range(1, 31)
     ]
 
     original_timestamps = {
@@ -273,6 +307,8 @@ def scrape_data(
         )
         for key in scraper_raw_data_filenames
     }
+
+    logger.info(f"Original timestamps: {original_timestamps}")
 
     game_scraper_url_filenames = s3_resource.list_file_keys(
         bucket=bucket, key=input_urls_key

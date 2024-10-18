@@ -17,3 +17,4 @@
 *.tfstate.backup
 *.conf
 *.lock.hcl
+aws_dagster_bgg/dagster_runs

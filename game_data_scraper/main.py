@@ -84,9 +84,13 @@ class GameScraper:
         self._run_scrapy_scraper(scraper_urls_raw)
         raw_xml = self._combine_xml_files_to_master()
 
+        file_name = CONFIGS[self.scraper_type]["output_raw_xml_suffix"].replace(
+            "{}", self.file_group
+        )
+
         save_file_local_first(
             path=self.scraped_games_folder,
-            file_name=f"combined_{self.file_group}_{self.scraper_type}_raw.xml",
+            file_name=file_name,
             data=raw_xml,
         )
 

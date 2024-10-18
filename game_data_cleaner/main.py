@@ -198,8 +198,8 @@ class DirtyDataExtractor:
 
         game_id_lookup = dict(zip(game_ids, game_names))
 
-        S3FileHandler().save_file(
-            file_path=GAME_CONFIGS["game_id_lookup_file"], data=game_id_lookup
+        save_file_local_first(
+            path="games", file_name="game_id_lookup.json", data=game_id_lookup
         )
 
 

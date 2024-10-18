@@ -42,7 +42,7 @@ class GameDataCleaner:
 
         print("\nCleaning Games Data")
         games_df = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="games.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="games_dirty.pkl"
         )
         games_df = self._drop_duplicates(games_df)
         games_df = self._drop_unneeded_columns(games_df)
@@ -54,12 +54,14 @@ class GameDataCleaner:
         themes_df = self._breakout_themes_df(games_df)
         games_df = self._drop_themes(games_df)
         save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"], file_name="games.pkl", data=games_df
+            path=GAME_CONFIGS["clean_dfs_directory"],
+            file_name="games_clean.pkl",
+            data=games_df,
         )
 
         self.save_file_set(data=themes_df, table="themes")
 
-        print("Finishes Cleaning Games Data\n")
+        print("Finished Cleaning Games Data\n")
 
     def load_games_data(self, file_path: str) -> pd.DataFrame:
         """Load games data from a file path"""

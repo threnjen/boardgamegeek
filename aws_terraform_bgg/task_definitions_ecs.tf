@@ -32,8 +32,8 @@ module "bgg_cleaner_ecs" {
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_cleaner}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_cleaner}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_cleaner}:latest"
-  cpu                    = "2048"
-  memory                 = "16384"
+  cpu                    = "4096"
+  memory                 = "24576"
   region                 = var.REGION
 }
 

@@ -23,12 +23,12 @@ class SecondaryDataCleaner:
 
     def save_file_set(self, data, table):
         save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"],
+            path=GAME_CONFIGS["clean_dfs_directory"],
             file_name=f"{table}_clean.pkl",
             data=data,
         )
         save_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"],
+            path=GAME_CONFIGS["clean_dfs_directory"],
             file_name=f"{table}_clean.csv",
             data=data,
         )
@@ -81,7 +81,7 @@ class SecondaryDataCleaner:
     def clean_publishers(self):
         print("\nCleaning Publishers")
         publishers = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="publishers.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="publishers_dirty.pkl"
         )
         publishers = publishers.loc[publishers["boardgamepublisher"] != "(Uncredited)"]
         publishers = publishers.reset_index(drop=True)
@@ -100,7 +100,7 @@ class SecondaryDataCleaner:
     def clean_artists(self):
         print("\nCleaning Artists")
         artists = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="artists.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="artists_dirty.pkl"
         )
         artists = artists.loc[artists["boardgameartist"] != "(Uncredited)"]
         artists = artists.reset_index(drop=True)
@@ -119,7 +119,7 @@ class SecondaryDataCleaner:
     def clean_designers(self):
         print("\nCleaning Designers")
         designers = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="designers.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="designers_dirty.pkl"
         )
         designers = designers.loc[designers["boardgamedesigner"] != "(Uncredited)"]
         designers = designers.reset_index(drop=True)
@@ -137,7 +137,7 @@ class SecondaryDataCleaner:
     def add_subcat_categories_to_games(self, big_cats_in_subcats_df):
         print("\nAdding Subcategories to Games data")
         games = load_file_local_first(
-            path=GAME_CONFIGS["game_dfs_clean"], file_name="games.pkl"
+            path=GAME_CONFIGS["clean_dfs_directory"], file_name="games_clean.pkl"
         )
 
         for key, value in self.game_mappings["big_category_mapper"].items():
@@ -160,7 +160,7 @@ class SecondaryDataCleaner:
     def clean_mechanics(self, mechanics_in_subcats_df):
         print("\nCleaning Mechanics")
         mechanics = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="mechanics.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="mechanics_dirty.pkl"
         )
 
         mechanics = mechanics.drop_duplicates(keep="first")
@@ -240,7 +240,7 @@ class SecondaryDataCleaner:
     def clean_themes(self, themes_in_subcats_df):
         print("\nCleaning Themes")
         themes = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="themes.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="themes_dirty.pkl"
         )
 
         themes = themes.dropna(subset=["Theme"]).sort_values("BGGId")
@@ -262,7 +262,8 @@ class SecondaryDataCleaner:
         print("\nExtracting Subcategories")
 
         subcategories = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="subcategories.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name="subcategories_dirty.pkl",
         )
 
         subcategories = (

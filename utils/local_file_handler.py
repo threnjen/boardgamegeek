@@ -24,7 +24,7 @@ class LocalFileHandler(FileHandler):
     def get_last_modified(self, file_path: str) -> datetime:
         last_modified_timestamp = datetime.fromtimestamp(os.path.getmtime(file_path))
 
-        timezone = pytz.timezone("America/New_York")
+        timezone = pytz.timezone("America/Los_Angeles")
         last_modified_timestamp = last_modified_timestamp.astimezone(timezone)
 
         return last_modified_timestamp.astimezone(pytz.utc)

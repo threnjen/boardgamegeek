@@ -12,17 +12,18 @@
     "user": {
         "scrapy_bot_name": "bggscraper_users",
         "raw_urls_directory": "users/scraper_urls_raw",
-        "output_xml_directory": "users/scraper_xml_raw",
+        "output_xml_directory": "users/scraped_xml_raw",
         "output_urls_json_suffix": "_user_scraper_urls_raw.json",
-        "output_raw_xml_suffix": "master_group{}_user_raw.xml"
+        "output_raw_xml_suffix": "master_group{}_user_raw.xml",
+        "dirty_dfs_directory": "users/user_dfs_dirty",
+        "clean_dfs_directory": "users/user_dfs_clean"
     },
     "game": {
         "scrapy_bot_name": "bggscraper_games",
         "raw_urls_directory": "games/scraper_urls_raw",
-        "output_xml_directory": "games/scraper_xml_raw",
+        "output_xml_directory": "games/scraped_xml_raw",
         "dirty_dfs_directory": "games/game_dfs_dirty",
-        "game_dfs_clean": "games/game_dfs_clean",
-        "game_id_lookup_file": "games/game_id_lookup.json",
+        "clean_dfs_directory": "games/game_dfs_clean",
         "output_urls_json_suffix": "_game_scraper_urls_raw.json",
         "output_raw_xml_suffix": "master_group{}_game_raw.xml",
         "kaggle_games_file": "games/kaggle_data/games.csv",

@@ -6,6 +6,7 @@ from datetime import datetime
 import boto3
 import pytz
 from dagster import ConfigurableResource, EnvVar, get_dagster_logger
+from functools import cache
 
 logger = get_dagster_logger()
 
