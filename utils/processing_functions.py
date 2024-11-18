@@ -5,7 +5,7 @@ from typing import Union
 import awswrangler as wr
 import pandas as pd
 
-from config import CONFIGS
+from modules.config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
 

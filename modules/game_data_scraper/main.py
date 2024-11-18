@@ -9,7 +9,7 @@ import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
 
-from config import CONFIGS
+from modules.config import CONFIGS
 from utils.file_handler import FileHandler
 from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import (

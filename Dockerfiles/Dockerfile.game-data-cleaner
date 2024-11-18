@@ -22,7 +22,7 @@ RUN mkdir -p data/prod/users/scraped_xml_raw \
 COPY modules/game_data_cleaner game_data_cleaner
 COPY utils utils
 COPY modules/game_data_cleaner/Pipfile* .
-COPY config.py .
+COPY modules/config.py .
 
 # Install dependencies with pipenv
 RUN pipenv sync
