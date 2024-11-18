@@ -18,7 +18,7 @@ IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else Fa
 
 
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
-def initialize_driver(default_directory):
+def initialize_driver(default_directory: str) -> webdriver.Chrome:
     """Initialize the Chrome driver
     This function will initialize the Chrome driver with the necessary
     options for the scraper to work. The function will return the
@@ -60,7 +60,7 @@ def initialize_driver(default_directory):
     return driver
 
 
-def lambda_handler(event, context):
+def lambda_handler(event: dict = None, context: dict = None) -> None:
     """Uses Selenium to download the BGG game ranks file
     This function will use Selenium to download the BGG game ranks file
     and upload it to S3. The function will return None."""
@@ -108,15 +108,15 @@ def lambda_handler(event, context):
 
     wr.s3.upload(
         local_file=f"{extract_directory}/boardgames_ranks.csv",
-        path=f"s3://{S3_SCRAPER_BUCKET}/data/boardgames_ranks.csv",
+        path=f"s3://{S3_SCRAPER_BUCKET}/data/prod/boardgames_ranks.csv",
     )
 
     wr.s3.upload(
         local_file=f"{extract_directory}/boardgames_ranks.csv",
-        path=f"s3://{S3_SCRAPER_BUCKET}/test_data/boardgames_ranks.csv",
+        path=f"s3://{S3_SCRAPER_BUCKET}/data/prod/test/boardgames_ranks.csv",
     )
 
 
 if __name__ == "__main__":
 
-    lambda_handler(None, None)
+    lambda_handler({}, {})

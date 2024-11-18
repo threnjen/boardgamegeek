@@ -14,15 +14,15 @@ ENV FILENAME=$FILENAME
 RUN pip3 install pipenv
 
 # Create necessary directories
-RUN mkdir -p data/users/scraped_xml_raw \
-    data/games/scraped_xml_raw \
-    data/game_dfs_dirty
+RUN mkdir -p data/prod/users/scraped_xml_raw \
+    data/prod/games/scraped_xml_raw \
+    data/prod/game_dfs_dirty
 
 # Copy the source code into the container
-COPY game_data_cleaner game_data_cleaner
+COPY modules/game_data_cleaner game_data_cleaner
 COPY utils utils
-COPY game_data_cleaner/Pipfile* .
-COPY config.py .
+COPY modules/game_data_cleaner/Pipfile* .
+COPY modules/config.py .
 
 # Install dependencies with pipenv
 RUN pipenv sync

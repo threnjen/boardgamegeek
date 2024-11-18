@@ -4,7 +4,7 @@ import sys
 
 import boto3
 
-from config import CONFIGS
+from modules.config import CONFIGS
 from utils.processing_functions import get_s3_keys_based_on_env
 
 ENV = os.environ.get("ENV", "dev")

@@ -13,7 +13,7 @@ RUN pip3 install pipenv
 COPY aws_dagster_bgg aws_dagster_bgg
 COPY aws_dagster_bgg/Pipfile* .
 COPY utils utils
-COPY config.py .
+COPY modules/config.py .
 COPY pyproject.toml .
 
 # Install dependencies with pipenv
