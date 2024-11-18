@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
 
 from config import CONFIGS
-from game_data_cleaner.games_data_cleaner import GameDataCleaner
-from game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
+from modules.game_data_cleaner.games_data_cleaner import GameDataCleaner
+from modules.game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
 from utils.processing_functions import (
     get_local_keys_based_on_env,
     get_s3_keys_based_on_env,

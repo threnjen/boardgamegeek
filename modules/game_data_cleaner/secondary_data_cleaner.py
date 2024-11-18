@@ -18,7 +18,7 @@ ENV = os.getenv("ENV", "dev")
 class SecondaryDataCleaner:
     def __init__(self):
         self.game_mappings = LocalFileHandler().load_file(
-            file_path="game_data_cleaner/game_mappings.json"
+            file_path="modules/game_data_cleaner/game_mappings.json"
         )
 
     def save_file_set(self, data, table):

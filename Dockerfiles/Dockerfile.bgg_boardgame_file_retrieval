@@ -15,6 +15,6 @@ RUN rm ./chrome-installer.sh
 RUN pip install selenium
 RUN pip install awswrangler
 
-COPY bgg_boardgame_file_retrieval/get_bgg_games_file.py .
+COPY modules/bgg_boardgame_file_retrieval/get_bgg_games_file.py .
 
 CMD [ "get_bgg_games_file.lambda_handler" ]

@@ -22,9 +22,9 @@ RUN mkdir -p data/prod/users/scraped_xml_raw \
 
 # Copy the source code into the container
 # COPY data game_data_scraper/data
-COPY game_data_scraper game_data_scraper
+COPY modules/game_data_scraper game_data_scraper
 COPY utils utils
-COPY game_data_scraper/Pipfile* .
+COPY modules/game_data_scraper/Pipfile* .
 COPY config.py .
 
 # Install dependencies with pipenv

@@ -17,7 +17,6 @@ from utils.processing_functions import (
     load_file_local_first,
     save_file_local_first,
 )
-from utils.s3_file_handler import S3FileHandler
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False

@@ -114,7 +114,7 @@ Return to the `aws_terraform_bgg` directory and run `make setup_boardgamegeek`
 
 ### 08 Clean raw scraped GAME data
 
-- `game_data_cleaner.main.py`
+- `modules/game_data_cleaner.main.py`
     - Takes the scraped files and composes into various dirty data frames of full data. Writes these locally. Will only write to S3 if run on AWS.
     - Step 03 needs to have run at least once for this to work, although two sample files from local will also suffice for testing.
     - If files are present on S3, it will download all of them for this process. If there are no files on S3 yet, it will use files in `data/prod/games/scraped_xml_raw`

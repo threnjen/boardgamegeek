@@ -31,7 +31,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
           
-      - name: Build, tag, push image to AWS ECR game_data_scraper
+      - name: Build, tag, push image to AWS ECR dev_bgg_scraper
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: dev_bgg_scraper
