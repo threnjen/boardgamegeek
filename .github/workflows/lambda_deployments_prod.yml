@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Zip functions
         run: |
-          cd lambda_functions
+          cd modules/lambda_functions
           zip -r bgg_scraper_fargate_trigger.zip bgg_scraper_fargate_trigger.py ../config.py ../utils
           zip -r bgg_cleaner_fargate_trigger.zip bgg_cleaner_fargate_trigger.py ../config.py ../utils
           zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../config.py ../utils
@@ -29,7 +29,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
       - run: |
-          cd lambda_functions
+          cd modules/lambda_functions
           aws lambda update-function-code --function-name=bgg_scraper_fargate_trigger  --zip-file=fileb://bgg_scraper_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_cleaner_fargate_trigger  --zip-file=fileb://bgg_cleaner_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_generate_game_urls  --zip-file=fileb://generate_game_urls_lambda.zip > /dev/null 2>&1
