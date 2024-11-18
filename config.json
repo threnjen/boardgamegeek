@@ -7,8 +7,8 @@
     "orchestrator_task_definition": "bgg_orchestrator",
     "boardgamegeek_csv_filename": "boardgames_ranks.csv",
     "file_retrieval_lambda": "bgg_boardgame_file_retrieval",
-    "dev_directory": "test_data/",
-    "prod_directory": "data/",
+    "dev_directory": "data/test/",
+    "prod_directory": "data/prod/",
     "user": {
         "scrapy_bot_name": "bggscraper_users",
         "raw_urls_directory": "users/scraper_urls_raw",
@@ -26,7 +26,7 @@
         "clean_dfs_directory": "games/game_dfs_clean",
         "output_urls_json_suffix": "_game_scraper_urls_raw.json",
         "output_raw_xml_suffix": "master_group{}_game_raw.xml",
-        "kaggle_games_file": "games/kaggle_data/games.csv",
+        "kaggle_games_file": "games/kaggle_data/prod/games.csv",
         "data_sets": [
             "games",
             "designers",

@@ -25,9 +25,9 @@ def bgg_games_csv(
     s3_scraper_bucket = configs["s3_scraper_bucket"]
 
     original_timestamps = {
-        f'data/{configs["boardgamegeek_csv_filename"]}': s3_resource.get_last_modified(
+        f'data/prod/{configs["boardgamegeek_csv_filename"]}': s3_resource.get_last_modified(
             bucket=s3_scraper_bucket,
-            key=f'data/{configs["boardgamegeek_csv_filename"]}',
+            key=f'data/prod/{configs["boardgamegeek_csv_filename"]}',
         )
     }
 
@@ -39,7 +39,7 @@ def bgg_games_csv(
 
     return compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
-        file_list_to_check=[f'data/{configs["boardgamegeek_csv_filename"]}'],
+        file_list_to_check=[f'data/prod/{configs["boardgamegeek_csv_filename"]}'],
         location_bucket=s3_scraper_bucket,
         sleep_timer=15,
         s3_resource=s3_resource,
@@ -117,7 +117,7 @@ def game_dfs_clean(
     configs = config_resource.get_config_file()
 
     bucket = configs["s3_scraper_bucket"]
-    key = f'data/{configs["game"]["output_xml_directory"]}'
+    key = f'data/prod/{configs["game"]["output_xml_directory"]}'
     data_sets = configs["game"]["data_sets"]
 
     raw_game_files = s3_resource.list_file_keys(bucket=bucket, key=key)
@@ -129,7 +129,7 @@ def game_dfs_clean(
     logger.info(data_sets)
 
     data_set_file_names = [
-        f"data/{configs['game']['clean_dfs_directory']}/{x}_clean.pkl"
+        f"data/prod/{configs['game']['clean_dfs_directory']}/{x}_clean.pkl"
         for x in data_sets
     ]
     logger.info(data_set_file_names)
@@ -255,7 +255,7 @@ def create_new_urls(
     lambda_function_name: str,
 ) -> bool:
 
-    scraper_url_filenames = [f"data/{x}" for x in scraper_url_filenames]
+    scraper_url_filenames = [f"data/prod/{x}" for x in scraper_url_filenames]
     logger.info(f"Created location urls for {scraper_url_filenames}")
 
     original_timestamps = {
@@ -293,10 +293,10 @@ def scrape_data(
     output_key_directory = configs[scraper_type]["output_xml_directory"]
     output_key_suffix = configs[scraper_type]["output_raw_xml_suffix"]
 
-    input_urls_key = f"data/{input_urls_key}"
+    input_urls_key = f"data/prod/{input_urls_key}"
 
     scraper_raw_data_filenames = [
-        f"data/{output_key_directory}/{output_key_suffix.format(i)}"
+        f"data/prod/{output_key_directory}/{output_key_suffix.format(i)}"
         for i in range(1, 31)
     ]
 

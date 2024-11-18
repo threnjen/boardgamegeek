@@ -17,8 +17,8 @@ ENV SCRAPER_TYPE=$SCRAPER_TYPE
 RUN pip3 install pipenv
 
 # Create necessary directories
-RUN mkdir -p data/users/scraped_xml_raw \
-    data/games/scraped_xml_raw
+RUN mkdir -p data/prod/users/scraped_xml_raw \
+    data/prod/games/scraped_xml_raw
 
 # Copy the source code into the container
 # COPY data game_data_scraper/data
