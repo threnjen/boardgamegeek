@@ -18,7 +18,7 @@ from utils.processing_functions import (
 )
 from utils.s3_file_handler import S3FileHandler
 
-ENV = os.environ.get("ENV", "dev")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["game"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
@@ -162,8 +162,8 @@ class DirtyDataExtractor:
         save_to_aws_glue(data=data, table=f"{table}_dirty")
 
     def _save_dfs_to_disk_or_s3(self, dirty_storage: dict[pd.DataFrame]):
-        """Save all files as pkl files. Save to local drive in ENV==env, or
-        copy pkl to s3 if ENV==prod"""
+        """Save all files as pkl files. Save to local drive in ENVIRONMENT==env, or
+        copy pkl to s3 if ENVIRONMENT==prod"""
 
         for table_name, table in dirty_storage.items():
 

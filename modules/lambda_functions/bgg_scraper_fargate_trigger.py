@@ -7,12 +7,14 @@ import boto3
 from modules.config import CONFIGS
 from utils.processing_functions import get_s3_keys_based_on_env
 
-ENV = os.environ.get("ENV", "dev")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
-WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
+WORKING_DIR = (
+    CONFIGS["dev_directory"] if ENVIRONMENT == "dev" else CONFIGS["prod_directory"]
+)
 
 print(SCRAPER_TASK_DEFINITION)
 
@@ -50,7 +52,9 @@ def lambda_handler(event, context):
     )
 
     task_definition = (
-        f"dev_{SCRAPER_TASK_DEFINITION}" if ENV != "prod" else SCRAPER_TASK_DEFINITION
+        f"dev_{SCRAPER_TASK_DEFINITION}"
+        if ENVIRONMENT != "prod"
+        else SCRAPER_TASK_DEFINITION
     )
     print(task_definition)
 
@@ -62,7 +66,7 @@ def lambda_handler(event, context):
         .get("revision")
     )
 
-    if ENV != "prod":
+    if ENVIRONMENT != "prod":
         file_prefixes = file_prefixes[:1]
 
     for file in file_prefixes:

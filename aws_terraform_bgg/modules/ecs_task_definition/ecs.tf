@@ -15,7 +15,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       essential = true,
       environment = [
         {
-          name  = "ENV",
+          name  = "ENVIRONMENT",
           value = var.environment
         },
         {

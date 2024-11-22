@@ -15,10 +15,10 @@ resource "aws_lambda_function" "lambda" {
     variables = merge(
       { 
       for tuple in regexall("(.*?)=(.*)", file("../.env")) : tuple[0] => tuple[1] 
-      if !(tuple[0] == "IS_LOCAL" || tuple[0] == "ENV" || tuple[0] == "PYTHONPATH")
+      if !(tuple[0] == "IS_LOCAL" || tuple[0] == "ENVIRONMENT" || tuple[0] == "PYTHONPATH")
     },
       {
-        ENV = var.environment
+        ENVIRONMENT = var.environment
         IS_LOCAL=false
       }
     )

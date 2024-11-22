@@ -6,7 +6,7 @@ import pandas as pd
 from modules.config import CONFIGS
 from utils.processing_functions import load_file_local_first, save_file_local_first
 
-ENV = os.environ.get("ENV", "dev")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 USER_CONFIGS = CONFIGS["user"]
 url_block_size = 20
@@ -112,7 +112,7 @@ def lambda_handler(event, context):
         print(f"{len(game_entries[0])} games in {group}")
         group_urls = generate_ratings_urls(game_entries)
 
-        if ENV != "prod":
+        if ENVIRONMENT != "prod":
             group_urls = group_urls[:3]
 
         save_file_local_first(
@@ -124,7 +124,7 @@ def lambda_handler(event, context):
         total_games_processed += len(game_entries[0])
         total_pages_processed += sum(game_entries[1])
 
-        if ENV != "prod":
+        if ENVIRONMENT != "prod":
             break
 
     print(f"\nTotal games processed: {total_games_processed}")

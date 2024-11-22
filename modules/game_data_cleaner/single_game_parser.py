@@ -6,7 +6,7 @@ import awswrangler as wr
 import pandas as pd
 from bs4 import BeautifulSoup
 
-ENV = os.environ.get("ENV", "dev")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 GAME_ATTRIBUTES = json.load(open(f"modules/game_data_cleaner/find_config.json"))[
     "GAME_ATTRIBUTES"
 ]

@@ -4,7 +4,7 @@ import os
 from modules.config import CONFIGS
 from utils.processing_functions import load_file_local_first, save_file_local_first
 
-ENV = os.environ.get("ENV", "dev")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 GAME_CONFIGS = CONFIGS["game"]
 
@@ -43,7 +43,9 @@ def lambda_handler(event, context):
 
     print(f"Number of scraper urls: {len(scraper_urls_raw)}")
     url_block_size = (
-        math.ceil(len(scraper_urls_raw) / number_url_files) if ENV == "prod" else 2
+        math.ceil(len(scraper_urls_raw) / number_url_files)
+        if ENVIRONMENT == "prod"
+        else 2
     )
     print(f"URL block size: {url_block_size}")
 
@@ -60,7 +62,7 @@ def lambda_handler(event, context):
             data=scraper_urls_set,
         )
 
-        if ENV == "dev":
+        if ENVIRONMENT == "dev":
             break
 
 

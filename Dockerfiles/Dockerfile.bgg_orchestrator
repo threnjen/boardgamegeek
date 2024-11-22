@@ -19,9 +19,9 @@ COPY pyproject.toml .
 # Install dependencies with pipenv
 RUN pipenv sync
 
-# Set environment variables with ARG for build-time and ENV for runtime
-ARG ENV
-ENV ENV=$ENV
+# Set environment variables with ARG for build-time and ENVIRONMENT for runtime
+ARG ENVIRONMENT
+ENV ENVIRONMENT=$ENVIRONMENT
 
 ARG ASSET
 ENV ASSET=$ASSET
@@ -31,4 +31,4 @@ EXPOSE 3000
 
 # Set the entry point and command
 ENTRYPOINT ["pipenv", "run", "python", "aws_dagster_bgg/bgg_orchestrate.py"]
-CMD ["$ENV", "$ASSET"]
+CMD ["$ENVIRONMENT", "$ASSET"]

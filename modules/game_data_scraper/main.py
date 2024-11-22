@@ -20,8 +20,10 @@ from utils.processing_functions import (
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
-ENV = os.environ.get("ENV", "dev")
-WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+WORKING_DIR = (
+    CONFIGS["dev_directory"] if ENVIRONMENT == "dev" else CONFIGS["prod_directory"]
+)
 
 
 class BGGSpider(scrapy.Spider):
@@ -162,7 +164,7 @@ class GameScraper:
 
         xml_bytes = ET.tostring(combined_root, encoding="utf-8", xml_declaration=True)
 
-        if ENV == "dev":
+        if ENVIRONMENT == "dev":
             # remove the saved files
             for xml_file in saved_files:
                 os.remove(xml_file)

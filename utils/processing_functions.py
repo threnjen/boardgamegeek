@@ -9,10 +9,12 @@ from modules.config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
 
-ENV = os.getenv("ENV", "dev")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
 S3_SCRAPER_BUCKET = os.getenv("S3_SCRAPER_BUCKET")
-WORKING_DIR = CONFIGS["dev_directory"] if ENV == "dev" else CONFIGS["prod_directory"]
+WORKING_DIR = (
+    CONFIGS["dev_directory"] if ENVIRONMENT == "dev" else CONFIGS["prod_directory"]
+)
 
 # from statistics import mean
 

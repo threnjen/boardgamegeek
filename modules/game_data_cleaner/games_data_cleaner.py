@@ -14,7 +14,7 @@ from utils.processing_functions import (
 from utils.s3_file_handler import S3FileHandler
 
 GAME_CONFIGS = CONFIGS["game"]
-ENV = os.getenv("ENV", "dev")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 
 
 class GameDataCleaner:

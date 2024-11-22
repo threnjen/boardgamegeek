@@ -12,7 +12,7 @@ from utils.processing_functions import (
 )
 
 GAME_CONFIGS = CONFIGS["game"]
-ENV = os.getenv("ENV", "dev")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 
 
 class SecondaryDataCleaner:

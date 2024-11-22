@@ -5,7 +5,7 @@ import boto3
 
 from modules.config import CONFIGS
 
-ENV = os.environ.get("ENV", "dev")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 SCRAPER_TASK_DEFINITION = CONFIGS["orchestrator_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
@@ -74,7 +74,10 @@ def lambda_handler(event, context):
                 {
                     "name": task_definition,
                     "environment": [
-                        {"name": "ENV", "value": os.environ.get("ENV", "dev")},
+                        {
+                            "name": "ENVIRONMENT",
+                            "value": os.environ.get("ENVIRONMENT", "dev"),
+                        },
                         {"name": "ASSET", "value": "all"},
                     ],
                 }

@@ -12,7 +12,7 @@ from selenium.webdriver.common.by import By
 
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
-ENV = os.environ.get("ENV", "dev")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
@@ -24,7 +24,7 @@ def initialize_driver(default_directory: str) -> webdriver.Chrome:
     options for the scraper to work. The function will return the
     initialized driver."""
 
-    if not os.environ.get("ENV", "dev") == "prod":
+    if not os.environ.get("ENVIRONMENT", "dev") == "prod":
         return webdriver.Chrome()
 
     chrome_options = ChromeOptions()

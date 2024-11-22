@@ -10,7 +10,7 @@ if __name__ == "__main__":
                 or "TF_VAR_MY_IP_FIRST_THREE_BLOCKS" in line
                 or "PYTHONPATH" in line
                 or "IS_LOCAL" in line
-                or "ENV" in line
+                or "ENVIRONMENT" in line
             ):
                 continue
             if line == "\n":
