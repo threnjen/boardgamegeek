@@ -118,8 +118,6 @@ class DirtyDataExtractor:
 
             print(f"Creating table for {table_name}")
             if table_name != "games":
-                print(table_name)
-                print(list_of_entries[:10])
                 combined_entries = defaultdict(list)
                 for d in list_of_entries:
                     for key, value in d.items():
@@ -128,8 +126,6 @@ class DirtyDataExtractor:
                 table = pd.DataFrame.from_dict(list_of_entries)
 
             else:
-                print(table_name)
-                print(list_of_entries[:10])
                 table = pd.DataFrame(list_of_entries)
                 self._make_json_game_lookup_file(table)
 

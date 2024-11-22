@@ -137,10 +137,6 @@ class ECSResource(ConfigurableResource):
             f"Got terraform state file. Launching ECS task for {task_definition}"
         )
 
-        task_definition = (
-            task_definition if ENVIRONMENT == "prod" else f"dev_{task_definition}"
-        )
-
         try:
             self.get_ecs_client().run_task(
                 taskDefinition=f"{task_definition}:{self.get_latest_task_revision(task_definition)}",

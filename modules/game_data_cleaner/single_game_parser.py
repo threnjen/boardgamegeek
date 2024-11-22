@@ -7,7 +7,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
-GAME_ATTRIBUTES = json.load(open(f"./game_data_cleaner/find_config.json"))[
+GAME_ATTRIBUTES = json.load(open(f"./modules/game_data_cleaner/find_config.json"))[
     "GAME_ATTRIBUTES"
 ]
 MIN_USER_RATINGS = 30
@@ -179,13 +179,11 @@ class GameEntryParser:
         poll = self.game_entry.find("poll", title=poll_title)
 
         if not poll:
-            print(f"Poll {poll_title} not found")
             return None
 
         poll_results = poll.find_all("results")
 
         if not poll_results:
-            print(f"Poll {poll_title} results not found")
             return None
 
         if len(poll_results) == 1:

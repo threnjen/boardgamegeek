@@ -132,7 +132,9 @@ def game_dfs_clean(
 
     assert len(raw_game_files) == 30 if ENVIRONMENT == "prod" else 1
 
-    ecs_resource.launch_ecs_task(task_definition="bgg_cleaner")
+    task_definition = "bgg_cleaner" if ENVIRONMENT == "prod" else "dev_bgg_cleaner"
+
+    ecs_resource.launch_ecs_task(task_definition=task_definition)
 
     logger.info(data_sets)
 
@@ -337,11 +339,11 @@ def scrape_data(
         bucket=bucket, key=input_urls_key
     )
 
+    task_definition = configs["scraper_task_definition"]
     task_definition = (
-        configs["scraper_task_definition"]
-        if ENVIRONMENT == "prod"
-        else f"dev_{configs['scraper_task_definition']}"
+        task_definition if ENVIRONMENT == "prod" else f"dev_{task_definition}"
     )
+    logger.info(task_definition)
 
     for key in game_scraper_url_filenames:
         filename = key.split("/")[-1].split(".")[0]
