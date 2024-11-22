@@ -22,6 +22,21 @@ module "boardgamegeek_orchestrator_ecs" {
   region                 = var.REGION
 }
 
+module "dev_boardgamegeek_orchestrator_ecs" {
+  source                 = "./modules/ecs_task_definition"
+  task_definition_family = "dev_${var.boardgamegeek_orchestrator}"
+  task_definition_name   = "dev_${var.boardgamegeek_orchestrator}"
+  registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.boardgamegeek_orchestrator}:latest"
+  environment            = "dev"
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
+  task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_orchestrator}_FargateTaskRole"
+  execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.boardgamegeek_orchestrator}_FargateExecutionRole"
+  image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.boardgamegeek_orchestrator}:latest"
+  cpu                    = "1024"
+  memory                 = "4096"
+  region                 = var.REGION
+}
+
 module "bgg_cleaner_ecs" {
   source                 = "./modules/ecs_task_definition"
   task_definition_family = var.bgg_cleaner
