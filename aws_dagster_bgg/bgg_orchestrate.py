@@ -4,8 +4,7 @@ import sys
 import time
 
 if __name__ == "__main__":
-    ENVIRONMENT = sys.argv[1]
-    asset = sys.argv[2]
+    asset = sys.argv[1]
 
     subprocess.Popen("dagster-webserver -h 0.0.0.0 -p 3000".split(" "))
     print("Started webserver")

@@ -7,6 +7,9 @@ from dagster import ConfigurableResource, asset, get_dagster_logger, op
 
 logger = get_dagster_logger()
 
+ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
+WORKING_ENV_DIR = "data/prod/" if ENVIRONMENT == "prod" else "data/test/"
+
 
 @asset
 def bgg_games_csv(
@@ -81,7 +84,11 @@ def game_scraper_urls(
         s3_resource,
         s3_scraper_bucket,
         game_scraper_url_filenames,
-        lambda_function_name="bgg_generate_game_urls",
+        lambda_function_name=(
+            "bgg_generate_game_urls"
+            if ENVIRONMENT == "prod"
+            else "dev_bgg_generate_game_urls"
+        ),
     )
 
     return True
@@ -117,7 +124,7 @@ def game_dfs_clean(
     configs = config_resource.get_config_file()
 
     bucket = configs["s3_scraper_bucket"]
-    key = f'data/prod/{configs["game"]["output_xml_directory"]}'
+    key = f'{WORKING_ENV_DIR}{configs["game"]["output_xml_directory"]}'
     data_sets = configs["game"]["data_sets"]
 
     raw_game_files = s3_resource.list_file_keys(bucket=bucket, key=key)
@@ -129,7 +136,7 @@ def game_dfs_clean(
     logger.info(data_sets)
 
     data_set_file_names = [
-        f"data/prod/{configs['game']['clean_dfs_directory']}/{x}_clean.pkl"
+        f"{WORKING_ENV_DIR}{configs['game']['clean_dfs_directory']}/{x}_clean.pkl"
         for x in data_sets
     ]
     logger.info(data_set_file_names)
@@ -186,7 +193,11 @@ def user_scraper_urls(
         s3_resource,
         s3_scraper_bucket,
         user_scraper_url_filenames,
-        lambda_function_name="bgg_generate_user_urls",
+        lambda_function_name=(
+            "bgg_generate_user_urls"
+            if ENVIRONMENT == "prod"
+            else "dev_bgg_generate_user_urls"
+        ),
     )
 
     return True
@@ -255,7 +266,7 @@ def create_new_urls(
     lambda_function_name: str,
 ) -> bool:
 
-    scraper_url_filenames = [f"data/prod/{x}" for x in scraper_url_filenames]
+    scraper_url_filenames = [f"{WORKING_ENV_DIR}{x}" for x in scraper_url_filenames]
     logger.info(f"Created location urls for {scraper_url_filenames}")
 
     original_timestamps = {
@@ -293,10 +304,10 @@ def scrape_data(
     output_key_directory = configs[scraper_type]["output_xml_directory"]
     output_key_suffix = configs[scraper_type]["output_raw_xml_suffix"]
 
-    input_urls_key = f"data/prod/{input_urls_key}"
+    input_urls_key = f"{WORKING_ENV_DIR}{input_urls_key}"
 
     scraper_raw_data_filenames = [
-        f"data/prod/{output_key_directory}/{output_key_suffix.format(i)}"
+        f"{WORKING_ENV_DIR}{output_key_directory}/{output_key_suffix.format(i)}"
         for i in range(1, 31)
     ]
 
