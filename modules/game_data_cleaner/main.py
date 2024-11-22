@@ -6,7 +6,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
 
-from modules.config import CONFIGS
+from config import CONFIGS
 from modules.game_data_cleaner.games_data_cleaner import GameDataCleaner
 from modules.game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
 from utils.processing_functions import (

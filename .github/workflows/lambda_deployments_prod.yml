@@ -28,7 +28,8 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - run: |
+      - name: Post Lambda Functions
+        run: |
           cd modules/lambda_functions
           aws lambda update-function-code --function-name=bgg_scraper_fargate_trigger  --zip-file=fileb://bgg_scraper_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_cleaner_fargate_trigger  --zip-file=fileb://bgg_cleaner_fargate_trigger.zip > /dev/null 2>&1

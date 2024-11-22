@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from modules.config import CONFIGS
+from config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import (
     integer_reduce,

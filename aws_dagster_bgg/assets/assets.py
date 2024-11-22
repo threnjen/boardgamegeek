@@ -1,7 +1,5 @@
-import logging
 import os
 import time
-from datetime import datetime
 
 from dagster import ConfigurableResource, asset, get_dagster_logger, op
 
@@ -28,9 +26,9 @@ def bgg_games_csv(
     s3_scraper_bucket = configs["s3_scraper_bucket"]
 
     original_timestamps = {
-        f'data/prod/{configs["boardgamegeek_csv_filename"]}': s3_resource.get_last_modified(
+        f'{WORKING_ENV_DIR}{configs["boardgamegeek_csv_filename"]}': s3_resource.get_last_modified(
             bucket=s3_scraper_bucket,
-            key=f'data/prod/{configs["boardgamegeek_csv_filename"]}',
+            key=f'{WORKING_ENV_DIR}{configs["boardgamegeek_csv_filename"]}',
         )
     }
 
@@ -42,7 +40,9 @@ def bgg_games_csv(
 
     return compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
-        file_list_to_check=[f'data/prod/{configs["boardgamegeek_csv_filename"]}'],
+        file_list_to_check=[
+            f'{WORKING_ENV_DIR}{configs["boardgamegeek_csv_filename"]}'
+        ],
         location_bucket=s3_scraper_bucket,
         sleep_timer=15,
         s3_resource=s3_resource,
@@ -75,20 +75,21 @@ def game_scraper_urls(
     raw_urls_directory = configs["game"]["raw_urls_directory"]
     output_urls_json_suffix = configs["game"]["output_urls_json_suffix"]
 
-    game_scraper_url_filenames = [
-        f"{raw_urls_directory}/group{i}{output_urls_json_suffix}" for i in range(1, 31)
-    ]
+    game_scraper_url_filenames = (
+        [
+            f"{raw_urls_directory}/group{i}{output_urls_json_suffix}"
+            for i in range(1, 31)
+        ]
+        if ENVIRONMENT == "prod"
+        else [f"{raw_urls_directory}/group1{output_urls_json_suffix}"]
+    )
 
     create_new_urls(
         lambda_resource,
         s3_resource,
         s3_scraper_bucket,
         game_scraper_url_filenames,
-        lambda_function_name=(
-            "bgg_generate_game_urls"
-            if ENVIRONMENT == "prod"
-            else "dev_bgg_generate_game_urls"
-        ),
+        lambda_function_name="bgg_generate_game_urls",
     )
 
     return True
@@ -129,7 +130,7 @@ def game_dfs_clean(
 
     raw_game_files = s3_resource.list_file_keys(bucket=bucket, key=key)
 
-    assert len(raw_game_files) == 30
+    assert len(raw_game_files) == 30 if ENVIRONMENT == "prod" else 1
 
     ecs_resource.launch_ecs_task(task_definition="bgg_cleaner")
 
@@ -184,20 +185,21 @@ def user_scraper_urls(
     raw_urls_directory = configs["user"]["raw_urls_directory"]
     output_urls_json_suffix = configs["user"]["output_urls_json_suffix"]
 
-    user_scraper_url_filenames = [
-        f"{raw_urls_directory}/group{i}{output_urls_json_suffix}" for i in range(1, 31)
-    ]
+    user_scraper_url_filenames = (
+        [
+            f"{raw_urls_directory}/group{i}{output_urls_json_suffix}"
+            for i in range(1, 31)
+        ]
+        if ENVIRONMENT == "prod"
+        else [f"{raw_urls_directory}/group1{output_urls_json_suffix}"]
+    )
 
     create_new_urls(
         lambda_resource,
         s3_resource,
         s3_scraper_bucket,
         user_scraper_url_filenames,
-        lambda_function_name=(
-            "bgg_generate_user_urls"
-            if ENVIRONMENT == "prod"
-            else "dev_bgg_generate_user_urls"
-        ),
+        lambda_function_name="bgg_generate_user_urls",
     )
 
     return True
@@ -278,6 +280,10 @@ def create_new_urls(
     }
     logger.info(f"Original timestamps: {original_timestamps}")
 
+    lambda_function_name = (
+        lambda_function_name if ENVIRONMENT == "prod" else f"dev_{lambda_function_name}"
+    )
+
     lambda_resource.invoke_lambda(function=lambda_function_name)
 
     compare_timestamps_for_refresh(
@@ -306,10 +312,16 @@ def scrape_data(
 
     input_urls_key = f"{WORKING_ENV_DIR}{input_urls_key}"
 
-    scraper_raw_data_filenames = [
-        f"{WORKING_ENV_DIR}{output_key_directory}/{output_key_suffix.format(i)}"
-        for i in range(1, 31)
-    ]
+    scraper_raw_data_filenames = (
+        [
+            f"{WORKING_ENV_DIR}{output_key_directory}/{output_key_suffix.format(f'group{i}')}"
+            for i in range(1, 31)
+        ]
+        if ENVIRONMENT == "prod"
+        else [
+            f"{WORKING_ENV_DIR}{output_key_directory}/{output_key_suffix.format('group1')}"
+        ]
+    )
 
     original_timestamps = {
         key: s3_resource.get_last_modified(
@@ -325,7 +337,11 @@ def scrape_data(
         bucket=bucket, key=input_urls_key
     )
 
-    task_definition = configs["scraper_task_definition"]
+    task_definition = (
+        configs["scraper_task_definition"]
+        if ENVIRONMENT == "prod"
+        else f"dev_{configs['scraper_task_definition']}"
+    )
 
     for key in game_scraper_url_filenames:
         filename = key.split("/")[-1].split(".")[0]

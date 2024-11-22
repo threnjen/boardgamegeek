@@ -13,6 +13,7 @@ logger = get_dagster_logger()
 REGION = os.environ.get("TF_VAR_REGION", "us-west-2")
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 
 
 class DynamoDBResource(ConfigurableResource):
@@ -134,6 +135,10 @@ class ECSResource(ConfigurableResource):
 
         logger.info(
             f"Got terraform state file. Launching ECS task for {task_definition}"
+        )
+
+        task_definition = (
+            task_definition if ENVIRONMENT == "prod" else f"dev_{task_definition}"
         )
 
         try:

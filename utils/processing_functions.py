@@ -5,7 +5,7 @@ from typing import Union
 import awswrangler as wr
 import pandas as pd
 
-from modules.config import CONFIGS
+from config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
 
@@ -13,7 +13,7 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
 S3_SCRAPER_BUCKET = os.getenv("S3_SCRAPER_BUCKET")
 WORKING_DIR = (
-    CONFIGS["dev_directory"] if ENVIRONMENT == "dev" else CONFIGS["prod_directory"]
+    CONFIGS["prod_directory"] if ENVIRONMENT == "prod" else CONFIGS["dev_directory"]
 )
 
 # from statistics import mean
