@@ -9,7 +9,8 @@ locals {
     module.dev_bgg_generate_user_urls.function_name,
     module.bgg_cleaner_fargate_trigger.function_name,
     module.dev_bgg_cleaner_fargate_trigger.function_name,
-    module.bgg_orchestrator_fargate_trigger.function_name
+    module.bgg_orchestrator_fargate_trigger.function_name,
+    module.dev_bgg_orchestrator_fargate_trigger.function_name
   ]
 }
 

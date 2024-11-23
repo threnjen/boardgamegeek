@@ -13,15 +13,13 @@ RUN pip3 install pipenv
 COPY aws_dagster_bgg aws_dagster_bgg
 COPY aws_dagster_bgg/Pipfile* .
 COPY utils utils
-COPY modules/config.py .
+COPY config.py .
 COPY pyproject.toml .
 
 # Install dependencies with pipenv
 RUN pipenv sync
 
 # Set environment variables with ARG for build-time and ENVIRONMENT for runtime
-ARG ENVIRONMENT
-ENV ENVIRONMENT=$ENVIRONMENT
 
 ARG ASSET
 ENV ASSET=$ASSET
@@ -31,4 +29,4 @@ EXPOSE 3000
 
 # Set the entry point and command
 ENTRYPOINT ["pipenv", "run", "python", "aws_dagster_bgg/bgg_orchestrate.py"]
-CMD ["$ENVIRONMENT", "$ASSET"]
+CMD ["$ASSET"]

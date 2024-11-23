@@ -3,7 +3,7 @@ from datetime import datetime
 
 import pandas as pd
 
-from modules.config import CONFIGS
+from config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import (
     integer_reduce,
@@ -85,13 +85,17 @@ class GameDataCleaner:
 
     def _clean_best_players(self, df: pd.DataFrame) -> pd.DataFrame:
 
-        # Get rid of all non-integer characters from df["BestPlayers"] using regex
-        df["BestPlayers"] = df["BestPlayers"].str.replace(r"\D", "", regex=True)
+        if df["BestPlayers"].dtype == "object":
 
-        # change the datatype of BestPlayers to int8
-        df["BestPlayers"] = pd.to_numeric(
-            df["BestPlayers"], errors="coerce", downcast="integer"
-        )
+            # Get rid of all non-integer characters from df["BestPlayers"] using regex
+            df["BestPlayers"] = df["BestPlayers"].str.replace(r"\D", "", regex=True)
+
+        if df["BestPlayers"].dtype == "float64" or df["BestPlayers"].dtype == "object":
+
+            # change the datatype of BestPlayers to int8
+            df["BestPlayers"] = pd.to_numeric(
+                df["BestPlayers"], errors="coerce", downcast="integer"
+            )
 
         # fill in missing values with 0
         df["BestPlayers"] = df["BestPlayers"].fillna(0)
@@ -105,8 +109,6 @@ class GameDataCleaner:
         for field, category in self.game_mappings["binary_flag_fields"].items():
             if field in df.columns:
                 df.loc[df[field].notna(), category] = 1
-
-        print(df.head())
 
         return df
 

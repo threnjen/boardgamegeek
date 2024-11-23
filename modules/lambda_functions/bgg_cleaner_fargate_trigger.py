@@ -3,7 +3,7 @@ import os
 
 import boto3
 
-from modules.config import CONFIGS
+from config import CONFIGS
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")

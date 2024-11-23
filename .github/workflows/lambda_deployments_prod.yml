@@ -18,17 +18,18 @@ jobs:
       - name: Zip functions
         run: |
           cd modules/lambda_functions
-          zip -r bgg_scraper_fargate_trigger.zip bgg_scraper_fargate_trigger.py ../config.py ../utils
-          zip -r bgg_cleaner_fargate_trigger.zip bgg_cleaner_fargate_trigger.py ../config.py ../utils
-          zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../config.py ../utils
-          zip -r generate_user_urls_lambda.zip generate_user_urls_lambda.py ../config.py ../utils
-          zip -r bgg_orchestrator_fargate_trigger.zip bgg_orchestrator_fargate_trigger.py ../config.py ../utils
+          zip -r bgg_scraper_fargate_trigger.zip bgg_scraper_fargate_trigger.py ../../config.py ../../utils
+          zip -r bgg_cleaner_fargate_trigger.zip bgg_cleaner_fargate_trigger.py ../../config.py ../../utils
+          zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../../config.py ../../utils
+          zip -r generate_user_urls_lambda.zip generate_user_urls_lambda.py ../../config.py ../../utils
+          zip -r bgg_orchestrator_fargate_trigger.zip bgg_orchestrator_fargate_trigger.py ../../config.py ../../utils
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-      - run: |
+      - name: Post Lambda Functions
+        run: |
           cd modules/lambda_functions
           aws lambda update-function-code --function-name=bgg_scraper_fargate_trigger  --zip-file=fileb://bgg_scraper_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_cleaner_fargate_trigger  --zip-file=fileb://bgg_cleaner_fargate_trigger.zip > /dev/null 2>&1

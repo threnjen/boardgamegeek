@@ -24,8 +24,8 @@ def initialize_driver(default_directory: str) -> webdriver.Chrome:
     options for the scraper to work. The function will return the
     initialized driver."""
 
-    if not os.environ.get("ENVIRONMENT", "dev") == "prod":
-        return webdriver.Chrome()
+    # if not os.environ.get("ENVIRONMENT", "dev") == "prod":
+    #     return webdriver.Chrome()
 
     chrome_options = ChromeOptions()
     chrome_options.add_argument("--headless=new")
@@ -113,7 +113,7 @@ def lambda_handler(event: dict = None, context: dict = None) -> None:
 
     wr.s3.upload(
         local_file=f"{extract_directory}/boardgames_ranks.csv",
-        path=f"s3://{S3_SCRAPER_BUCKET}/data/prod/test/boardgames_ranks.csv",
+        path=f"s3://{S3_SCRAPER_BUCKET}/data/test/boardgames_ranks.csv",
     )
 
 

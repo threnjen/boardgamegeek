@@ -6,7 +6,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
 
-from modules.config import CONFIGS
+from config import CONFIGS
 from modules.game_data_cleaner.games_data_cleaner import GameDataCleaner
 from modules.game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
 from utils.processing_functions import (
@@ -118,8 +118,6 @@ class DirtyDataExtractor:
 
             print(f"Creating table for {table_name}")
             if table_name != "games":
-                print(table_name)
-                print(list_of_entries[:10])
                 combined_entries = defaultdict(list)
                 for d in list_of_entries:
                     for key, value in d.items():
@@ -128,8 +126,6 @@ class DirtyDataExtractor:
                 table = pd.DataFrame.from_dict(list_of_entries)
 
             else:
-                print(table_name)
-                print(list_of_entries[:10])
                 table = pd.DataFrame(list_of_entries)
                 self._make_json_game_lookup_file(table)
 

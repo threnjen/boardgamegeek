@@ -1,7 +1,7 @@
 import math
 import os
 
-from modules.config import CONFIGS
+from config import CONFIGS
 from utils.processing_functions import load_file_local_first, save_file_local_first
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
@@ -45,7 +45,7 @@ def lambda_handler(event, context):
     url_block_size = (
         math.ceil(len(scraper_urls_raw) / number_url_files)
         if ENVIRONMENT == "prod"
-        else 2
+        else 3
     )
     print(f"URL block size: {url_block_size}")
 
@@ -62,7 +62,7 @@ def lambda_handler(event, context):
             data=scraper_urls_set,
         )
 
-        if ENVIRONMENT == "dev":
+        if ENVIRONMENT != "prod":
             break
 
 

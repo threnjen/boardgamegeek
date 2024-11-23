@@ -3,11 +3,11 @@ import os
 
 import boto3
 
-from modules.config import CONFIGS
+from config import CONFIGS
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-SCRAPER_TASK_DEFINITION = CONFIGS["orchestrator_task_definition"]
+TASK_DEFINITION = CONFIGS["orchestrator_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 
@@ -35,7 +35,9 @@ def lambda_handler(event, context):
 
     terraform_state_file = get_terraform_state_file_for_vpc()
 
-    task_definition = SCRAPER_TASK_DEFINITION
+    task_definition = (
+        TASK_DEFINITION if ENVIRONMENT == "prod" else f"dev_{TASK_DEFINITION}"
+    )
     print(task_definition)
 
     ecs_client = boto3.client("ecs")
@@ -74,10 +76,6 @@ def lambda_handler(event, context):
                 {
                     "name": task_definition,
                     "environment": [
-                        {
-                            "name": "ENVIRONMENT",
-                            "value": os.environ.get("ENVIRONMENT", "dev"),
-                        },
                         {"name": "ASSET", "value": "all"},
                     ],
                 }
