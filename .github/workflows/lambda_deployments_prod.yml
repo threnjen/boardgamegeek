@@ -37,4 +37,4 @@ jobs:
           aws lambda update-function-code --function-name=bgg_generate_game_urls  --zip-file=fileb://generate_game_urls_lambda.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_generate_user_urls  --zip-file=fileb://generate_user_urls_lambda.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_orchestrator_fargate_trigger  --zip-file=fileb://bgg_orchestrator_fargate_trigger.zip > /dev/null 2>&1
-          aws lambda update-function-code --function-name=bgg_user_data_cleaner_fargate_trigger  --zip-file=fileb://dev_bgg_user_data_cleaner_fargate_trigger.zip > /dev/null 2>&1
+          aws lambda update-function-code --function-name=bgg_user_data_cleaner_fargate_trigger  --zip-file=fileb://bgg_user_data_cleaner_fargate_trigger.zip > /dev/null 2>&1
