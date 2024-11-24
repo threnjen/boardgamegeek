@@ -6,10 +6,6 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up environment variables
-ARG FILENAME
-ENV FILENAME=$FILENAME
-
 # Install pipenv
 RUN pip3 install pipenv
 
@@ -31,4 +27,3 @@ COPY config.py .
 RUN pipenv sync
 
 ENTRYPOINT ["pipenv", "run", "python", "modules/game_data_cleaner/main.py"]
-CMD ["$FILENAME"]

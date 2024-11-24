@@ -28,6 +28,7 @@ jobs:
           zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../../config.py ../../utils
           zip -r generate_user_urls_lambda.zip generate_user_urls_lambda.py ../../config.py ../../utils
           zip -r bgg_orchestrator_fargate_trigger.zip bgg_orchestrator_fargate_trigger.py ../../config.py ../../utils
+          zip -r bgg_user_data_cleaner_fargate_trigger.zip bgg_user_data_cleaner_fargate_trigger.py ../../config.py ../../utils
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -41,4 +42,5 @@ jobs:
           aws lambda update-function-code --function-name=dev_bgg_generate_game_urls  --zip-file=fileb://generate_game_urls_lambda.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_bgg_generate_user_urls  --zip-file=fileb://generate_user_urls_lambda.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_bgg_orchestrator_fargate_trigger  --zip-file=fileb://bgg_orchestrator_fargate_trigger.zip > /dev/null 2>&1
+          aws lambda update-function-code --function-name=dev_bgg_user_data_cleaner_fargate_trigger  --zip-file=fileb://bgg_user_data_cleaner_fargate_trigger.zip > /dev/null 2>&1
 
