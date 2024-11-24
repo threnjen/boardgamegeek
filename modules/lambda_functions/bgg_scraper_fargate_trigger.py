@@ -47,9 +47,16 @@ def lambda_handler(event, context):
 
     print(terraform_state_file["outputs"])
 
-    file_prefixes = get_s3_keys_based_on_env(
-        directory=f'{CONFIGS[scraper_type]["raw_urls_directory"]}'
-    )
+    if not event.get("file_name"):
+        file_prefixes = get_s3_keys_based_on_env(
+            directory=f'{CONFIGS[scraper_type]["raw_urls_directory"]}'
+        )
+
+    else:
+        file_name = event.get("file_name")
+        file_prefixes = [
+            f"{WORKING_DIR}{CONFIGS[scraper_type]['raw_urls_directory']}/{file_name}"
+        ]
 
     task_definition = (
         f"dev_{SCRAPER_TASK_DEFINITION}"
@@ -108,6 +115,10 @@ def lambda_handler(event, context):
 if __name__ == "__main__":
     scraper_type = sys.argv[1]
 
-    event = {"scraper_type": scraper_type}
+    try:
+        file_name = sys.argv[2]
+        event = {"scraper_type": scraper_type, "file_name": file_name}
+    except IndexError:
+        event = {"scraper_type": scraper_type, "file_name": None}
 
     lambda_handler(event, None)
