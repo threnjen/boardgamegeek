@@ -52,7 +52,7 @@ class DirtyDataExtractor:
 
         for file in file_list_to_process:
 
-            game_entries = self._get_beautiful_soup(file)
+            game_entries = self._get_beautiful_soup(file_name=file)
 
             for game_entry in game_entries:
 
@@ -66,11 +66,11 @@ class DirtyDataExtractor:
 
         return all_entries
 
-    def _get_beautiful_soup(self, file) -> BeautifulSoup:
+    def _get_beautiful_soup(self, file_name: str) -> list[BeautifulSoup]:
         """Get the BeautifulSoup object for the XML file"""
         local_open = load_file_local_first(
             path=USER_CONFIGS["output_xml_directory"],
-            file_name=file.split("/")[-1],
+            file_name=file_name.split("/")[-1],
         )
 
         game_page = BeautifulSoup(local_open, features="xml")
@@ -81,7 +81,7 @@ class DirtyDataExtractor:
 
         return game_entries
 
-    def _get_ratings_from_game(self, game_entry) -> list:
+    def _get_ratings_from_game(self, game_entry: BeautifulSoup) -> list[list]:
         """Parse the individual game data"""
         game_id = game_entry["id"]
         comments = game_entry.find_all("comment")
