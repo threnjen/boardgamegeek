@@ -57,9 +57,7 @@ class DirtyDataExtractor:
             for game_entry in game_entries:
 
                 one_game_reviews = self._get_ratings_from_game(game_entry)
-                print(
-                    f"Number of ratings ID {game_entry['id']}: {len(one_game_reviews)}"
-                )
+
                 self.total_entries += len(one_game_reviews)
 
                 all_entries += one_game_reviews

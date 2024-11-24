@@ -41,6 +41,29 @@ resource "aws_iam_role_policy_attachment" "boardgamegeekscraper_github_cicd_lamb
   policy_arn = aws_iam_policy.boardgamegeekscraper_github_cicd_lambda_functions_policy.arn
 }
 
+resource "aws_iam_role_policy_attachment" "boardgamegeekscraper_github_cicd_s3_policyGitHubActions_Push_Role_attach" {
+  role       = aws_iam_role.GitHubActions_Push_Role_role.name
+  policy_arn = aws_iam_policy.boardgamegeekscraper_github_cicd_s3_policy.arn
+}
+
+resource "aws_iam_policy" "boardgamegeekscraper_github_cicd_s3_policy" {
+  name = "boardgamegeekscraper_github_cicd_s3"
+  path = "/"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "Statement1",
+        Effect = "Allow",
+        Action = [
+          "s3:PutObject"
+        ],
+        Resource = ["*"]
+      }
+    ]
+  })
+}
+
 resource "aws_iam_policy" "boardgamegeekscraper_github_cicd_lambda_functions_policy" {
   name = "boardgamegeekscraper_github_cicd_lambda_functions"
   path = "/"
