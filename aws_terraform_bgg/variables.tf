@@ -29,6 +29,12 @@ variable "bgg_game_data_cleaner" {
   default     = "bgg_game_data_cleaner"
 }
 
+variable "bgg_user_data_cleaner" {
+  description = "The name of the ECS task definition for the bgg_user_data_cleaner"
+  type        = string
+  default     = "bgg_user_data_cleaner"
+}
+
 variable "boardgamegeek_orchestrator" {
   description = "The name of the ECS task definition for the boardgamegeek_orchestrator"
   type        = string
