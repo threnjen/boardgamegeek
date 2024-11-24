@@ -189,11 +189,7 @@ resource "aws_iam_policy" "lambda_direct_permissions" {
           "lambda:InvokeFunction*",
         ]
         Effect   = "Allow"
-        Resource = [
-        "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.bgg_generate_game_urls.function_name}",
-        "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${module.bgg_generate_user_urls.function_name}",
-        "${aws_lambda_function.bgg_boardgame_file_retrieval_lambda.arn}"
-        ]
+        Resource = concat([for function in local.lambda_functions : "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${function}"], ["${aws_lambda_function.bgg_boardgame_file_retrieval_lambda.arn}"])
       },
     ]
   })
