@@ -6,16 +6,12 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up environment variables
-ARG FILENAME
-ENV FILENAME=$FILENAME
-
 # Install pipenv
 RUN pip3 install pipenv
 
 # Create necessary directories
-RUN mkdir -p data/prod/users/scraped_xml_raw \
-    data/test/users/scraped_xml_raw \
+RUN mkdir -p data/prod/users/user_dfs_clean \
+    data/test/users/user_dfs_clean \
     modules 
 
 # Copy the source code into the container
@@ -28,4 +24,3 @@ COPY config.py .
 RUN pipenv sync
 
 ENTRYPOINT ["pipenv", "run", "python", "modules/user_data_cleaner/main.py"]
-CMD ["$FILENAME"]

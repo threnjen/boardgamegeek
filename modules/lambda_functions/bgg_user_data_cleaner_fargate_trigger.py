@@ -7,7 +7,7 @@ from config import CONFIGS
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-SCRAPER_TASK_DEFINITION = CONFIGS["game_cleaner_task_definition"]
+SCRAPER_TASK_DEFINITION = CONFIGS["user_cleaner_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 
@@ -31,7 +31,7 @@ def get_terraform_state_file_for_vpc():
 def lambda_handler(event, context):
     """Trigger the Fargate task to process the files in the S3 bucket"""
 
-    print(f"Running Game Data Cleaner task")
+    print(f"Running User Data Cleaner task")
 
     terraform_state_file = get_terraform_state_file_for_vpc()
 
