@@ -3,7 +3,7 @@
     "game_dfs_dirty": "game_dfs_dirty",
     "scraper_task_definition": "bgg_scraper",
     "game_cleaner_task_definition": "bgg_game_data_cleaner",
-    "user_cleaner_task_definition": "user_game_data_cleaner",
+    "user_cleaner_task_definition": "bgg_user_data_cleaner",
     "ecs_cluster": "boardgamegeek",
     "orchestrator_task_definition": "bgg_orchestrator",
     "boardgamegeek_csv_filename": "boardgames_ranks.csv",
