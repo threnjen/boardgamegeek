@@ -32,7 +32,7 @@ import re
 
 def get_s3_keys_based_on_env(directory: str):
     directory = f"{WORKING_DIR}{directory}"
-    return [f"{directory}/{x}" for x in S3FileHandler().list_files(directory)]
+    return S3FileHandler().list_files(directory)
 
 
 def get_local_keys_based_on_env(directory: str):

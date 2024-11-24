@@ -4,11 +4,8 @@ from collections import defaultdict
 
 import pandas as pd
 from bs4 import BeautifulSoup
-from single_game_parser import GameEntryParser
 
 from config import CONFIGS
-from modules.game_data_cleaner.games_data_cleaner import GameDataCleaner
-from modules.game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
 from utils.processing_functions import (
     get_local_keys_based_on_env,
     get_s3_keys_based_on_env,
@@ -19,91 +16,119 @@ from utils.processing_functions import (
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
-GAME_CONFIGS = CONFIGS["game"]
+USER_CONFIGS = CONFIGS["user"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
 class DirtyDataExtractor:
 
     def __init__(self) -> None:
-        pass
+        self.total_entries = 0
 
     def data_extraction_chain(self):
         file_list_to_process = self._get_file_list()
-        raw_storage = self._process_file_list(file_list_to_process)
-        dirty_storage = self._organize_raw_storage(raw_storage)
-        self._save_dfs_to_disk_or_s3(dirty_storage)
+        all_entries = self._process_file_list(file_list_to_process)
+        raw_storage = self._organize_raw_data(all_entries)
+        self._validate_dictionary_creation(raw_storage)
+        self._create_table_from_data(raw_storage)
+        # self._save_dfs_to_disk_or_s3(dirty_storage)
 
     def _get_file_list(self) -> list[str]:
         # list files in data dirty prefix in s3 using awswrangler
-        xml_directory = GAME_CONFIGS["output_xml_directory"]
+        xml_directory = USER_CONFIGS["output_xml_directory"]
         file_list_to_process = get_s3_keys_based_on_env(xml_directory)
         if not file_list_to_process:
             local_files = get_local_keys_based_on_env(xml_directory)
             file_list_to_process = [x for x in local_files if x.endswith(".xml")]
-        print(file_list_to_process)
         return file_list_to_process
 
-    def _process_file_list(self, file_list_to_process: list) -> dict[list]:
+    def _process_file_list(self, file_list_to_process: list) -> list[dict]:
         """Process the list of files in the S3 bucket
         This function will process the list of files in the S3 bucket
         and extract the necessary information from the XML files. The
         function will return None."""
 
-        raw_storage = {
-            "games": [],
-            "designers": [],
-            "categories": [],
-            "mechanics": [],
-            "artists": [],
-            "publishers": [],
-            "subcategories": [],
-            # "comments": [],
-            "expansions": [],
-        }
+        all_entries = []
 
         for file in file_list_to_process:
-            local_open = load_file_local_first(
-                path=GAME_CONFIGS["output_xml_directory"],
-                file_name=file.split("/")[-1],
-            )
 
-            game_page = BeautifulSoup(local_open, features="xml")
-
-            game_entries = game_page.find_all("item")
+            game_entries = self._get_beautiful_soup(file)
 
             for game_entry in game_entries:
-                game_parser = GameEntryParser(game_entry=game_entry)
 
-                if not game_parser.check_rating_count_threshold():
-                    continue
-                print(f"Processing game with ID: {game_entry['id']}")
+                one_game_reviews_dict = self._get_ratings_from_game(game_entry)
+                print(
+                    f"Number of ratings ID {game_entry['id']}: {len(one_game_reviews_dict)}"
+                )
+                self.total_entries += len(one_game_reviews_dict)
 
-                game_parser.parse_individual_game()
-                (
-                    game,
-                    subcategories,
-                    designers,
-                    categories,
-                    mechanics,
-                    artists,
-                    publishers,
-                    expansions,
-                ) = game_parser.get_single_game_attributes()
+                all_entries.append(one_game_reviews_dict)
 
-                raw_storage["games"].append(game)
-                raw_storage["designers"].append(designers)
-                raw_storage["categories"].append(subcategories)
-                raw_storage["mechanics"].append(mechanics)
-                raw_storage["artists"].append(artists)
-                raw_storage["publishers"].append(publishers)
-                raw_storage["subcategories"].append(categories)
-                raw_storage["expansions"].append(expansions)
+        print(f"\nTotal number of user ratings processed: {self.total_entries}")
 
-        if not raw_storage["games"]:
-            return
+        return all_entries
+
+    def _get_beautiful_soup(self, file) -> BeautifulSoup:
+        local_open = load_file_local_first(
+            path=USER_CONFIGS["output_xml_directory"],
+            file_name=file.split("/")[-1],
+        )
+
+        game_page = BeautifulSoup(local_open, features="xml")
+
+        game_entries = game_page.find_all("item")
+
+        print(f"\nTotal number of game entries in file: {len(game_entries)}\n")
+
+        return game_entries
+
+    def _get_ratings_from_game(self, game_entry) -> dict:
+        """Parse the individual game data"""
+        game_id = game_entry["id"]
+        comments = game_entry.find_all("comment")
+
+        user_ratings = self._create_ratings_dict_by_user(game_id, comments)
+
+        return user_ratings
+
+    def _create_ratings_dict_by_user(self, game_id, comments: list) -> dict:
+        """Create a dictionary of ratings by user"""
+        user_ratings = {}
+
+        for comment in comments:
+            username = comment["username"]
+            user_ratings[username] = []
+            user_ratings[username].append(game_id)
+            user_ratings[username].append(comment["rating"])
+            user_ratings[username].append(comment["value"])
+
+        return user_ratings
+
+    def _organize_raw_data(self, all_entries: list[dict]) -> dict[list]:
+        """Organize the raw data into a dictionary of lists"""
+        raw_storage = defaultdict(list)
+
+        for game_set in all_entries:
+            for username, game_data in game_set.items():
+                if not raw_storage.get(username):
+                    raw_storage[username] = []
+                raw_storage[username].append(game_data)
 
         return raw_storage
+
+    def _validate_dictionary_creation(self, raw_storage: dict[list]) -> dict[list]:
+        """Make a dictionary where the key is the username and the value is the length of the list of games"""
+        user_game_count = {k: len(v) for k, v in raw_storage.items()}
+        print(f"Number of unique users: {len(user_game_count)}")
+        num_logged_ratings = sum(user_game_count.values())
+        assert (
+            num_logged_ratings == self.total_entries
+        ), f"Number of ratings logged: {num_logged_ratings} != {self.total_entries}"
+        return user_game_count
+
+    def _create_table_from_data(self, raw_storage: dict[list]) -> dict[pd.DataFrame]:
+        df = pd.DataFrame(raw_storage)
+        print(df.head())
 
     def _organize_raw_storage(self, raw_storage: dict[list]) -> dict[pd.DataFrame]:
         print("Crafting data frames")
@@ -146,12 +171,12 @@ class DirtyDataExtractor:
 
     def save_file_set(self, data, table):
         save_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"],
+            path=USER_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table}_dirty.pkl",
             data=data,
         )
         save_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"],
+            path=USER_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table}_dirty.csv",
             data=data,
         )
@@ -168,13 +193,13 @@ class DirtyDataExtractor:
             print(table.dtypes)
 
             save_file_local_first(
-                path=GAME_CONFIGS["dirty_dfs_directory"],
+                path=USER_CONFIGS["dirty_dfs_directory"],
                 file_name=f"{table_name}.csv",
                 data=table,
             )
 
             table = load_file_local_first(
-                path=GAME_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
+                path=USER_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
             )
 
             print(table.dtypes)
@@ -184,23 +209,7 @@ class DirtyDataExtractor:
             del table
             gc.collect()
 
-    def _make_json_game_lookup_file(self, games_df: pd.DataFrame):
-
-        games_df = games_df.copy()
-
-        # lists of game ids and game names
-        game_ids = list(games_df["BGGId"])
-        game_names = list(games_df["Name"])
-
-        game_id_lookup = dict(zip(game_ids, game_names))
-
-        save_file_local_first(
-            path="games", file_name="game_id_lookup.json", data=game_id_lookup
-        )
-
 
 if __name__ == "__main__":
 
     DirtyDataExtractor().data_extraction_chain()
-    GameDataCleaner().primary_cleaning_chain()
-    SecondaryDataCleaner().secondary_cleaning_chain()
