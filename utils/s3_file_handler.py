@@ -74,11 +74,13 @@ class S3FileHandler(FileHandler):
 
     def load_csv(self, file_path: str) -> Union[dict, list]:
         obj = self.s3_client.get_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
-        return pd.read_csv(obj["Body"], low_memory=False, on_bad_lines="skip")
+        return pd.read_csv(obj["Body"], low_memory=False, on_bad_lines="skip", sep="\t")
 
     def save_csv(self, file_path: str, data: Any):
         self.s3_client.put_object(
-            Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data.to_csv().encode("utf-8")
+            Bucket=S3_SCRAPER_BUCKET,
+            Key=file_path,
+            Body=data.to_csv(sep="\t").encode("utf-8"),
         )
 
     def load_pkl(self, file_path: str) -> pd.DataFrame:
