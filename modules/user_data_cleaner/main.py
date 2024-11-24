@@ -108,7 +108,7 @@ class DirtyDataExtractor:
     def _save_dfs_to_disk_or_s3(self, user_df: dict[pd.DataFrame]):
         """Save all files as pkl files and csv files"""
 
-        print(f"Saving user data to disk and uploading to S3")
+        print(f"\nSaving user data to disk and uploading to S3")
 
         table_name = "user_data"
 

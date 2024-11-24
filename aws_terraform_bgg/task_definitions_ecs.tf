@@ -123,8 +123,8 @@ module "dev_bgg_user_data_cleaner_ecs" {
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_user_data_cleaner}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_user_data_cleaner}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_user_data_cleaner}:latest"
-  cpu                    = "512"
-  memory                 = "4096"
+  cpu                    = "1024"
+  memory                 = "8192"
   region                 = var.REGION
 }
 
