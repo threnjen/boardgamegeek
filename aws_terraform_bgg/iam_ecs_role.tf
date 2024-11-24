@@ -59,6 +59,36 @@ resource "aws_iam_role_policy_attachment" "glue_boardgamegeekbgg_game_data_clean
   policy_arn = aws_iam_policy.glue_table_access.arn
 }
 
+module "bgg_user_data_cleaner_FargateTaskRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "bgg_user_data_cleaner_FargateTaskRole"
+}
+
+module "bgg_user_data_cleaner_FargateExecutionRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "bgg_user_data_cleaner_FargateExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "S3_Access_bgg_user_data_cleaner_FargateExecutionRole_attach" {
+  role       = module.bgg_user_data_cleaner_FargateExecutionRole_role.name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "S3_Access_boardgamegeekbgg_user_data_cleaner_FargateTaskRoleattach" {
+  role       = module.bgg_user_data_cleaner_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metricsbgg_user_data_cleaner_FargateTaskRoleattach" {
+  role       = module.bgg_user_data_cleaner_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.Cloudwatch_Put_Metrics_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "glue_boardgamegeekbgg_user_data_cleaner_FargateTaskRoleattach" {
+  role       = module.bgg_user_data_cleaner_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.glue_table_access.arn
+}
+
 module "bgg_scraper_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
   task_definition = "bgg_scraper_FargateExecutionRole"

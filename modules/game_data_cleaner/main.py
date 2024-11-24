@@ -16,7 +16,6 @@ from utils.processing_functions import (
     save_file_local_first,
     save_to_aws_glue,
 )
-from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
@@ -42,6 +41,7 @@ class DirtyDataExtractor:
         if not file_list_to_process:
             local_files = get_local_keys_based_on_env(xml_directory)
             file_list_to_process = [x for x in local_files if x.endswith(".xml")]
+        print(file_list_to_process)
         return file_list_to_process
 
     def _process_file_list(self, file_list_to_process: list) -> dict[list]:
@@ -155,7 +155,8 @@ class DirtyDataExtractor:
             file_name=f"{table}_dirty.csv",
             data=data,
         )
-        save_to_aws_glue(data=data, table=f"{table}_dirty")
+        if ENVIRONMENT == "prod":
+            save_to_aws_glue(data=data, table=f"{table}_dirty")
 
     def _save_dfs_to_disk_or_s3(self, dirty_storage: dict[pd.DataFrame]):
         """Save all files as pkl files. Save to local drive in ENVIRONMENT==env, or

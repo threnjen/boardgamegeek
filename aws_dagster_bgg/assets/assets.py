@@ -228,6 +228,57 @@ def scraped_user_xmls(
     return True
 
 
+@asset(deps=["scraped_user_xmls"])
+def user_data_df(
+    s3_resource: ConfigurableResource,
+    ecs_resource: ConfigurableResource,
+    config_resource: ConfigurableResource,
+) -> bool:
+    """
+    Creates a clean dataframe for the user data from the scraped user XML files
+    """
+
+    configs = config_resource.get_config_file()
+
+    bucket = configs["s3_scraper_bucket"]
+    key = f'{WORKING_ENV_DIR}{configs["user"]["output_xml_directory"]}'
+
+    raw_user_files = s3_resource.list_file_keys(bucket=bucket, key=key)
+
+    assert len(raw_user_files) == 30 if ENVIRONMENT == "prod" else 1
+
+    task_definition = (
+        "bgg_user_data_cleaner"
+        if ENVIRONMENT == "prod"
+        else "dev_bgg_user_data_cleaner"
+    )
+
+    ecs_resource.launch_ecs_task(task_definition=task_definition)
+
+    check_filenames = [
+        f"{WORKING_ENV_DIR}{configs['user']['clean_dfs_directory']}/user_data.pkl"
+    ]
+    logger.info(check_filenames)
+
+    original_timestamps = {
+        key: s3_resource.get_last_modified(
+            bucket=bucket,
+            key=key,
+        )
+        for key in check_filenames
+    }
+
+    compare_timestamps_for_refresh(
+        original_timestamps=original_timestamps,
+        file_list_to_check=check_filenames,
+        location_bucket=bucket,
+        sleep_timer=300,
+        s3_resource=s3_resource,
+    )
+
+    return True
+
+
 @op
 def compare_timestamps_for_refresh(
     original_timestamps: dict,
@@ -242,9 +293,10 @@ def compare_timestamps_for_refresh(
 
     while len(file_list_to_check):
 
+        logger.info(f"Files to check: {file_list_to_check}")
+
         time.sleep(sleep_timer)
 
-        logger.info(f"Files to check: {file_list_to_check}")
         for key in file_list_to_check:
             logger.info(f"Checking key: {key}")
             new_timestamp_tracker[key] = s3_resource.get_last_modified(
