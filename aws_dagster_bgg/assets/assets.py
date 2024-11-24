@@ -132,7 +132,11 @@ def game_dfs_clean(
 
     assert len(raw_game_files) == 30 if ENVIRONMENT == "prod" else 1
 
-    task_definition = "bgg_cleaner" if ENVIRONMENT == "prod" else "dev_bgg_cleaner"
+    task_definition = (
+        "bgg_game_data_cleaner"
+        if ENVIRONMENT == "prod"
+        else "dev_bgg_game_data_cleaner"
+    )
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 

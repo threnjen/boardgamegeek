@@ -23,10 +23,10 @@ variable "bgg_scraper" {
   type        = string
   default     = "bgg_scraper"
 }
-variable "bgg_cleaner" {
-  description = "The name of the ECS task definition for the bgg_cleaner"
+variable "bgg_game_data_cleaner" {
+  description = "The name of the ECS task definition for the bgg_game_data_cleaner"
   type        = string
-  default     = "bgg_cleaner"
+  default     = "bgg_game_data_cleaner"
 }
 
 variable "boardgamegeek_orchestrator" {

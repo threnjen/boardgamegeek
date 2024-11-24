@@ -5,8 +5,8 @@ locals {
   ecr_repositories = [
     module.bgg_boardgame_file_retrieval_ecr.ecr_repository_name,
     module.bgg_orchestrator_ecr.ecr_repository_name,
-    module.bgg_cleaner_ecr.ecr_repository_name,
-    module.dev_bgg_cleaner_ecr.ecr_repository_name,
+    module.bgg_game_data_cleaner_ecr.ecr_repository_name,
+    module.dev_bgg_game_data_cleaner_ecr.ecr_repository_name,
     module.bgg_scraper_ecr.ecr_repository_name,
     module.dev_bgg_scraper_ecr.ecr_repository_name,
     module.dev_bgg_orchestrator_ecr.ecr_repository_name
@@ -23,14 +23,19 @@ module "bgg_orchestrator_ecr" {
   ecr_repository_name = "bgg_orchestrator"
 }
 
-module "bgg_cleaner_ecr" {
+module "dev_bgg_orchestrator_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "bgg_cleaner"
+  ecr_repository_name = "dev_bgg_orchestrator"
 }
 
-module "dev_bgg_cleaner_ecr" {
+module "bgg_game_data_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_bgg_cleaner"
+  ecr_repository_name = "bgg_game_data_cleaner"
+}
+
+module "dev_bgg_game_data_cleaner_ecr" {
+  source              = "./modules/ecr"
+  ecr_repository_name = "dev_bgg_game_data_cleaner"
 }
 
 module "bgg_scraper_ecr" {
@@ -43,7 +48,4 @@ module "dev_bgg_scraper_ecr" {
   ecr_repository_name = "dev_bgg_scraper"
 }
 
-module "dev_bgg_orchestrator_ecr" {
-  source              = "./modules/ecr"
-  ecr_repository_name = "dev_bgg_orchestrator"
-}
+
