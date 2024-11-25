@@ -72,12 +72,21 @@ class DirtyDataExtractor:
 
             game_entries = game_page.find_all("item")
 
+            print(f"Number of game entries in file: {len(game_entries)}")
+
+            if len(game_entries) == 0:
+                print(
+                    f"\n\nNo game entries found in file: {file}. Exiting application."
+                )
+                exit()
+
             for game_entry in game_entries:
+
                 game_parser = GameEntryParser(game_entry=game_entry)
 
                 if not game_parser.check_rating_count_threshold():
                     continue
-                print(f"Processing game with ID: {game_entry['id']}")
+                # print(f"Processing game with ID: {game_entry['id']}")
 
                 game_parser.parse_individual_game()
                 (

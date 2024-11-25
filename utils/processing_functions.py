@@ -56,11 +56,10 @@ def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, d
 def load_file_local_first(path: str = None, file_name: str = ""):
 
     file_path = f"{path}/{file_name}" if path else file_name
-    print(file_path)
 
     load_path = f"{WORKING_DIR}{file_path}"
 
-    print(load_path)
+    print(f"Loading: {load_path}")
 
     try:
         # open from local_pile_path
