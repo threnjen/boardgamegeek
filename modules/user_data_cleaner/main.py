@@ -99,6 +99,7 @@ class DirtyDataExtractor:
         """Create a DataFrame from the data"""
         df = pd.DataFrame(all_entries, columns=["username", "BGGId", "rating", "value"])
         df = df.sort_values(by="username").reset_index(drop=True).set_index("username")
+        df = df.drop_duplicates()
         print(df.head())
 
         return df
