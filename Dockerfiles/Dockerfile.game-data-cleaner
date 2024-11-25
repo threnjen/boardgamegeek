@@ -9,16 +9,9 @@ RUN apt-get update && apt-get install -y \
 # Install pipenv
 RUN pip3 install pipenv
 
-# Create necessary directories
-RUN mkdir -p data/prod/users/scraped_xml_raw \
-    data/prod/games/scraped_xml_raw \
-    data/prod/game_dfs_dirty \
-    data/test/games/scraped_xml_raw \
-    data/test/game_dfs_dirty \
-    modules 
-
 # Copy the source code into the container
 COPY modules/game_data_cleaner modules/game_data_cleaner
+COPY data data
 COPY utils utils
 COPY modules/game_data_cleaner/Pipfile* .
 COPY config.py .
