@@ -57,6 +57,7 @@ class LocalFileHandler(FileHandler):
 
     def save_xml(self, file_path: str, data: str):
         self.make_directory(Path(file_path).parent)
+        data = bytes(data, "utf-8")
         with open(file_path, "wb") as f:
             f.write(data)
 
