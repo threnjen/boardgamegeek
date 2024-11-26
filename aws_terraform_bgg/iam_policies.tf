@@ -71,6 +71,14 @@ module "bgg_ratings_data_cleaner_describe_task_def_policy" {
   account_id = data.aws_caller_identity.current.account_id
 }
 
+module "bgg_users_data_cleaner_describe_task_def_policy" {
+  source = "./modules/lambda_ecs_trigger_policies"
+  name   = "${var.bgg_users_data_cleaner}_lambda_ecs_trigger"
+  task_name = var.bgg_users_data_cleaner
+  region = var.REGION
+  account_id = data.aws_caller_identity.current.account_id
+}
+
 module "bgg_orchestrator_task_def_policy" {
   source = "./modules/lambda_ecs_trigger_policies"
   name   = "${var.boardgamegeek_orchestrator}_lambda_ecs_trigger"
@@ -222,6 +230,52 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_ratings_data_cleaner" {
         Resource = [
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_data_cleaner}_FargateExecutionRole",
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_data_cleaner}_FargateTaskRole"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "ecs_run_permissions_bgg_users_data_cleaner" {
+  name        = "ecs_run_permissions_bgg_users_data_cleaner"
+  description = "Policy to allow running the BGG ECS tasks"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "VisualEditor0",
+        Effect = "Allow",
+        Action = "ecs:DescribeTasks",
+        Resource = [
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.bgg_users_data_cleaner}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_users_data_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/dev_${var.bgg_users_data_cleaner}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_users_data_cleaner}:*",
+        ]
+      },
+      {
+        Sid      = "VisualEditor1",
+        Effect   = "Allow",
+        Action   = "ecs:DescribeTaskDefinition",
+        Resource = "*"
+      },
+      {
+        Sid    = "VisualEditor2",
+        Effect = "Allow",
+        Action = "ecs:RunTask",
+        Resource = [
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_users_data_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_users_data_cleaner}:*",
+        ]
+      },
+      {
+        Sid    = "VisualEditor3",
+        Effect = "Allow",
+        Action = "iam:PassRole",
+        Resource = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_users_data_cleaner}_FargateExecutionRole",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_users_data_cleaner}_FargateTaskRole"
         ]
       }
     ]

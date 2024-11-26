@@ -279,6 +279,69 @@ def ratings_data_df(
     return True
 
 
+@asset
+def user_scraper_urls(
+    lambda_resource: ConfigurableResource,
+    s3_resource: ConfigurableResource,
+    config_resource: ConfigurableResource,
+) -> bool:
+    """
+    Generates the game scraper keys that should exist.
+    Gets the last modified timestamp of each keys from s3.
+    Runs the lambda function to generate the urls.
+    Waits for the urls to be generated.
+    Polls S3 for the last modified timestamp of the keys.
+    If the last modified timestamp of the keys is greater than the last modified timestamp of the keys in s3.
+    Then the keys have been updated and the asset is materialized.
+    Every time a timestamp is found to be greater than the last modified timestamp in s3, remove that key from the check dictionary so it is not checked again.
+    Update the last modified timestamp of the keys in s3.
+    """
+
+    logger.info("Generating user scraper urls")
+
+    configs = config_resource.get_config_file()
+
+    s3_scraper_bucket = configs["s3_scraper_bucket"]
+    raw_urls_directory = configs["users"]["raw_urls_directory"]
+    output_urls_json_suffix = configs["users"]["output_urls_json_suffix"]
+
+    game_scraper_url_filenames = (
+        [
+            f"{raw_urls_directory}/group{i}{output_urls_json_suffix}"
+            for i in range(1, 31)
+        ]
+        if ENVIRONMENT == "prod"
+        else [f"{raw_urls_directory}/group1{output_urls_json_suffix}"]
+    )
+
+    create_new_urls(
+        lambda_resource,
+        s3_resource,
+        s3_scraper_bucket,
+        game_scraper_url_filenames,
+        lambda_function_name="bgg_generate_user_urls",
+    )
+
+    return True
+
+
+@asset(deps=["user_scraper_urls"])
+def scraped_user_xmls(
+    ecs_resource: ConfigurableResource,
+    s3_resource: ConfigurableResource,
+    config_resource: ConfigurableResource,
+) -> bool:
+    """
+    Scrapes the BGG website for users data, using the URLs generated in the previous step
+    """
+
+    configs = config_resource.get_config_file()
+
+    scrape_data(ecs_resource, s3_resource, configs, scraper_type="users")
+
+    return True
+
+
 @op
 def compare_timestamps_for_refresh(
     original_timestamps: dict,

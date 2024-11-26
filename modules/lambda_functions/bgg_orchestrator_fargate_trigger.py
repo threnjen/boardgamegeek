@@ -31,6 +31,9 @@ def get_terraform_state_file_for_vpc():
 def lambda_handler(event, context):
     """Trigger the Fargate task to process the files in the S3 bucket"""
 
+    asset = event.get("asset", "all")
+    job = event.get("job", "bgg_job")
+
     print(f"Running BGGeek Orchestrator task")
 
     terraform_state_file = get_terraform_state_file_for_vpc()
@@ -76,7 +79,8 @@ def lambda_handler(event, context):
                 {
                     "name": task_definition,
                     "environment": [
-                        {"name": "ASSET", "value": "all"},
+                        {"name": "ASSET", "value": asset},
+                        {"name": "JOB", "value": job},
                     ],
                 }
             ]
