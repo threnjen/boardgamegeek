@@ -1,13 +1,10 @@
-name: DEV deployment to boardgamegeek ratings data cleaner
+name: PROD deployment to boardgamegeek users data cleaner
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-      
+
 permissions:
   id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
@@ -18,24 +15,18 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
           aws-region: ${{ secrets.AWS_REGION }}
-
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-          
-      - name: Build, tag, push image to AWS ECR dev_bgg_ratings_data_cleaner
+      - name: Build, tag, push image to AWS ECR bgg_users_data_cleaner
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev_bgg_ratings_data_cleaner
+          ECR_REPOSITORY: bgg_users_data_cleaner
         run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.ratings-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.user-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
-      

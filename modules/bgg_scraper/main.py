@@ -122,11 +122,11 @@ class UserSpider(scrapy.Spider):
             return
 
         # Process the valid response
-        self._save_response(response, response.meta["group_num"])
+        self._save_response(response, response.url)
 
-    def _save_response(self, response: scrapy.http.Response, response_id: int):
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        file_path = f"{WORKING_DIR}{self.save_file_path}/{self.group}_{response_id}_{timestamp}.xml"
+    def _save_response(self, response: scrapy.http.Response, url: str):
+        user_id = url.split("=")[1].split("&")[0]
+        file_path = f"{WORKING_DIR}{self.save_file_path}/{user_id}.xml"
         self.file_handler.save_file(file_path=file_path, data=response.body)
         self.logger.info(f"Response saved to {file_path}")
 
@@ -212,9 +212,8 @@ class GameScraper:
         saved_files = [
             x
             for x in get_local_keys_based_on_env(self.scraped_files_folder)
-            if self.file_group in x and "combined" not in x and ".gitkeep" not in x
+            if "combined" not in x and ".gitkeep" not in x
         ]
-        print(f"{saved_files}\n\n")
 
         # Parse the first XML file to get the root and header
         tree = ET.parse(saved_files[0])
@@ -228,6 +227,11 @@ class GameScraper:
             # Parse the XML file
             tree = ET.parse(xml_file)
             root = tree.getroot()
+
+            if self.scraper_type == "users":
+                user_name = xml_file.split("/")[-1].split(".")[0]
+                user_tag = ET.SubElement(combined_root, "username")
+                user_tag.text = user_name
 
             # Append each <item> element to the new root
             for item in root.findall("item"):
