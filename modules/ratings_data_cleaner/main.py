@@ -29,8 +29,8 @@ class DirtyDataExtractor:
         """Main function to extract data from the XML files"""
         file_list_to_process = self._get_file_list()
         all_entries = self._process_file_list(file_list_to_process)
-        user_df = self._create_table_from_data(all_entries)
-        self._save_dfs_to_disk_or_s3(user_df)
+        ratings_df = self._create_table_from_data(all_entries)
+        self._save_dfs_to_disk_or_s3(ratings_df)
 
     def _get_file_list(self) -> list[str]:
         """Get the list of files to process"""
@@ -62,7 +62,7 @@ class DirtyDataExtractor:
 
                 all_entries += one_game_reviews
 
-        print(f"\nTotal number of user ratings processed: {self.total_entries}")
+        print(f"\nTotal number of ratings ratings processed: {self.total_entries}")
 
         return all_entries
 
@@ -86,14 +86,14 @@ class DirtyDataExtractor:
         game_id = game_entry["id"]
         comments = game_entry.find_all("comment")
 
-        user_ratings = []
+        ratings_ratings = []
 
         for comment in comments:
-            user_ratings.append(
+            ratings_ratings.append(
                 [comment["username"], game_id, comment["rating"], comment["value"]]
             )
 
-        return user_ratings
+        return ratings_ratings
 
     def _create_table_from_data(self, all_entries: dict[list]) -> pd.DataFrame:
         """Create a DataFrame from the data"""
@@ -104,36 +104,36 @@ class DirtyDataExtractor:
 
         return df
 
-    def _save_dfs_to_disk_or_s3(self, user_df: dict[pd.DataFrame]):
+    def _save_dfs_to_disk_or_s3(self, ratings_df: dict[pd.DataFrame]):
         """Save all files as pkl files and csv files"""
 
-        print(f"\nSaving user data to disk and uploading to S3")
+        print(f"\nSaving ratings data to disk and uploading to S3")
 
-        table_name = "user_data"
+        table_name = "ratings_data"
 
         # save and load as csv to properly infer data types
         save_file_local_first(
             path=RATING_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table_name}.csv",
-            data=user_df,
+            data=ratings_df,
         )
 
-        user_df = load_file_local_first(
+        ratings_df = load_file_local_first(
             path=RATING_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
         )
 
         save_file_local_first(
             path=RATING_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table_name}.pkl",
-            data=user_df,
+            data=ratings_df,
         )
         save_file_local_first(
             path=RATING_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table_name}.csv",
-            data=user_df,
+            data=ratings_df,
         )
         if ENVIRONMENT == "prod":
-            save_to_aws_glue(data=user_df, table=f"{table_name}")
+            save_to_aws_glue(data=ratings_df, table=f"{table_name}")
 
 
 if __name__ == "__main__":

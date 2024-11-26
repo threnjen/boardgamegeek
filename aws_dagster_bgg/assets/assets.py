@@ -107,7 +107,7 @@ def scraped_game_xmls(
 
     configs = config_resource.get_config_file()
 
-    scrape_data(ecs_resource, s3_resource, configs, scraper_type="game")
+    scrape_data(ecs_resource, s3_resource, configs, scraper_type="games")
 
     return True
 
@@ -168,13 +168,13 @@ def game_dfs_clean(
 
 
 @asset(deps=["game_dfs_clean"])
-def user_scraper_urls(
+def ratings_scraper_urls(
     lambda_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
 ) -> bool:
     """
-    Generates the user scraper keys that should exist.
+    Generates the ratings scraper keys that should exist.
     Gets the last modified timestamp of each keys from s3.
     Runs the lambda function to generate the urls.
     Waits for the urls to be generated.
@@ -191,7 +191,7 @@ def user_scraper_urls(
     raw_urls_directory = configs["ratings"]["raw_urls_directory"]
     output_urls_json_suffix = configs["ratings"]["output_urls_json_suffix"]
 
-    user_scraper_url_filenames = (
+    ratings_scraper_url_filenames = (
         [
             f"{raw_urls_directory}/group{i}{output_urls_json_suffix}"
             for i in range(1, 31)
@@ -204,38 +204,38 @@ def user_scraper_urls(
         lambda_resource,
         s3_resource,
         s3_scraper_bucket,
-        user_scraper_url_filenames,
-        lambda_function_name="bgg_generate_user_urls",
+        ratings_scraper_url_filenames,
+        lambda_function_name="bgg_generate_ratings_urls",
     )
 
     return True
 
 
-@asset(deps=["user_scraper_urls"])
-def scraped_user_xmls(
+@asset(deps=["ratings_scraper_urls"])
+def scraped_ratings_xmls(
     ecs_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
 ) -> bool:
     """
-    Scrapes the BGG website for user data, using the URLs generated in the previous step
+    Scrapes the BGG website for ratings data, using the URLs generated in the previous step
     """
 
     configs = config_resource.get_config_file()
 
-    scrape_data(ecs_resource, s3_resource, configs, scraper_type="user")
+    scrape_data(ecs_resource, s3_resource, configs, scraper_type="ratings")
 
     return True
 
 
-@asset(deps=["scraped_user_xmls"])
-def user_data_df(
+@asset(deps=["scraped_ratings_xmls"])
+def ratings_data_df(
     s3_resource: ConfigurableResource,
     ecs_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
 ) -> bool:
     """
-    Creates a clean dataframe for the user data from the scraped user XML files
+    Creates a clean dataframe for the ratings data from the scraped ratings XML files
     """
 
     configs = config_resource.get_config_file()
@@ -243,9 +243,9 @@ def user_data_df(
     bucket = configs["s3_scraper_bucket"]
     key = f'{WORKING_ENV_DIR}{configs["ratings"]["output_xml_directory"]}'
 
-    raw_user_files = s3_resource.list_file_keys(bucket=bucket, key=key)
+    raw_ratings_files = s3_resource.list_file_keys(bucket=bucket, key=key)
 
-    assert len(raw_user_files) == 30 if ENVIRONMENT == "prod" else 1
+    assert len(raw_ratings_files) == 30 if ENVIRONMENT == "prod" else 1
 
     task_definition = (
         "bgg_ratings_data_cleaner"
@@ -256,7 +256,7 @@ def user_data_df(
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 
     check_filenames = [
-        f"{WORKING_ENV_DIR}{configs['user']['clean_dfs_directory']}/user_data.pkl"
+        f"{WORKING_ENV_DIR}{configs['ratings']['clean_dfs_directory']}/ratings_data.pkl"
     ]
     logger.info(check_filenames)
 

@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install pipenv
 
 # Create necessary directories
-RUN mkdir -p data/prod/users/user_dfs_clean \
-    data/test/users/user_dfs_clean \
+RUN mkdir -p data/prod/users/ratings_dfs_clean \
+    data/test/users/ratings_dfs_clean \
     modules 
 
 # Copy the source code into the container

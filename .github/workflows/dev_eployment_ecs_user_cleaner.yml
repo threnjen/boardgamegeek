@@ -1,4 +1,4 @@
-name: DEV deployment to boardgamegeek user data cleaner
+name: DEV deployment to boardgamegeek ratings data cleaner
 
 on:
   push:

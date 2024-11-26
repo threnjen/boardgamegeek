@@ -33,9 +33,9 @@ def generate_ratings_urls(game_entries):
 
 
 def lambda_handler(event, context):
-    """Generate the raw URLs for the user scraper
+    """Generate the raw URLs for the ratings scraper
     This function will read the game ids from the local csv file or S3
-    and generate the raw URLs for the user scraper. The URLs
+    and generate the raw URLs for the ratings scraper. The URLs
     will be split into blocks and saved to S3 for the scraper
     to pick up."""
 

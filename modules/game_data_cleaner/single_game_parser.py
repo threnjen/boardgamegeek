@@ -28,10 +28,10 @@ class GameEntryParser:
     def check_rating_count_threshold(
         self,
     ) -> bool:
-        """Check if the game has enough user ratings to be considered"""
-        user_ratings = int(self.find_thing_in_soup("usersrated"))
+        """Check if the game has enough ratings ratings to be considered"""
+        ratings_ratings = int(self.find_thing_in_soup("usersrated"))
 
-        if user_ratings < MIN_USER_RATINGS:
+        if ratings_ratings < MIN_USER_RATINGS:
             return False
         return True
 
@@ -121,7 +121,7 @@ class GameEntryParser:
 
     def _parse_poll_items(self) -> dict:
         """Parse the poll items of the game
-        This includes the user suggested player age, language dependence, best players, and play time.
+        This includes the ratings suggested player age, language dependence, best players, and play time.
         """
         self.game_base_attributes["ComAgeRec"] = self.evaulate_poll(
             "User Suggested Player Age"
@@ -267,7 +267,7 @@ class GameEntryParser:
             "poll", title="User Suggested Number of Players"
         ).find_all(
             "results"
-        )  # get user players poll
+        )  # get ratings players poll
         player_num_votes = int(
             self.game_entry.find("poll", title="User Suggested Number of Players")[
                 "totalvotes"
@@ -345,7 +345,7 @@ class GameEntryParser:
 
     def create_thing_of_type(self, game_id: str, find_type_str: str) -> dict[str, list]:
         """Create DataFrame for things for a specific game id.
-        The user can pass a find_type_str to get the specific type of thing they want.
+        The ratings can pass a find_type_str to get the specific type of thing they want.
         The function will search for that as a link type in the game_entry.
 
         Parameters:

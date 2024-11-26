@@ -7,7 +7,7 @@ from config import CONFIGS
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-SCRAPER_TASK_DEFINITION = CONFIGS["user_cleaner_task_definition"]
+SCRAPER_TASK_DEFINITION = CONFIGS["ratings_cleaner_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 
