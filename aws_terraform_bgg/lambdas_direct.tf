@@ -11,8 +11,8 @@ locals {
     module.dev_bgg_game_data_cleaner_fargate_trigger.function_name,
     module.bgg_orchestrator_fargate_trigger.function_name,
     module.dev_bgg_orchestrator_fargate_trigger.function_name,
-    module.bgg_user_data_cleaner_fargate_trigger.function_name,
-    module.dev_bgg_user_data_cleaner_fargate_trigger.function_name
+    module.bgg_ratings_data_cleaner_fargate_trigger.function_name,
+    module.dev_bgg_ratings_data_cleaner_fargate_trigger.function_name
   ]
 }
 
@@ -137,26 +137,26 @@ module "dev_bgg_orchestrator_fargate_trigger" {
   description = "DEV Lambda function to trigger the boardgamegeek orchestrator fargate task"
 }
 
-module "bgg_user_data_cleaner_fargate_trigger" {
+module "bgg_ratings_data_cleaner_fargate_trigger" {
   source        = "./modules/lambda_function_direct"
-  function_name = "bgg_user_data_cleaner_fargate_trigger"
+  function_name = "bgg_ratings_data_cleaner_fargate_trigger"
   timeout       = 600
   memory_size   = 128
-  role          = module.bgg_user_data_cleaner_fargate_trigger_role.arn
-  handler       = "bgg_user_data_cleaner_fargate_trigger.lambda_handler"
+  role          = module.bgg_ratings_data_cleaner_fargate_trigger_role.arn
+  handler       = "bgg_ratings_data_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
   description = "Lambda function to trigger the boardgamegeek cleaner fargate task"
 }
 
 
-module "dev_bgg_user_data_cleaner_fargate_trigger" {
+module "dev_bgg_ratings_data_cleaner_fargate_trigger" {
   source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_user_data_cleaner_fargate_trigger"
+  function_name = "dev_bgg_ratings_data_cleaner_fargate_trigger"
   timeout       = 600
   memory_size   = 128
-  role          = module.bgg_user_data_cleaner_fargate_trigger_role.arn
-  handler       = "bgg_user_data_cleaner_fargate_trigger.lambda_handler"
+  role          = module.bgg_ratings_data_cleaner_fargate_trigger_role.arn
+  handler       = "bgg_ratings_data_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
   description = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"

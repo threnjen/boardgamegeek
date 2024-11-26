@@ -72,8 +72,8 @@ def game_scraper_urls(
     configs = config_resource.get_config_file()
 
     s3_scraper_bucket = configs["s3_scraper_bucket"]
-    raw_urls_directory = configs["game"]["raw_urls_directory"]
-    output_urls_json_suffix = configs["game"]["output_urls_json_suffix"]
+    raw_urls_directory = configs["games"]["raw_urls_directory"]
+    output_urls_json_suffix = configs["games"]["output_urls_json_suffix"]
 
     game_scraper_url_filenames = (
         [
@@ -125,8 +125,8 @@ def game_dfs_clean(
     configs = config_resource.get_config_file()
 
     bucket = configs["s3_scraper_bucket"]
-    key = f'{WORKING_ENV_DIR}{configs["game"]["output_xml_directory"]}'
-    data_sets = configs["game"]["data_sets"]
+    key = f'{WORKING_ENV_DIR}{configs["games"]["output_xml_directory"]}'
+    data_sets = configs["games"]["data_sets"]
 
     raw_game_files = s3_resource.list_file_keys(bucket=bucket, key=key)
 
@@ -188,8 +188,8 @@ def user_scraper_urls(
     configs = config_resource.get_config_file()
 
     s3_scraper_bucket = configs["s3_scraper_bucket"]
-    raw_urls_directory = configs["user"]["raw_urls_directory"]
-    output_urls_json_suffix = configs["user"]["output_urls_json_suffix"]
+    raw_urls_directory = configs["ratings"]["raw_urls_directory"]
+    output_urls_json_suffix = configs["ratings"]["output_urls_json_suffix"]
 
     user_scraper_url_filenames = (
         [
@@ -241,16 +241,16 @@ def user_data_df(
     configs = config_resource.get_config_file()
 
     bucket = configs["s3_scraper_bucket"]
-    key = f'{WORKING_ENV_DIR}{configs["user"]["output_xml_directory"]}'
+    key = f'{WORKING_ENV_DIR}{configs["ratings"]["output_xml_directory"]}'
 
     raw_user_files = s3_resource.list_file_keys(bucket=bucket, key=key)
 
     assert len(raw_user_files) == 30 if ENVIRONMENT == "prod" else 1
 
     task_definition = (
-        "bgg_user_data_cleaner"
+        "bgg_ratings_data_cleaner"
         if ENVIRONMENT == "prod"
-        else "dev_bgg_user_data_cleaner"
+        else "dev_bgg_ratings_data_cleaner"
     )
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)

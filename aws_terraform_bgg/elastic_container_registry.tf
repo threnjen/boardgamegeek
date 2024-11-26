@@ -10,8 +10,8 @@ locals {
     module.bgg_scraper_ecr.ecr_repository_name,
     module.dev_bgg_scraper_ecr.ecr_repository_name,
     module.dev_bgg_orchestrator_ecr.ecr_repository_name,
-    module.bgg_user_data_cleaner_ecr.ecr_repository_name,
-    module.dev_bgg_user_data_cleaner_ecr.ecr_repository_name
+    module.bgg_ratings_data_cleaner_ecr.ecr_repository_name,
+    module.dev_bgg_ratings_data_cleaner_ecr.ecr_repository_name
   ]
 }
 
@@ -40,14 +40,14 @@ module "dev_bgg_game_data_cleaner_ecr" {
   ecr_repository_name = "dev_bgg_game_data_cleaner"
 }
 
-module "bgg_user_data_cleaner_ecr" {
+module "bgg_ratings_data_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "bgg_user_data_cleaner"
+  ecr_repository_name = "bgg_ratings_data_cleaner"
 }
 
-module "dev_bgg_user_data_cleaner_ecr" {
+module "dev_bgg_ratings_data_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_bgg_user_data_cleaner"
+  ecr_repository_name = "dev_bgg_ratings_data_cleaner"
 }
 
 module "bgg_scraper_ecr" {

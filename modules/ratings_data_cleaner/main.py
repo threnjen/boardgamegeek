@@ -16,7 +16,7 @@ from utils.processing_functions import (
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
-USER_CONFIGS = CONFIGS["user"]
+RATING_CONFIGS = CONFIGS["ratings"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
@@ -35,7 +35,7 @@ class DirtyDataExtractor:
     def _get_file_list(self) -> list[str]:
         """Get the list of files to process"""
 
-        xml_directory = USER_CONFIGS["output_xml_directory"]
+        xml_directory = RATING_CONFIGS["output_xml_directory"]
         file_list_to_process = get_s3_keys_based_on_env(xml_directory)
         if not file_list_to_process:
             local_files = get_local_keys_based_on_env(xml_directory)
@@ -69,7 +69,7 @@ class DirtyDataExtractor:
     def _get_beautiful_soup(self, file_name: str) -> list[BeautifulSoup]:
         """Get the BeautifulSoup object for the XML file"""
         local_open = load_file_local_first(
-            path=USER_CONFIGS["output_xml_directory"],
+            path=RATING_CONFIGS["output_xml_directory"],
             file_name=file_name.split("/")[-1],
         )
 
@@ -113,22 +113,22 @@ class DirtyDataExtractor:
 
         # save and load as csv to properly infer data types
         save_file_local_first(
-            path=USER_CONFIGS["dirty_dfs_directory"],
+            path=RATING_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table_name}.csv",
             data=user_df,
         )
 
         user_df = load_file_local_first(
-            path=USER_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
+            path=RATING_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
         )
 
         save_file_local_first(
-            path=USER_CONFIGS["dirty_dfs_directory"],
+            path=RATING_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table_name}.pkl",
             data=user_df,
         )
         save_file_local_first(
-            path=USER_CONFIGS["dirty_dfs_directory"],
+            path=RATING_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table_name}.csv",
             data=user_df,
         )

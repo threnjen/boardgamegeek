@@ -6,7 +6,7 @@ from utils.processing_functions import load_file_local_first, save_file_local_fi
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-GAME_CONFIGS = CONFIGS["game"]
+GAME_CONFIGS = CONFIGS["games"]
 
 url_block_size = 20
 number_url_files = 30

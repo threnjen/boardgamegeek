@@ -177,7 +177,7 @@ def parse_args():
     parser.add_argument(
         "scraper_type",
         type=str,
-        help="The type of scraper to run.  Current options are 'game' and 'user'",
+        help="The type of scraper to run.  Current options are ['games', 'ratings', 'users']",
     )
     parser.add_argument(
         "urls_filename",
