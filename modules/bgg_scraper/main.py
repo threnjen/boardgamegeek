@@ -230,12 +230,15 @@ class GameScraper:
 
             if self.scraper_type == "users":
                 user_name = xml_file.split("/")[-1].split(".")[0]
-                user_tag = ET.SubElement(combined_root, "username")
-                user_tag.text = user_name
+                user_tag = ET.SubElement(combined_root, "username", value=user_name)
 
-            # Append each <item> element to the new root
-            for item in root.findall("item"):
-                combined_root.append(item)
+                # Append each <item> element to the new root
+                for item in root.findall("item"):
+                    user_tag.append(item)
+            else:
+                # Append each <item> element to the new root
+                for item in root.findall("item"):
+                    combined_root.append(item)
 
         # Create a new XML tree and write it to a new file
         combined_tree = ET.ElementTree(combined_root)

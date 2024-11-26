@@ -180,7 +180,7 @@ def integer_reduce(data: pd.DataFrame, columns: list[str], fill_value: int = 0):
 #     print("\nCleaning Frame #" + str(id_num))
 
 #     # load in raw users file according to id_num inputted
-#     path = "userid/ratings_ratings" + str(id_num) + ".pkl"
+#     path = "userid/user_ratings" + str(id_num) + ".pkl"
 #     users = pd.read_pickle(path)
 
 #     # convert all datatypes to float
@@ -248,13 +248,13 @@ def integer_reduce(data: pd.DataFrame, columns: list[str], fill_value: int = 0):
 #     return master_file
 
 
-# def process_dataframe_ratings(x, ratings_ratings, raw_ratings):
+# def process_dataframe_ratings(x, user_ratings, raw_ratings):
 
 #     try:
-#         ratings_ratings[x["Username"]][x["BGGId"]] = float(x["Rating"])
+#         user_ratings[x["Username"]][x["BGGId"]] = float(x["Rating"])
 
 #     except:
-#         ratings_ratings[x["Username"]] = {}
-#         ratings_ratings[x["Username"]][x["BGGId"]] = float(x["Rating"])
+#         user_ratings[x["Username"]] = {}
+#         user_ratings[x["Username"]][x["BGGId"]] = float(x["Rating"])
 
 #     raw_ratings[x["BGGId"]].append(x["Rating"])

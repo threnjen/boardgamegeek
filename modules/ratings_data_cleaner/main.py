@@ -87,14 +87,14 @@ class DirtyDataExtractor:
         game_id = game_entry["id"]
         comments = game_entry.find_all("comment")
 
-        ratings_ratings = []
+        user_ratings = []
 
         for comment in comments:
-            ratings_ratings.append(
+            user_ratings.append(
                 [comment["username"], game_id, comment["rating"], comment["value"]]
             )
 
-        return ratings_ratings
+        return user_ratings
 
     def _create_table_from_data(self, all_entries: dict[list]) -> pd.DataFrame:
         """Create a DataFrame from the data"""
@@ -139,9 +139,9 @@ class DirtyDataExtractor:
     def _create_file_of_unique_user_ids(self, ratings_df: pd.DataFrame) -> list:
         """Create a list of unique user IDs"""
 
-        ratings_ratings_count_df = ratings_df.groupby("username").count()["rating"]
-        ratings_names_less_than_5 = ratings_ratings_count_df[
-            ratings_ratings_count_df < 5
+        user_ratings_count_df = ratings_df.groupby("username").count()["rating"]
+        ratings_names_less_than_5 = user_ratings_count_df[
+            user_ratings_count_df < 5
         ].index
         ratings_df = ratings_df.drop(
             ratings_df[ratings_df["username"].isin(ratings_names_less_than_5)].index
