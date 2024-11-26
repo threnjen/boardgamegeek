@@ -17,15 +17,15 @@ ENV SCRAPER_TYPE=$SCRAPER_TYPE
 RUN pip3 install pipenv
 
 # Copy the source code into the container
-COPY modules/game_data_scraper game_data_scraper
+COPY modules/bgg_scraper bgg_scraper
 COPY utils utils
 COPY data data
-COPY modules/game_data_scraper/Pipfile* .
+COPY modules/bgg_scraper/Pipfile* .
 COPY config.py .
 
 # Install dependencies with pipenv
 RUN pipenv sync
 
 # Set the entry point and command
-ENTRYPOINT ["pipenv", "run", "python", "game_data_scraper/main.py"]
+ENTRYPOINT ["pipenv", "run", "python", "bgg_scraper/main.py"]
 CMD ["$SCRAPER_TYPE", "$FILENAME"]
