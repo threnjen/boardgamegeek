@@ -97,7 +97,6 @@ class ConfigResource(ConfigurableResource):
             configs = S3Resource(region_name=self.region_name).load_json(
                 bucket=self.bucket, key="config.json"
             )
-            json.dump(configs, open("config.json", "w"))
             return configs
 
 

@@ -125,7 +125,6 @@ class UserSpider(scrapy.Spider):
         self._save_response(response, response.meta["group_num"])
 
     def _save_response(self, response: scrapy.http.Response, response_id: int):
-        print(type(response.body))
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         file_path = f"{WORKING_DIR}{self.save_file_path}/{self.group}_{response_id}_{timestamp}.xml"
         self.file_handler.save_file(file_path=file_path, data=response.body)
@@ -140,13 +139,13 @@ class GameScraper:
         self.bot_scraper_name = CONFIGS[scraper_type]["scrapy_bot_name"]
         self.raw_urls_folder = CONFIGS[scraper_type]["raw_urls_directory"]
         self.scraped_files_folder = CONFIGS[scraper_type]["output_xml_directory"]
-        print(self.scraped_files_folder)
         self.scraper_type = scraper_type
 
     def run_game_scraper_processes(self):
         scraper_urls_raw = load_file_local_first(
             path=self.raw_urls_folder, file_name=f"{self.urls_filename}.json"
         )
+        print(f"Length of incoming urls: {len(scraper_urls_raw)}")
         self._run_scrapy_scraper(scraper_urls_raw)
         raw_xml = self._combine_xml_files_to_master()
 
@@ -213,9 +212,8 @@ class GameScraper:
         saved_files = [
             x
             for x in get_local_keys_based_on_env(self.scraped_files_folder)
-            if self.file_group in x and "combined" not in x
+            if self.file_group in x and "combined" not in x and ".gitkeep" not in x
         ]
-        print(saved_files)
 
         # Parse the first XML file to get the root and header
         tree = ET.parse(saved_files[0])
