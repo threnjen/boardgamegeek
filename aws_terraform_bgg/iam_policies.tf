@@ -63,10 +63,10 @@ module "bgg_game_data_cleaner_describe_task_def_policy" {
   account_id = data.aws_caller_identity.current.account_id
 }
 
-module "bgg_user_data_cleaner_describe_task_def_policy" {
+module "bgg_ratings_data_cleaner_describe_task_def_policy" {
   source = "./modules/lambda_ecs_trigger_policies"
-  name   = "${var.bgg_user_data_cleaner}_lambda_ecs_trigger"
-  task_name = var.bgg_user_data_cleaner
+  name   = "${var.bgg_ratings_data_cleaner}_lambda_ecs_trigger"
+  task_name = var.bgg_ratings_data_cleaner
   region = var.REGION
   account_id = data.aws_caller_identity.current.account_id
 }
@@ -85,9 +85,9 @@ module "trigger_bgg_generate_game_urls_lambda" {
   account_id = data.aws_caller_identity.current.account_id
 }
 
-module "trigger_bgg_generate_user_urls_lambda" {
+module "trigger_bgg_generate_ratings_urls_lambda" {
   source = "./modules/iam_lambda_run_permissions"
-  function_name = module.bgg_generate_user_urls.function_name
+  function_name = module.bgg_generate_ratings_urls.function_name
   region = var.REGION
   account_id = data.aws_caller_identity.current.account_id
 }
@@ -182,8 +182,8 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_scraper" {
   })
 }
 
-resource "aws_iam_policy" "ecs_run_permissions_bgg_user_data_cleaner" {
-  name        = "ecs_run_permissions_bgg_user_data_cleaner"
+resource "aws_iam_policy" "ecs_run_permissions_bgg_ratings_data_cleaner" {
+  name        = "ecs_run_permissions_bgg_ratings_data_cleaner"
   description = "Policy to allow running the BGG ECS tasks"
 
   policy = jsonencode({
@@ -194,10 +194,10 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_user_data_cleaner" {
         Effect = "Allow",
         Action = "ecs:DescribeTasks",
         Resource = [
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.bgg_user_data_cleaner}",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_user_data_cleaner}:*",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/dev_${var.bgg_user_data_cleaner}",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_user_data_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/${var.bgg_ratings_data_cleaner}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_ratings_data_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task/*/dev_${var.bgg_ratings_data_cleaner}",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_ratings_data_cleaner}:*",
         ]
       },
       {
@@ -211,8 +211,8 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_user_data_cleaner" {
         Effect = "Allow",
         Action = "ecs:RunTask",
         Resource = [
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_user_data_cleaner}:*",
-          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_user_data_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/${var.bgg_ratings_data_cleaner}:*",
+          "arn:aws:ecs:${var.REGION}:${data.aws_caller_identity.current.account_id}:task-definition/dev_${var.bgg_ratings_data_cleaner}:*",
         ]
       },
       {
@@ -220,8 +220,8 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_user_data_cleaner" {
         Effect = "Allow",
         Action = "iam:PassRole",
         Resource = [
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_user_data_cleaner}_FargateExecutionRole",
-          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_user_data_cleaner}_FargateTaskRole"
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_data_cleaner}_FargateExecutionRole",
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_data_cleaner}_FargateTaskRole"
         ]
       }
     ]

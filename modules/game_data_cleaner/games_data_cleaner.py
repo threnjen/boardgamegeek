@@ -13,7 +13,7 @@ from utils.processing_functions import (
 )
 from utils.s3_file_handler import S3FileHandler
 
-GAME_CONFIGS = CONFIGS["game"]
+GAME_CONFIGS = CONFIGS["games"]
 ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 
 

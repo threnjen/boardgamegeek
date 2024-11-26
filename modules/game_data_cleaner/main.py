@@ -19,7 +19,7 @@ from utils.processing_functions import (
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
-GAME_CONFIGS = CONFIGS["game"]
+GAME_CONFIGS = CONFIGS["games"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 

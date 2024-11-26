@@ -8,7 +8,7 @@ from utils.processing_functions import load_file_local_first, save_file_local_fi
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
-USER_CONFIGS = CONFIGS["user"]
+RATING_CONFIGS = CONFIGS["ratings"]
 url_block_size = 20
 number_url_files = 30
 NUMBER_PROCESSES = 30
@@ -33,14 +33,14 @@ def generate_ratings_urls(game_entries):
 
 
 def lambda_handler(event, context):
-    """Generate the raw URLs for the user scraper
+    """Generate the raw URLs for the ratings scraper
     This function will read the game ids from the local csv file or S3
-    and generate the raw URLs for the user scraper. The URLs
+    and generate the raw URLs for the ratings scraper. The URLs
     will be split into blocks and saved to S3 for the scraper
     to pick up."""
 
     games = load_file_local_first(
-        path=f'{CONFIGS["game"]["dirty_dfs_directory"]}',
+        path=f'{CONFIGS["games"]["dirty_dfs_directory"]}',
         file_name="games_dirty.pkl",
     )
 
@@ -116,8 +116,8 @@ def lambda_handler(event, context):
             group_urls = group_urls[:3]
 
         save_file_local_first(
-            path=USER_CONFIGS["raw_urls_directory"],
-            file_name=f"{group}{USER_CONFIGS['output_urls_json_suffix']}",
+            path=RATING_CONFIGS["raw_urls_directory"],
+            file_name=f"{group}{RATING_CONFIGS['output_urls_json_suffix']}",
             data=group_urls,
         )
 

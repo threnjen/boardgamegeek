@@ -11,7 +11,7 @@ from utils.processing_functions import (
     save_to_aws_glue,
 )
 
-GAME_CONFIGS = CONFIGS["game"]
+GAME_CONFIGS = CONFIGS["games"]
 ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 
 

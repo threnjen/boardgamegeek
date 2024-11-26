@@ -17,13 +17,13 @@ resource "aws_iam_role_policy_attachment" "bgg_generate_game_urls_lambda_role" {
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
 }
 
-module "bgg_generate_user_urls_lambda_role" {
+module "bgg_generate_ratings_urls_lambda_role" {
   source    = "./modules/iam_lambda_roles"
-  role_name = "bgg_generate_user_urls_lambda"
+  role_name = "bgg_generate_ratings_urls_lambda"
 }
 
-resource "aws_iam_role_policy_attachment" "bgg_generate_user_urls_lambda_attach" {
-  role       = module.bgg_generate_user_urls_lambda_role.role_name
+resource "aws_iam_role_policy_attachment" "bgg_generate_ratings_urls_lambda_attach" {
+  role       = module.bgg_generate_ratings_urls_lambda_role.role_name
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
 }
 
@@ -72,17 +72,17 @@ resource "aws_iam_role_policy_attachment" "bgg_orchestrator_s3_attach" {
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
 }
 
-module "bgg_user_data_cleaner_fargate_trigger_role" {
+module "bgg_ratings_data_cleaner_fargate_trigger_role" {
   source    = "./modules/iam_lambda_roles"
-  role_name = "bgg_user_data_cleaner_fargate_trigger_role"
+  role_name = "bgg_ratings_data_cleaner_fargate_trigger_role"
 }
 
-resource "aws_iam_role_policy_attachment" "bgg_user_data_cleaner_describe_attach" {
-  role       = module.bgg_user_data_cleaner_fargate_trigger_role.role_name
-  policy_arn = module.bgg_user_data_cleaner_describe_task_def_policy.lambda_ecs_trigger_arn
+resource "aws_iam_role_policy_attachment" "bgg_ratings_data_cleaner_describe_attach" {
+  role       = module.bgg_ratings_data_cleaner_fargate_trigger_role.role_name
+  policy_arn = module.bgg_ratings_data_cleaner_describe_task_def_policy.lambda_ecs_trigger_arn
 }
 
-resource "aws_iam_role_policy_attachment" "bgg_user_data_cleaner_s3_attach" {
-  role       = module.bgg_user_data_cleaner_fargate_trigger_role.role_name
+resource "aws_iam_role_policy_attachment" "bgg_ratings_data_cleaner_s3_attach" {
+  role       = module.bgg_ratings_data_cleaner_fargate_trigger_role.role_name
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
 }
