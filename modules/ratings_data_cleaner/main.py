@@ -31,6 +31,7 @@ class DirtyDataExtractor:
         all_entries = self._process_file_list(file_list_to_process)
         ratings_df = self._create_table_from_data(all_entries)
         self._save_dfs_to_disk_or_s3(ratings_df)
+        self._create_file_of_unique_user_ids(ratings_df)
 
     def _get_file_list(self) -> list[str]:
         """Get the list of files to process"""
@@ -134,6 +135,23 @@ class DirtyDataExtractor:
         )
         if ENVIRONMENT == "prod":
             save_to_aws_glue(data=ratings_df, table=f"{table_name}")
+
+    def _create_file_of_unique_user_ids(self, ratings_df: pd.DataFrame) -> list:
+        """Create a list of unique user IDs"""
+
+        ratings_ratings_count_df = ratings_df.groupby("username").count()["rating"]
+        ratings_names_less_than_5 = ratings_ratings_count_df[
+            ratings_ratings_count_df < 5
+        ].index
+        ratings_df = ratings_df.drop(
+            ratings_df[ratings_df["username"].isin(ratings_names_less_than_5)].index
+        )
+
+        unique_ids = {"list_of_ids": ratings_df["username"].unique().tolist()}
+
+        save_file_local_first(
+            path="ratings", file_name="unique_ids.json", data=unique_ids
+        )
 
 
 if __name__ == "__main__":

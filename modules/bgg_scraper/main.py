@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from functools import partial
@@ -26,7 +27,7 @@ WORKING_DIR = (
 )
 
 
-class BGGSpider(scrapy.Spider):
+class GameSpider(scrapy.Spider):
     """Spider to scrape BGG for game data"""
 
     def __init__(
@@ -68,6 +69,69 @@ class BGGSpider(scrapy.Spider):
         )
 
 
+class UserSpider(scrapy.Spider):
+    """Spider to scrape BGG for game data"""
+
+    def __init__(
+        self,
+        name: str,
+        scraper_urls_raw: list[str],
+        save_file_path: str,
+        group: str,
+        file_handler: FileHandler,
+    ):
+        """
+        Parameters:
+        name: str
+            The name of the spider
+        save_folder: str
+            The folder to save the data to
+        scraper_urls_raw: list[str]
+            The urls to scrape
+        """
+        self.name = name
+        super().__init__()
+        self.scraper_urls_raw = scraper_urls_raw
+        self.save_file_path = save_file_path
+        self.file_handler = file_handler
+        self.group = group
+
+    def start_requests(self):
+        for self.group_num, url in enumerate(self.scraper_urls_raw):
+            print(f"Starting URL {self.group_num}: {url}")
+            yield scrapy.Request(
+                url=url,
+                meta={"group_num": self.group_num},
+                dont_filter=True,
+                callback=self.parse,
+            )
+
+    def parse(self, response):
+        if (
+            "Your request for this collection has been accepted"
+            in response.body.decode("utf-8")
+        ):
+            time.sleep(2)
+            self.logger.info("Received 'try again later' message. Retrying...")
+            yield scrapy.Request(
+                url=response.url,
+                callback=self.parse,
+                dont_filter=True,
+                meta=response.meta,  # Preserve meta information
+            )
+            return
+
+        # Process the valid response
+        self._save_response(response, response.meta["group_num"])
+
+    def _save_response(self, response: scrapy.http.Response, response_id: int):
+        print(type(response.body))
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        file_path = f"{WORKING_DIR}{self.save_file_path}/{self.group}_{response_id}_{timestamp}.xml"
+        self.file_handler.save_file(file_path=file_path, data=response.body)
+        self.logger.info(f"Response saved to {file_path}")
+
+
 class GameScraper:
 
     def __init__(self, scraper_type: str, urls_filename: str) -> None:
@@ -75,7 +139,8 @@ class GameScraper:
         self.urls_filename = urls_filename.split(".")[0]
         self.bot_scraper_name = CONFIGS[scraper_type]["scrapy_bot_name"]
         self.raw_urls_folder = CONFIGS[scraper_type]["raw_urls_directory"]
-        self.scraped_games_folder = CONFIGS[scraper_type]["output_xml_directory"]
+        self.scraped_files_folder = CONFIGS[scraper_type]["output_xml_directory"]
+        print(self.scraped_files_folder)
         self.scraper_type = scraper_type
 
     def run_game_scraper_processes(self):
@@ -90,7 +155,7 @@ class GameScraper:
         )
 
         save_file_local_first(
-            path=self.scraped_games_folder,
+            path=self.scraped_files_folder,
             file_name=file_name,
             data=raw_xml,
         )
@@ -111,16 +176,29 @@ class GameScraper:
             }
         )
 
-        process.crawl(
-            BGGSpider,
-            name="bgg_raw",
-            scraper_urls_raw=scraper_urls_raw,
-            save_file_path=self.scraped_games_folder,
-            group=self.file_group,
-            file_handler=LocalFileHandler(),
-        )
+        if self.scraper_type in ["games", "ratings"]:
+            process.crawl(
+                GameSpider,
+                name="bgg_raw",
+                scraper_urls_raw=scraper_urls_raw,
+                save_file_path=self.scraped_files_folder,
+                group=self.file_group,
+                file_handler=LocalFileHandler(),
+            )
 
-        process.start()
+            process.start()
+
+        if self.scraper_type == "users":
+            process.crawl(
+                UserSpider,
+                name="bgg_users",
+                scraper_urls_raw=scraper_urls_raw,
+                save_file_path=self.scraped_files_folder,
+                group=self.file_group,
+                file_handler=LocalFileHandler(),
+            )
+
+            process.start()
 
         # Testing section to see what happens after we are done with process.start()
         print("Completed with scraping process")
@@ -130,11 +208,11 @@ class GameScraper:
 
         print(f"Combining XML files for {self.file_group}")
 
-        print(get_local_keys_based_on_env(self.scraped_games_folder))
+        print(get_local_keys_based_on_env(self.scraped_files_folder))
 
         saved_files = [
             x
-            for x in get_local_keys_based_on_env(self.scraped_games_folder)
+            for x in get_local_keys_based_on_env(self.scraped_files_folder)
             if self.file_group in x and "combined" not in x
         ]
         print(saved_files)

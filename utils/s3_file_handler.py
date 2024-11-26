@@ -70,6 +70,8 @@ class S3FileHandler(FileHandler):
         return obj["Body"].read().decode("utf-8")
 
     def save_xml(self, file_path: str, data: Any):
+        if type(data) == str:
+            data = bytes(data, "utf-8")
         self.s3_client.put_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data)
 
     def load_csv(self, file_path: str) -> Union[dict, list]:

@@ -40,6 +40,30 @@ module "dev_bgg_generate_game_urls" {
   description = "DEV Lambda function to generate game urls"
 }
 
+module "bgg_generate_user_urls" {
+  source        = "./modules/lambda_function_direct"
+  function_name = "bgg_bgg_generate_user_urls"
+  timeout       = 900
+  memory_size   = 1024
+  role          = module.bgg_generate_user_urls_lambda_role.arn
+  handler       = "generate_user_urls_lambda.lambda_handler"
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
+  environment   = "prod"
+  description  = "Lambda function to generate user urls"
+}
+
+module "dev_bgg_generate_user_urls" {
+  source        = "./modules/lambda_function_direct"
+  function_name = "dev_bgg_generate_user_urls"
+  timeout       = 900
+  memory_size   = 1024
+  role          = module.bgg_generate_user_urls_lambda_role.arn
+  handler       = "generate_user_urls_lambda.lambda_handler"
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
+  environment   = "dev"
+  description = "DEV Lambda function to generate user urls"
+}
+
 module "bgg_generate_ratings_urls" {
   source        = "./modules/lambda_function_direct"
   function_name = "bgg_generate_ratings_urls"

@@ -17,6 +17,15 @@ resource "aws_iam_role_policy_attachment" "bgg_generate_game_urls_lambda_role" {
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
 }
 
+module "bgg_generate_user_urls_lambda_role" {
+  source    = "./modules/iam_lambda_roles"
+  role_name = "bgg_generate_user_urls_lambda_role"
+}
+resource "aws_iam_role_policy_attachment" "bgg_generate_user_urls_lambda_role" {
+  role       = module.bgg_generate_user_urls_lambda_role.role_name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
+}
+
 module "bgg_generate_ratings_urls_lambda_role" {
   source    = "./modules/iam_lambda_roles"
   role_name = "bgg_generate_ratings_urls_lambda"

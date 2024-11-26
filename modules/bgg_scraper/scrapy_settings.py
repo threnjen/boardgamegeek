@@ -8,7 +8,8 @@
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
 BOT_NAME_GAMES = "bggscraper_games"
-BOT_NAME_USERS = "bggscraper_ratings"
+BOT_NAME_RATINGS = "bggscraper_ratings"
+BOT_NAME_USERS = "bggscraper_users"
 
 # SPIDER_MODULES = ["bggscraper.spiders"]
 # NEWSPIDER_MODULE = "bggscraper.spiders"
