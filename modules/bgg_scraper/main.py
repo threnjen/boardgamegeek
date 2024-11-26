@@ -205,7 +205,7 @@ class GameScraper:
     def _combine_xml_files_to_master(self) -> str:
         """Combine the XML files into a single XML file"""
 
-        print(f"Combining XML files for {self.file_group}")
+        print(f"\n\nCombining XML files for {self.file_group}")
 
         print(get_local_keys_based_on_env(self.scraped_files_folder))
 
@@ -214,6 +214,7 @@ class GameScraper:
             for x in get_local_keys_based_on_env(self.scraped_files_folder)
             if self.file_group in x and "combined" not in x and ".gitkeep" not in x
         ]
+        print(f"{saved_files}\n\n")
 
         # Parse the first XML file to get the root and header
         tree = ET.parse(saved_files[0])
