@@ -18,6 +18,8 @@ xmltodict = "*"
 dagster = "*"
 dagster-webserver = "*"
 tzlocal = "*"
+matplotlib = "*"
+scikit-learn = "*"
 
 [dev-packages]
 pytest = "*"

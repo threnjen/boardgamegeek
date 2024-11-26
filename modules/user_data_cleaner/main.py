@@ -98,7 +98,7 @@ class DirtyDataExtractor:
     def _create_table_from_data(self, all_entries: dict[list]) -> pd.DataFrame:
         """Create a DataFrame from the data"""
         df = pd.DataFrame(all_entries, columns=["username", "BGGId", "rating", "value"])
-        df = df.sort_values(by="username").reset_index(drop=True).set_index("username")
+        df = df.sort_values(by="username").reset_index(drop=True)
         df = df.drop_duplicates()
         print(df.head())
 
@@ -113,22 +113,22 @@ class DirtyDataExtractor:
 
         # save and load as csv to properly infer data types
         save_file_local_first(
-            path=USER_CONFIGS["clean_dfs_directory"],
+            path=USER_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table_name}.csv",
             data=user_df,
         )
 
         user_df = load_file_local_first(
-            path=USER_CONFIGS["clean_dfs_directory"], file_name=f"{table_name}.csv"
+            path=USER_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
         )
 
         save_file_local_first(
-            path=USER_CONFIGS["clean_dfs_directory"],
+            path=USER_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table_name}.pkl",
             data=user_df,
         )
         save_file_local_first(
-            path=USER_CONFIGS["clean_dfs_directory"],
+            path=USER_CONFIGS["dirty_dfs_directory"],
             file_name=f"{table_name}.csv",
             data=user_df,
         )

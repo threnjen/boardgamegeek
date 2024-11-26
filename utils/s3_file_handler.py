@@ -80,7 +80,7 @@ class S3FileHandler(FileHandler):
         self.s3_client.put_object(
             Bucket=S3_SCRAPER_BUCKET,
             Key=file_path,
-            Body=data.to_csv(sep="\t").encode("utf-8"),
+            Body=data.to_csv(sep="\t", index=False).encode("utf-8"),
         )
 
     def load_pkl(self, file_path: str) -> pd.DataFrame:
