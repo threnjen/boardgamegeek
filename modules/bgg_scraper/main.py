@@ -277,4 +277,6 @@ if __name__ == "__main__":
     scraper_type = args.scraper_type
     urls_filename = args.urls_filename
 
+    print(f"Running {scraper_type} scraper with urls from {urls_filename}")
+
     GameScraper(scraper_type, urls_filename).run_game_scraper_processes()
