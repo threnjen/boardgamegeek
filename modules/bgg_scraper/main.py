@@ -165,7 +165,7 @@ class GameScraper:
                 "LOG_LEVEL": "DEBUG",
                 "BOT_NAME": self.bot_scraper_name,
                 "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
-                "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
+                # "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
                 "COOKIES_ENABLED": COOKIES_ENABLED,
                 "AUTOTHROTTLE_ENABLED": AUTOTHROTTLE_ENABLED,
                 "AUTOTHROTTLE_START_DELAY": AUTOTHROTTLE_START_DELAY,
