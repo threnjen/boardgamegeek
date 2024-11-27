@@ -125,8 +125,8 @@ class UserSpider(scrapy.Spider):
         self._save_response(response, response.url)
 
     def _save_response(self, response: scrapy.http.Response, url: str):
-        user_id = url.split("=")[1].split("&")[0]
-        file_path = f"{WORKING_DIR}{self.save_file_path}/{user_id}.xml"
+        user_id = url.split("username=")[-1].split("&rated")[0]
+        file_path = f"{WORKING_DIR}{self.save_file_path}/user_{user_id}.xml"
         self.file_handler.save_file(file_path=file_path, data=response.body)
         self.logger.info(f"Response saved to {file_path}")
 
@@ -229,7 +229,7 @@ class GameScraper:
             root = tree.getroot()
 
             if self.scraper_type == "users":
-                user_name = xml_file.split("/")[-1].split(".")[0]
+                user_name = xml_file.split("user_")[-1].split(".xml")[0]
                 user_tag = ET.SubElement(combined_root, "username", value=user_name)
 
                 # Append each <item> element to the new root

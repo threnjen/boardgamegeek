@@ -62,7 +62,7 @@ def lambda_handler(event, context):
         group_urls = generate_user_urls(url_blocks[group_num])
 
         if ENVIRONMENT != "prod":
-            group_urls = group_urls[:5]
+            group_urls = group_urls[:20]
 
         save_file_local_first(
             path=USER_CONFIGS["raw_urls_directory"],
