@@ -18,6 +18,7 @@ from typing import Tuple
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 USER_CONFIGS = CONFIGS["users"]
+RATINGS_CONFIGS = CONFIGS["ratings"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
@@ -30,8 +31,16 @@ class DirtyDataExtractor:
         """Main function to extract data from the XML files"""
         file_list_to_process = self._get_file_list()
         all_entries = self._process_file_list(file_list_to_process)
-        ratings_df = self._create_table_from_data(all_entries)
-        self._save_dfs_to_disk_or_s3(ratings_df)
+        users_df = self._create_table_from_data(all_entries)
+        self._save_dfs_to_disk_or_s3(
+            directory="dirty_dfs_directory", table_name="user_data", df=users_df
+        )
+        merged_df = self.merge_with_other_ratings_file(users_df)
+        self._save_dfs_to_disk_or_s3(
+            directory="clean_dfs_directory",
+            table_name="complete_user_ratings",
+            df=merged_df,
+        )
 
     def _get_file_list(self) -> list[str]:
         """Get the list of files to process"""
@@ -115,36 +124,49 @@ class DirtyDataExtractor:
 
         return df
 
-    def _save_dfs_to_disk_or_s3(self, ratings_df: dict[pd.DataFrame]):
+    def merge_with_other_ratings_file(self, users_df):
+        ratings_df = load_file_local_first(
+            path=RATINGS_CONFIGS["clean_dfs_directory"], file_name=f"ratings_data.pkl"
+        )
+
+        merged_df = pd.merge(
+            ratings_df[["username", "BGGId", "rating", "value"]],
+            users_df[["username", "BGGId", "lastmodified"]],
+            on=["username", "BGGId"],
+            how="inner",
+        )
+
+        return merged_df
+
+    def _save_dfs_to_disk_or_s3(self, directory, table_name, df: dict[pd.DataFrame]):
         """Save all files as pkl files and csv files"""
 
         print(f"\nSaving ratings data to disk and uploading to S3")
 
-        table_name = "user_data"
-
         # save and load as csv to properly infer data types
         save_file_local_first(
-            path=USER_CONFIGS["dirty_dfs_directory"],
+            path=USER_CONFIGS[directory],
             file_name=f"{table_name}.csv",
-            data=ratings_df,
+            data=df,
         )
 
-        ratings_df = load_file_local_first(
-            path=USER_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
+        df = load_file_local_first(
+            path=USER_CONFIGS[directory], file_name=f"{table_name}.csv"
         )
 
+        # save completed dataframes
         save_file_local_first(
-            path=USER_CONFIGS["dirty_dfs_directory"],
+            path=USER_CONFIGS[directory],
             file_name=f"{table_name}.pkl",
-            data=ratings_df,
+            data=df,
         )
         save_file_local_first(
-            path=USER_CONFIGS["dirty_dfs_directory"],
+            path=USER_CONFIGS[directory],
             file_name=f"{table_name}.csv",
-            data=ratings_df,
+            data=df,
         )
         if ENVIRONMENT == "prod":
-            save_to_aws_glue(data=ratings_df, table=f"{table_name}")
+            save_to_aws_glue(data=df, table=f"{table_name}")
 
 
 if __name__ == "__main__":
