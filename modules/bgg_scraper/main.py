@@ -160,22 +160,23 @@ class GameScraper:
         )
 
     def _run_scrapy_scraper(self, scraper_urls_raw) -> None:
-        process = CrawlerProcess(
-            settings={
-                "LOG_LEVEL": "DEBUG",
-                "BOT_NAME": self.bot_scraper_name,
-                "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
-                # "DOWNLOAD_DELAY": DOWNLOAD_DELAY,
-                "COOKIES_ENABLED": COOKIES_ENABLED,
-                "AUTOTHROTTLE_ENABLED": AUTOTHROTTLE_ENABLED,
-                "AUTOTHROTTLE_START_DELAY": AUTOTHROTTLE_START_DELAY,
-                "AUTOTHROTTLE_MAX_DELAY": AUTOTHROTTLE_MAX_DELAY,
-                "AUTOTHROTTLE_TARGET_CONCURRENCY": AUTOTHROTTLE_TARGET_CONCURRENCY,
-                "AUTOTHROTTLE_DEBUG": AUTOTHROTTLE_DEBUG,
-            }
-        )
 
         if self.scraper_type in ["games", "ratings"]:
+            process = CrawlerProcess(
+                settings={
+                    "LOG_LEVEL": "DEBUG",
+                    "BOT_NAME": self.bot_scraper_name,
+                    "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
+                    "DOWNLOAD_DELAY": 2,
+                    "COOKIES_ENABLED": COOKIES_ENABLED,
+                    "AUTOTHROTTLE_ENABLED": AUTOTHROTTLE_ENABLED,
+                    "AUTOTHROTTLE_START_DELAY": AUTOTHROTTLE_START_DELAY,
+                    "AUTOTHROTTLE_MAX_DELAY": AUTOTHROTTLE_MAX_DELAY,
+                    "AUTOTHROTTLE_TARGET_CONCURRENCY": AUTOTHROTTLE_TARGET_CONCURRENCY,
+                    "AUTOTHROTTLE_DEBUG": AUTOTHROTTLE_DEBUG,
+                }
+            )
+
             process.crawl(
                 GameSpider,
                 name="bgg_raw",
@@ -188,6 +189,22 @@ class GameScraper:
             process.start()
 
         if self.scraper_type == "users":
+            process = CrawlerProcess(
+                settings={
+                    "LOG_LEVEL": "DEBUG",
+                    "BOT_NAME": self.bot_scraper_name,
+                    "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
+                    "DOWNLOAD_DELAY": 4,
+                    "CONCURRENT_REQUESTS_PER_DOMAIN": 1,
+                    "COOKIES_ENABLED": COOKIES_ENABLED,
+                    "AUTOTHROTTLE_ENABLED": AUTOTHROTTLE_ENABLED,
+                    "AUTOTHROTTLE_START_DELAY": 3,
+                    "AUTOTHROTTLE_MAX_DELAY": 60,
+                    "AUTOTHROTTLE_TARGET_CONCURRENCY": 1,
+                    "AUTOTHROTTLE_DEBUG": AUTOTHROTTLE_DEBUG,
+                }
+            )
+
             process.crawl(
                 UserSpider,
                 name="bgg_users",

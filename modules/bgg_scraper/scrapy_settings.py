@@ -50,11 +50,14 @@ COOKIES_ENABLED = True
 #    'bggscraper.middlewares.BggscraperSpiderMiddleware': 543,
 # }
 
+
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
-# DOWNLOADER_MIDDLEWARES = {
-#    'bggscraper.middlewares.BggscraperDownloaderMiddleware': 543,
-# }
+DOWNLOADER_MIDDLEWARES = {
+    "bggscraper.middlewares.BggscraperDownloaderMiddleware": 543,
+}
+RETRY_HTTP_CODES = [429]
+
 
 # Enable or disable extensions
 # See https://docs.scrapy.org/en/latest/topics/extensions.html
