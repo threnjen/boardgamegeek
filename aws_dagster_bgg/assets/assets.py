@@ -514,6 +514,8 @@ def scrape_data(
         task_definition if ENVIRONMENT == "prod" else f"dev_{task_definition}"
     )
     logger.info(task_definition)
+    logger.info(len(game_scraper_url_filenames))
+    logger.info(game_scraper_url_filenames)
 
     for key in game_scraper_url_filenames:
         filename = key.split("/")[-1].split(".")[0]
@@ -530,6 +532,7 @@ def scrape_data(
             ]
         }
         ecs_resource.launch_ecs_task(task_definition, overrides)
+        time.sleep(3)
         logger.info(f"Launched ECS for filename: {filename}")
 
     compare_timestamps_for_refresh(
