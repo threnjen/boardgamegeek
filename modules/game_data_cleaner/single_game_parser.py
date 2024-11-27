@@ -29,9 +29,9 @@ class GameEntryParser:
         self,
     ) -> bool:
         """Check if the game has enough ratings ratings to be considered"""
-        ratings_ratings = int(self.find_thing_in_soup("usersrated"))
+        user_ratings = int(self.find_thing_in_soup("usersrated"))
 
-        if ratings_ratings < MIN_USER_RATINGS:
+        if user_ratings < MIN_USER_RATINGS:
             return False
         return True
 

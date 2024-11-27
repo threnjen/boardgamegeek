@@ -9,7 +9,7 @@ from dagster import (
 )
 
 from .assets import assets
-from .jobs import bgg_job
+from .jobs import bgg_job, user_job
 from .resources import (
     ConfigResource,
     DynamoDBResource,
@@ -19,8 +19,6 @@ from .resources import (
 )
 
 scraper_assets = load_assets_from_modules([assets])
-
-all_jobs = []
 
 REGION = os.environ.get("TF_VAR_REGION", "us-west-2")
 
@@ -39,5 +37,5 @@ defs = Definitions(
             region_name=REGION, bucket=os.environ.get("S3_SCRAPER_BUCKET")
         ),
     },
-    jobs=[bgg_job],
+    jobs=[bgg_job, user_job],
 )

@@ -10,13 +10,12 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install pipenv
 
 # Create necessary directories
-RUN mkdir -p data/prod/users/ratings_dfs_clean \
-    data/test/users/ratings_dfs_clean \
-    modules 
+RUN mkdir -p modules 
 
 # Copy the source code into the container
 COPY modules/ratings_data_cleaner modules/ratings_data_cleaner
 COPY utils utils
+COPY data data
 COPY modules/ratings_data_cleaner/Pipfile* .
 COPY config.py .
 

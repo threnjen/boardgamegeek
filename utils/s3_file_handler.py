@@ -62,14 +62,17 @@ class S3FileHandler(FileHandler):
         ]
 
     def save_jsonl(self, file_path: str, data: str):
-        jsonl = "\n".join([json.dumps(line) for line in data]).encode("utf-8")
-        self.s3_client.put_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=jsonl)
+        self.s3_client.put_object(
+            Body=json.dumps(data), Bucket=S3_SCRAPER_BUCKET, Key=file_path
+        )
 
     def load_xml(self, file_path: str):
         obj = self.s3_client.get_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
         return obj["Body"].read().decode("utf-8")
 
     def save_xml(self, file_path: str, data: Any):
+        if type(data) == str:
+            data = bytes(data, "utf-8")
         self.s3_client.put_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path, Body=data)
 
     def load_csv(self, file_path: str) -> Union[dict, list]:

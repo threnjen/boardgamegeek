@@ -24,9 +24,12 @@ RUN pipenv sync
 ARG ASSET
 ENV ASSET=$ASSET
 
+ARG JOB
+ENV JOB=$JOB
+
 # Expose the port (if needed for the service)
 EXPOSE 3000
 
 # Set the entry point and command
 ENTRYPOINT ["pipenv", "run", "python", "aws_dagster_bgg/bgg_orchestrate.py"]
-CMD ["$ASSET"]
+CMD ["$ASSET", "$JOB"]

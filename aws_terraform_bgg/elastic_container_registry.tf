@@ -11,7 +11,9 @@ locals {
     module.dev_bgg_scraper_ecr.ecr_repository_name,
     module.dev_bgg_orchestrator_ecr.ecr_repository_name,
     module.bgg_ratings_data_cleaner_ecr.ecr_repository_name,
-    module.dev_bgg_ratings_data_cleaner_ecr.ecr_repository_name
+    module.dev_bgg_ratings_data_cleaner_ecr.ecr_repository_name,
+    module.bgg_users_data_cleaner_ecr.ecr_repository_name,
+    module.dev_bgg_users_data_cleaner_ecr.ecr_repository_name
   ]
 }
 
@@ -60,4 +62,13 @@ module "dev_bgg_scraper_ecr" {
   ecr_repository_name = "dev_bgg_scraper"
 }
 
+module "bgg_users_data_cleaner_ecr" {
+  source              = "./modules/ecr"
+  ecr_repository_name = "bgg_users_data_cleaner"
+}
+
+module "dev_bgg_users_data_cleaner_ecr" {
+  source              = "./modules/ecr"
+  ecr_repository_name = "dev_bgg_users_data_cleaner"
+}
 

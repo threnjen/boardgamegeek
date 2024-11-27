@@ -1,4 +1,4 @@
-name: DEV deployment to boardgamegeek ratings data cleaner
+name: DEV deployment to boardgamegeek users data cleaner
 
 on:
   push:
@@ -31,11 +31,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
           
-      - name: Build, tag, push image to AWS ECR dev_bgg_ratings_data_cleaner
+      - name: Build, tag, push image to AWS ECR dev_bgg_users_data_cleaner
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev_bgg_ratings_data_cleaner
+          ECR_REPOSITORY: dev_bgg_users_data_cleaner
         run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.ratings-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.users-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
       
