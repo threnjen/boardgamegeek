@@ -91,7 +91,7 @@ Return to the `aws_terraform_bgg` directory and run `make setup_boardgamegeek`
 - TEST LOCAL - `bgg_scraper.main.py` for GAME to test a single file locally
     - Use to test a single specific url file. Must have generated game urls first with step 02.
     - Run locally and pass the scraper type `game` as an arg, and an existing filename without directory or suffix from `data/prod/scraper_urls_raw_game`
-    - Example: `python bgg_scraper/main.py game group1_game_scraper_urls_raw`
+    - Example: `python bgg_scraper/main.py game group1_games_scraper_urls_raw_raw`
     - Only saves data locally to `data/prod/games/scraped_xml_raw`
 
 - TEST ON AWS - `lambda_functions.dev_bgg_scraper_fargate_trigger` for GAME will trigger process to run and write scraping on S3    
@@ -135,7 +135,7 @@ Return to the `aws_terraform_bgg` directory and run `make setup_boardgamegeek`
 - TEST - `bgg_scraper.main.py` for USER
     - Use to test a single specific url file. Must have generated ratings urls first with step 05.
     - Run locally and pass both scraper type `user` as an arg, and an existing filename without directory or suffix from `data/prod/scraper_urls_raw_user`
-    - Example: `python bgg_scraper/main.py ratings group1_ratings_scraper_urls_raw`
+    - Example: `python bgg_scraper/main.py ratings group1_ratings_scraper_urls_raw_raw`
     - Only saves data locally to `data/prod/users/scraped_xml_raw`
 
 ## I added some new stuff to my deployment. How do I update it?

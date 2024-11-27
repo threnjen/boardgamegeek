@@ -1,4 +1,4 @@
-name: PROD deployment to boardgamegeek ratings data cleaner
+name: Deploy config file to S3
 
 on:
   push:

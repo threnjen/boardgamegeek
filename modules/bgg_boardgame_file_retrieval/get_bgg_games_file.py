@@ -1,6 +1,7 @@
 import os
 import time
 import zipfile
+import csv
 from os.path import expanduser
 from tempfile import mkdtemp
 
@@ -24,8 +25,8 @@ def initialize_driver(default_directory: str) -> webdriver.Chrome:
     options for the scraper to work. The function will return the
     initialized driver."""
 
-    # if not os.environ.get("ENVIRONMENT", "dev") == "prod":
-    #     return webdriver.Chrome()
+    if not os.environ.get("ENVIRONMENT", "dev") == "prod":
+        return webdriver.Chrome()
 
     chrome_options = ChromeOptions()
     chrome_options.add_argument("--headless=new")
@@ -106,13 +107,32 @@ def lambda_handler(event: dict = None, context: dict = None) -> None:
     with zipfile.ZipFile(f"{default_directory}/Downloads/{filename}", "r") as zip_ref:
         zip_ref.extractall(extract_directory)
 
+    local_file = f"{extract_directory}/boardgames_ranks.csv"
+    output_file = f"{extract_directory}/boardgames_ranks.tsv"
+
+    # Input and output file paths
+    input_file = local_file
+    output_file = output_file
+
+    # Convert CSV to TSV
+    with open(input_file, "r") as csv_file, open(
+        output_file, "w", newline=""
+    ) as tsv_file:
+        csv_reader = csv.reader(csv_file)
+        tsv_writer = csv.writer(tsv_file, delimiter="\t")
+
+        for row in csv_reader:
+            tsv_writer.writerow(row)
+
+    print(f"Converted {input_file} to {output_file}")
+
     wr.s3.upload(
-        local_file=f"{extract_directory}/boardgames_ranks.csv",
+        local_file=output_file,
         path=f"s3://{S3_SCRAPER_BUCKET}/data/prod/boardgames_ranks.csv",
     )
 
     wr.s3.upload(
-        local_file=f"{extract_directory}/boardgames_ranks.csv",
+        local_file=output_file,
         path=f"s3://{S3_SCRAPER_BUCKET}/data/test/boardgames_ranks.csv",
     )
 

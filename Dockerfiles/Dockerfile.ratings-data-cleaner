@@ -13,13 +13,13 @@ RUN pip3 install pipenv
 RUN mkdir -p modules 
 
 # Copy the source code into the container
-COPY modules/user_data_cleaner modules/user_data_cleaner
+COPY modules/ratings_data_cleaner modules/ratings_data_cleaner
 COPY utils utils
 COPY data data
-COPY modules/user_data_cleaner/Pipfile* .
+COPY modules/ratings_data_cleaner/Pipfile* .
 COPY config.py .
 
 # Install dependencies with pipenv
 RUN pipenv sync
 
-ENTRYPOINT ["pipenv", "run", "python", "modules/user_data_cleaner/main.py"]
+ENTRYPOINT ["pipenv", "run", "python", "modules/ratings_data_cleaner/main.py"]

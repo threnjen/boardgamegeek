@@ -10,7 +10,7 @@ WORKING_ENV_DIR = "data/prod/" if ENVIRONMENT == "prod" else "data/test/"
 
 
 @asset
-def bgg_games_csv(
+def boardgame_ranks_csv(
     s3_resource: ConfigurableResource,
     lambda_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
@@ -49,8 +49,8 @@ def bgg_games_csv(
     )
 
 
-@asset(deps=["bgg_games_csv"])
-def game_scraper_urls(
+@asset(deps=["boardgame_ranks_csv"])
+def games_scraper_urls_raw(
     lambda_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
@@ -95,8 +95,8 @@ def game_scraper_urls(
     return True
 
 
-@asset(deps=["game_scraper_urls"])
-def scraped_game_xmls(
+@asset(deps=["games_scraper_urls_raw"])
+def games_scraped_xml_raw(
     ecs_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
@@ -112,7 +112,7 @@ def scraped_game_xmls(
     return True
 
 
-@asset(deps=["scraped_game_xmls"])
+@asset(deps=["games_scraped_xml_raw"])
 def game_dfs_clean(
     s3_resource: ConfigurableResource,
     ecs_resource: ConfigurableResource,
@@ -143,7 +143,7 @@ def game_dfs_clean(
     logger.info(data_sets)
 
     data_set_file_names = [
-        f"{WORKING_ENV_DIR}{configs['game']['clean_dfs_directory']}/{x}_clean.pkl"
+        f"{WORKING_ENV_DIR}{configs['games']['clean_dfs_directory']}/{x}_clean.pkl"
         for x in data_sets
     ]
     logger.info(data_set_file_names)
@@ -168,7 +168,7 @@ def game_dfs_clean(
 
 
 @asset(deps=["game_dfs_clean"])
-def ratings_scraper_urls(
+def ratings_scraper_urls_raw(
     lambda_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
@@ -211,8 +211,8 @@ def ratings_scraper_urls(
     return True
 
 
-@asset(deps=["ratings_scraper_urls"])
-def scraped_ratings_xmls(
+@asset(deps=["ratings_scraper_urls_raw"])
+def ratings_scraped_xml_raw(
     ecs_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
@@ -228,8 +228,8 @@ def scraped_ratings_xmls(
     return True
 
 
-@asset(deps=["scraped_ratings_xmls"])
-def ratings_data_df(
+@asset(deps=["ratings_scraped_xml_raw"])
+def ratings_dfs_dirty(
     s3_resource: ConfigurableResource,
     ecs_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
@@ -280,7 +280,7 @@ def ratings_data_df(
 
 
 @asset
-def user_scraper_urls(
+def users_scraper_urls_raw(
     lambda_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
@@ -325,8 +325,8 @@ def user_scraper_urls(
     return True
 
 
-@asset(deps=["user_scraper_urls"])
-def scraped_user_xmls(
+@asset(deps=["users_scraper_urls_raw"])
+def users_scraped_xml_raw(
     ecs_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     config_resource: ConfigurableResource,
@@ -338,6 +338,57 @@ def scraped_user_xmls(
     configs = config_resource.get_config_file()
 
     scrape_data(ecs_resource, s3_resource, configs, scraper_type="users")
+
+    return True
+
+
+@asset(deps=["users_scraped_xml_raw"])
+def user_dfs_dirty(
+    s3_resource: ConfigurableResource,
+    ecs_resource: ConfigurableResource,
+    config_resource: ConfigurableResource,
+) -> bool:
+    """
+    Creates a clean dataframe for the ratings data from the scraped ratings XML files
+    """
+
+    configs = config_resource.get_config_file()
+
+    bucket = configs["s3_scraper_bucket"]
+    key = f'{WORKING_ENV_DIR}{configs["users"]["output_xml_directory"]}'
+
+    raw_ratings_files = s3_resource.list_file_keys(bucket=bucket, key=key)
+
+    assert len(raw_ratings_files) == 30 if ENVIRONMENT == "prod" else 1
+
+    task_definition = (
+        "bgg_users_data_cleaner"
+        if ENVIRONMENT == "prod"
+        else "dev_bgg_users_data_cleaner"
+    )
+
+    ecs_resource.launch_ecs_task(task_definition=task_definition)
+
+    check_filenames = [
+        f"{WORKING_ENV_DIR}{configs['users']['dirty_dfs_directory']}/users_data.pkl"
+    ]
+    logger.info(check_filenames)
+
+    original_timestamps = {
+        key: s3_resource.get_last_modified(
+            bucket=bucket,
+            key=key,
+        )
+        for key in check_filenames
+    }
+
+    compare_timestamps_for_refresh(
+        original_timestamps=original_timestamps,
+        file_list_to_check=check_filenames,
+        location_bucket=bucket,
+        sleep_timer=300,
+        s3_resource=s3_resource,
+    )
 
     return True
 

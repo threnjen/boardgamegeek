@@ -139,13 +139,14 @@ class DirtyDataExtractor:
     def _create_file_of_unique_user_ids(self, ratings_df: pd.DataFrame) -> list:
         """Create a list of unique user IDs"""
 
-        user_ratings_count_df = ratings_df.groupby("username").count()["rating"]
-        ratings_names_less_than_5 = user_ratings_count_df[
-            user_ratings_count_df < 5
-        ].index
-        ratings_df = ratings_df.drop(
-            ratings_df[ratings_df["username"].isin(ratings_names_less_than_5)].index
-        )
+        if ENVIRONMENT == "prod":
+            user_ratings_count_df = ratings_df.groupby("username").count()["rating"]
+            ratings_names_less_than_5 = user_ratings_count_df[
+                user_ratings_count_df < 5
+            ].index
+            ratings_df = ratings_df.drop(
+                ratings_df[ratings_df["username"].isin(ratings_names_less_than_5)].index
+            )
 
         unique_ids = {"list_of_ids": ratings_df["username"].unique().tolist()}
 

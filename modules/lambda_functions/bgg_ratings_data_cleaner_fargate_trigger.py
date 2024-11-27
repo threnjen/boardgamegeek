@@ -7,7 +7,7 @@ from config import CONFIGS
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-SCRAPER_TASK_DEFINITION = CONFIGS["ratings_cleaner_task_definition"]
+TASK_DEFINITION = CONFIGS["ratings_cleaner_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 
@@ -36,9 +36,7 @@ def lambda_handler(event, context):
     terraform_state_file = get_terraform_state_file_for_vpc()
 
     task_definition = (
-        f"dev_{SCRAPER_TASK_DEFINITION}"
-        if ENVIRONMENT != "prod"
-        else SCRAPER_TASK_DEFINITION
+        f"dev_{TASK_DEFINITION}" if ENVIRONMENT != "prod" else TASK_DEFINITION
     )
     print(task_definition)
 
