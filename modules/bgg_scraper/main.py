@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 import time
+import boto3
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from functools import partial
@@ -9,9 +10,11 @@ from functools import partial
 import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy_settings import *
+from modules.bgg_scraper.spiders import GameSpider, UserSpider
 
 from config import CONFIGS
 from utils.file_handler import FileHandler
+from utils.s3_file_handler import S3FileHandler
 from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import (
     get_local_keys_based_on_env,
@@ -27,111 +30,7 @@ WORKING_DIR = (
 )
 
 
-class GameSpider(scrapy.Spider):
-    """Spider to scrape BGG for game data"""
-
-    def __init__(
-        self,
-        name: str,
-        scraper_urls_raw: list[str],
-        save_file_path: str,
-        group: str,
-        file_handler: FileHandler,
-    ):
-        """
-        Parameters:
-        name: str
-            The name of the spider
-        save_folder: str
-            The folder to save the data to
-        scraper_urls_raw: list[str]
-            The urls to scrape
-        """
-        self.name = name
-        super().__init__()
-        self.scraper_urls_raw = scraper_urls_raw
-        self.save_file_path = save_file_path
-        self.file_handler = file_handler
-        self.group = group
-
-    def start_requests(self):
-        for i, url in enumerate(self.scraper_urls_raw):
-            print(f"Starting URL {i}: {url}")
-            save_response_with_index = partial(self._save_response, response_id=i)
-            yield scrapy.Request(url=url, callback=save_response_with_index)
-
-    def _save_response(self, response: scrapy.http.Response, response_id: int):
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-
-        self.file_handler.save_file(
-            file_path=f"{WORKING_DIR}{self.save_file_path}/{self.group}_{response_id}_{timestamp}.xml",
-            data=response.body,
-        )
-
-
-class UserSpider(scrapy.Spider):
-    """Spider to scrape BGG for game data"""
-
-    def __init__(
-        self,
-        name: str,
-        scraper_urls_raw: list[str],
-        save_file_path: str,
-        group: str,
-        file_handler: FileHandler,
-    ):
-        """
-        Parameters:
-        name: str
-            The name of the spider
-        save_folder: str
-            The folder to save the data to
-        scraper_urls_raw: list[str]
-            The urls to scrape
-        """
-        self.name = name
-        super().__init__()
-        self.scraper_urls_raw = scraper_urls_raw
-        self.save_file_path = save_file_path
-        self.file_handler = file_handler
-        self.group = group
-
-    def start_requests(self):
-        for self.group_num, url in enumerate(self.scraper_urls_raw):
-            print(f"Starting URL {self.group_num}: {url}")
-            yield scrapy.Request(
-                url=url,
-                meta={"group_num": self.group_num},
-                dont_filter=True,
-                callback=self.parse,
-            )
-
-    def parse(self, response):
-        if (
-            "Your request for this collection has been accepted"
-            in response.body.decode("utf-8")
-        ):
-            time.sleep(2)
-            self.logger.info("Received 'try again later' message. Retrying...")
-            yield scrapy.Request(
-                url=response.url,
-                callback=self.parse,
-                dont_filter=True,
-                meta=response.meta,  # Preserve meta information
-            )
-            return
-
-        # Process the valid response
-        self._save_response(response, response.url)
-
-    def _save_response(self, response: scrapy.http.Response, url: str):
-        user_id = url.split("username=")[-1].split("&rated")[0]
-        file_path = f"{WORKING_DIR}{self.save_file_path}/user_{user_id}.xml"
-        self.file_handler.save_file(file_path=file_path, data=response.body)
-        self.logger.info(f"Response saved to {file_path}")
-
-
-class GameScraper:
+class DataScraper:
 
     def __init__(self, scraper_type: str, urls_filename: str) -> None:
         self.file_group = urls_filename.split("_")[0]
@@ -141,7 +40,7 @@ class GameScraper:
         self.scraped_files_folder = CONFIGS[scraper_type]["output_xml_directory"]
         self.scraper_type = scraper_type
 
-    def run_game_scraper_processes(self):
+    def scraper_process_chain(self):
         scraper_urls_raw = load_file_local_first(
             path=self.raw_urls_folder, file_name=f"{self.urls_filename}.json"
         )
@@ -183,7 +82,6 @@ class GameScraper:
                 scraper_urls_raw=scraper_urls_raw,
                 save_file_path=self.scraped_files_folder,
                 group=self.file_group,
-                file_handler=LocalFileHandler(),
             )
 
             process.start()
@@ -194,7 +92,7 @@ class GameScraper:
                     "LOG_LEVEL": "DEBUG",
                     "BOT_NAME": self.bot_scraper_name,
                     "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
-                    "DOWNLOAD_DELAY": 4,
+                    "DOWNLOAD_DELAY": 5,
                     "CONCURRENT_REQUESTS_PER_DOMAIN": 1,
                     "COOKIES_ENABLED": COOKIES_ENABLED,
                     "AUTOTHROTTLE_ENABLED": AUTOTHROTTLE_ENABLED,
@@ -202,6 +100,7 @@ class GameScraper:
                     "AUTOTHROTTLE_MAX_DELAY": 60,
                     "AUTOTHROTTLE_TARGET_CONCURRENCY": 1,
                     "AUTOTHROTTLE_DEBUG": AUTOTHROTTLE_DEBUG,
+                    "RANDOMIZE_DOWNLOAD_DELAY": True,
                 }
             )
 
@@ -211,7 +110,6 @@ class GameScraper:
                 scraper_urls_raw=scraper_urls_raw,
                 save_file_path=self.scraped_files_folder,
                 group=self.file_group,
-                file_handler=LocalFileHandler(),
             )
 
             process.start()
@@ -296,4 +194,4 @@ if __name__ == "__main__":
 
     print(f"Running {scraper_type} scraper with urls from {urls_filename}")
 
-    GameScraper(scraper_type, urls_filename).run_game_scraper_processes()
+    DataScraper(scraper_type, urls_filename).scraper_process_chain()
