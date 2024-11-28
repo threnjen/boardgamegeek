@@ -125,7 +125,7 @@ class UserSpider(scrapy.Spider):
             "Your request for this collection has been accepted"
             in response.body.decode("utf-8")
         ):
-            self.logger.info("Received 'try again later' message. Retrying...")
+            self.logger.info("Received 'Request accepted' message. Retrying...")
             time.sleep(5)
             yield scrapy.Request(
                 url=response.url,
