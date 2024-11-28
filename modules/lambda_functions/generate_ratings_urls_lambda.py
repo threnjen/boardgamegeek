@@ -10,8 +10,8 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 RATING_CONFIGS = CONFIGS["ratings"]
 url_block_size = 20
-number_url_files = 30
-NUMBER_PROCESSES = 30
+number_url_files = 29
+NUMBER_PROCESSES = 29
 
 
 def generate_ratings_urls(game_entries):

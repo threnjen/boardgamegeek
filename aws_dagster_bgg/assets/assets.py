@@ -78,7 +78,7 @@ def games_scraper_urls_raw(
     game_scraper_url_filenames = (
         [
             f"{raw_urls_directory}/group{i}{output_urls_json_suffix}"
-            for i in range(1, 31)
+            for i in range(1, 30)
         ]
         if ENVIRONMENT == "prod"
         else [f"{raw_urls_directory}/group1{output_urls_json_suffix}"]
@@ -130,7 +130,7 @@ def game_dfs_clean(
 
     raw_game_files = s3_resource.list_file_keys(bucket=bucket, key=key)
 
-    assert len(raw_game_files) == 30 if ENVIRONMENT == "prod" else 1
+    assert len(raw_game_files) == 29 if ENVIRONMENT == "prod" else 1
 
     task_definition = (
         "bgg_game_data_cleaner"
@@ -194,7 +194,7 @@ def ratings_scraper_urls_raw(
     ratings_scraper_url_filenames = (
         [
             f"{raw_urls_directory}/group{i}{output_urls_json_suffix}"
-            for i in range(1, 31)
+            for i in range(1, 30)
         ]
         if ENVIRONMENT == "prod"
         else [f"{raw_urls_directory}/group1{output_urls_json_suffix}"]
@@ -245,7 +245,7 @@ def ratings_dfs_dirty(
 
     raw_ratings_files = s3_resource.list_file_keys(bucket=bucket, key=key)
 
-    assert len(raw_ratings_files) == 30 if ENVIRONMENT == "prod" else 1
+    assert len(raw_ratings_files) == 29 if ENVIRONMENT == "prod" else 1
 
     task_definition = (
         "bgg_ratings_data_cleaner"
@@ -308,7 +308,7 @@ def users_scraper_urls_raw(
     game_scraper_url_filenames = (
         [
             f"{raw_urls_directory}/group{i}{output_urls_json_suffix}"
-            for i in range(1, 31)
+            for i in range(1, 30)
         ]
         if ENVIRONMENT == "prod"
         else [f"{raw_urls_directory}/group1{output_urls_json_suffix}"]
@@ -359,7 +359,7 @@ def user_dfs_dirty(
 
     raw_ratings_files = s3_resource.list_file_keys(bucket=bucket, key=key)
 
-    assert len(raw_ratings_files) == 30 if ENVIRONMENT == "prod" else 1
+    assert len(raw_ratings_files) == 29 if ENVIRONMENT == "prod" else 1
 
     task_definition = (
         "bgg_users_data_cleaner"
@@ -487,7 +487,7 @@ def scrape_data(
     scraper_raw_data_filenames = (
         [
             f"{WORKING_ENV_DIR}{output_key_directory}/{output_key_suffix.format(f'group{i}')}"
-            for i in range(1, 31)
+            for i in range(1, 30)
         ]
         if ENVIRONMENT == "prod"
         else [
@@ -532,7 +532,7 @@ def scrape_data(
             ]
         }
         ecs_resource.launch_ecs_task(task_definition, overrides)
-        time.sleep(3)
+        time.sleep(10)
         logger.info(f"Launched ECS for filename: {filename}")
 
     compare_timestamps_for_refresh(

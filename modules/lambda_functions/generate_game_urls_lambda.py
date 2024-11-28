@@ -9,7 +9,7 @@ S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 GAME_CONFIGS = CONFIGS["games"]
 
 url_block_size = 20
-number_url_files = 30
+number_url_files = 29
 
 
 def generate_raw_urls(game_ids: list[str]):

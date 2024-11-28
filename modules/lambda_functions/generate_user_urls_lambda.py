@@ -10,8 +10,8 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 USER_CONFIGS = CONFIGS["users"]
 url_block_size = 20
-number_url_files = 30
-NUMBER_PROCESSES = 30
+number_url_files = 29
+NUMBER_PROCESSES = 29
 
 
 def generate_user_urls(user_ids):
@@ -42,7 +42,7 @@ def lambda_handler(event, context):
     print(type(user_ids))
     print(f"\nNumber of user ids: {len(user_ids)}\n")
 
-    total_url_files = 30
+    total_url_files = 29
     total_users = len(user_ids)
     urls_per_file = total_users // total_url_files
 
