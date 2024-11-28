@@ -90,18 +90,25 @@ class UserSpider(scrapy.Spider):
         self.group = group
         self.s3_client = boto3.client("s3")
 
+    def check_file_exists(self, file_path: str) -> bool:
+        try:
+            self.s3_client.head_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
+            return True
+        except:
+            return False
+
     def start_requests(self):
         for self.group_num, url in enumerate(self.scraper_urls_raw):
             user_id = url.split("username=")[-1].split("&rated")[0]
 
             # check S3 for existing user data
-            if S3FileHandler().check_file_exists(
+            if self.check_file_exists(
                 file_path=f"{WORKING_DIR}{self.save_file_path}/user_{user_id}.xml"
             ):
                 self.logger.info(f"User {user_id} already exists. Skipping...")
                 continue
 
-            print(f"Starting URL {self.group_num}: {url}")
+            self.logger.info(f"Starting URL {self.group_num}: {url}")
             yield scrapy.Request(
                 url=url,
                 meta={"group_num": self.group_num},
