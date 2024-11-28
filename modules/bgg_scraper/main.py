@@ -101,7 +101,6 @@ class UserSpider(scrapy.Spider):
             if self.s3_file_handler.check_file_exists(
                 file_path=f"{WORKING_DIR}{self.save_file_path}/user_{user_id}.xml"
             ):
-                # self.download_from_s3()
                 self.logger.info(f"User {user_id} already exists. Skipping...")
                 continue
 
