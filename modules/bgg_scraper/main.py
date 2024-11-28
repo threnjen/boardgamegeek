@@ -163,7 +163,7 @@ class DataScraper:
 
         xml_bytes = ET.tostring(combined_root, encoding="utf-8", xml_declaration=True)
 
-        if ENVIRONMENT == "dev":
+        if IS_LOCAL and ENVIRONMENT == "dev":
             # remove the saved files
             for xml_file in saved_files:
                 os.remove(xml_file)
