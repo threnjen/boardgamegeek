@@ -1,6 +1,5 @@
 import os
 import time
-import boto3
 from datetime import datetime
 from functools import partial
 
@@ -9,8 +8,8 @@ from scrapy_settings import *
 
 from config import CONFIGS
 from utils.s3_file_handler import S3FileHandler
+from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import (
-    get_local_keys_based_on_env,
     load_file_local_first,
     save_file_local_first,
 )
@@ -88,23 +87,27 @@ class UserSpider(scrapy.Spider):
         self.scraper_urls_raw = scraper_urls_raw
         self.save_file_path = save_file_path
         self.group = group
-        self.s3_client = boto3.client("s3")
+        self.s3_file_handler = S3FileHandler()
+        self.local_file_handler = LocalFileHandler()
 
-    def check_file_exists(self, file_path: str) -> bool:
-        try:
-            self.s3_client.head_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
-            return True
-        except:
-            return False
+    def download_from_s3(self, file_path: str):
+        if IS_LOCAL:
+            return load_file_local_first(path=self.save_file_path, file_name=file_path)
+        else:
+            file = self.s3_file_handler.load_xml(f"{WORKING_DIR}{file_path}")
+            self.local_file_handler.save_xml(
+                file_path=f"{WORKING_DIR}{self.save_file_path}/{file_path}", data=file
+            )
 
     def start_requests(self):
         for self.group_num, url in enumerate(self.scraper_urls_raw):
             user_id = url.split("username=")[-1].split("&rated")[0]
 
             # check S3 for existing user data
-            if self.check_file_exists(
+            if self.s3_file_handler.check_file_exists(
                 file_path=f"{WORKING_DIR}{self.save_file_path}/user_{user_id}.xml"
             ):
+                self.download_from_s3()
                 self.logger.info(f"User {user_id} already exists. Skipping...")
                 continue
 

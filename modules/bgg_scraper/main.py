@@ -1,11 +1,6 @@
 import argparse
 import os
-import sys
-import time
-import boto3
 import xml.etree.ElementTree as ET
-from datetime import datetime
-from functools import partial
 
 import scrapy
 from scrapy.crawler import CrawlerProcess
@@ -13,9 +8,6 @@ from scrapy_settings import *
 from modules.bgg_scraper.spiders import GameSpider, UserSpider
 
 from config import CONFIGS
-from utils.file_handler import FileHandler
-from utils.s3_file_handler import S3FileHandler
-from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import (
     get_local_keys_based_on_env,
     load_file_local_first,
@@ -93,12 +85,12 @@ class DataScraper:
                     "BOT_NAME": self.bot_scraper_name,
                     "ROBOTSTXT_OBEY": ROBOTSTXT_OBEY,
                     "DOWNLOAD_DELAY": 5,
-                    "CONCURRENT_REQUESTS_PER_DOMAIN": 1,
+                    "CONCURRENT_REQUESTS_PER_DOMAIN": 2,
                     "COOKIES_ENABLED": COOKIES_ENABLED,
                     "AUTOTHROTTLE_ENABLED": AUTOTHROTTLE_ENABLED,
                     "AUTOTHROTTLE_START_DELAY": 3,
                     "AUTOTHROTTLE_MAX_DELAY": 60,
-                    "AUTOTHROTTLE_TARGET_CONCURRENCY": 1,
+                    "AUTOTHROTTLE_TARGET_CONCURRENCY": 2,
                     "AUTOTHROTTLE_DEBUG": AUTOTHROTTLE_DEBUG,
                     "RANDOMIZE_DOWNLOAD_DELAY": True,
                 }
