@@ -33,6 +33,8 @@ class S3FileHandler(FileHandler):
             return True
         except self.file_missing_exception:
             return False
+        except:
+            return False
 
     def get_last_modified(self, file_path: str) -> datetime:
         obj = self.s3_client.get_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
