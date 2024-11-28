@@ -31,7 +31,7 @@ import re
 
 
 def get_s3_keys_based_on_env(directory: str):
-    directory = f"{WORKING_DIR}{directory}"
+    directory = f"s3://{S3_SCRAPER_BUCKET}/{WORKING_DIR}{directory}"
     return S3FileHandler().list_files(directory)
 
 

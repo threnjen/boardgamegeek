@@ -35,7 +35,7 @@ class DirtyDataExtractor:
         self._save_dfs_to_disk_or_s3(
             directory="dirty_dfs_directory", table_name="user_data", df=users_df
         )
-        merged_df = self.merge_with_other_ratings_file(users_df)
+        merged_df = self.merge_with_other_ratings_file()
         self._save_dfs_to_disk_or_s3(
             directory="clean_dfs_directory",
             table_name="complete_user_ratings",
@@ -47,6 +47,7 @@ class DirtyDataExtractor:
 
         xml_directory = USER_CONFIGS["output_xml_directory"]
         file_list_to_process = get_s3_keys_based_on_env(xml_directory)
+        print(f"User files to process: {len(file_list_to_process)}\n\n")
         if not file_list_to_process:
             local_files = get_local_keys_based_on_env(xml_directory)
             file_list_to_process = [x for x in local_files if x.endswith(".xml")]
@@ -60,41 +61,28 @@ class DirtyDataExtractor:
 
         all_entries = []
 
-        for file in file_list_to_process:
+        for file_name in file_list_to_process:
 
-            user_entries = self._get_individual_user(file_name=file)
+            local_open = load_file_local_first(
+                path=USER_CONFIGS["output_xml_directory"],
+                file_name=file_name.split("/")[-1],
+            )
 
-            for user_entry in user_entries:
+            game_page = BeautifulSoup(local_open, features="xml")
 
-                user_entry = BeautifulSoup(str(user_entry), features="xml")
-                username = user_entry.find("username").get("value")
-                print(f"\nParsing user {username}")
+            username = file_name.split("user_")[-1].split(".xml")[0]
+            print(f"\nParsing user {username}")
 
-                one_user_reviews = self._get_ratings_from_user(username, user_entry)
-                print(f"Ratings for user {username}: {len(one_user_reviews)}")
+            one_user_reviews = self._get_ratings_from_user(username, game_page)
+            print(f"Ratings for user {username}: {len(one_user_reviews)}")
 
-                self.total_entries += len(one_user_reviews)
+            self.total_entries += len(one_user_reviews)
 
-                all_entries += one_user_reviews
+            all_entries += one_user_reviews
 
         print(f"\nTotal number of ratings ratings processed: {self.total_entries}")
 
         return all_entries
-
-    def _get_individual_user(self, file_name: str) -> Tuple[str, list[BeautifulSoup]]:
-        """Get the BeautifulSoup object for the XML file"""
-        local_open = load_file_local_first(
-            path=USER_CONFIGS["output_xml_directory"],
-            file_name=file_name.split("/")[-1],
-        )
-
-        game_page = BeautifulSoup(local_open, features="xml")
-
-        user_entries = game_page.find_all("username")
-
-        print(f"\nTotal number of users in file: {len(user_entries)}\n")
-
-        return user_entries
 
     def _get_ratings_from_user(
         self, username: str, user_entry: BeautifulSoup
@@ -124,10 +112,16 @@ class DirtyDataExtractor:
 
         return df
 
-    def merge_with_other_ratings_file(self, users_df):
-        ratings_df = load_file_local_first(
-            path=RATINGS_CONFIGS["clean_dfs_directory"], file_name=f"ratings_data.pkl"
+    def merge_with_other_ratings_file(self):
+
+        users_df = load_file_local_first(
+            path=USER_CONFIGS["dirty_dfs_directory"], file_name=f"user_data.pkl"
         )
+        ratings_df = load_file_local_first(
+            path=RATINGS_CONFIGS["dirty_dfs_directory"], file_name=f"ratings_data.pkl"
+        )
+        print(ratings_df.info())
+        print(users_df.info())
 
         merged_df = pd.merge(
             ratings_df[["username", "BGGId", "rating", "value"]],

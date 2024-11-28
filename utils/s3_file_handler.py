@@ -1,6 +1,7 @@
 import json
 import os
 import pickle
+import awswrangler as wr
 from datetime import datetime
 from typing import Any, Union
 
@@ -113,6 +114,8 @@ class S3FileHandler(FileHandler):
             return False
 
     def list_files(self, directory: str) -> list[str]:
+
+        return wr.s3.list_objects(directory)
         response = self.s3_client.list_objects_v2(
             Bucket=S3_SCRAPER_BUCKET, Prefix=directory
         )
