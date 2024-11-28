@@ -1,7 +1,7 @@
+import csv
 import os
 import time
 import zipfile
-import csv
 from os.path import expanduser
 from tempfile import mkdtemp
 

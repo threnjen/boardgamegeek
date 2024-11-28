@@ -2,13 +2,13 @@ import os
 import xml.etree.ElementTree as ET
 
 from config import CONFIGS
-from utils.s3_file_handler import S3FileHandler
 from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import (
     get_local_keys_based_on_env,
     load_file_local_first,
     save_file_local_first,
 )
+from utils.s3_file_handler import S3FileHandler
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False

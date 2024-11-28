@@ -11,10 +11,7 @@ from scrapy_settings import *
 
 from config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
-from utils.processing_functions import (
-    load_file_local_first,
-    save_file_local_first,
-)
+from utils.processing_functions import load_file_local_first, save_file_local_first
 from utils.s3_file_handler import S3FileHandler
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")

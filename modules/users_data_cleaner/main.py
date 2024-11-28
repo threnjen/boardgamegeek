@@ -1,6 +1,7 @@
 import gc
 import os
 from collections import defaultdict
+from typing import Tuple
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -13,7 +14,6 @@ from utils.processing_functions import (
     save_file_local_first,
     save_to_aws_glue,
 )
-from typing import Tuple
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
