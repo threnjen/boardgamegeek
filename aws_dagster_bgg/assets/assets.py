@@ -361,7 +361,7 @@ def user_dfs_dirty(
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 
     check_filenames = [
-        f"{WORKING_ENV_DIR}{configs['users']['dirty_dfs_directory']}/users_data.pkl"
+        f"{WORKING_ENV_DIR}{configs['users']['clean_dfs_directory']}/complete_user_ratings.pkl"
     ]
     logger.info(check_filenames)
 
