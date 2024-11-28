@@ -49,9 +49,19 @@ class GameSpider(scrapy.Spider):
         self.scraper_urls_raw = scraper_urls_raw
         self.save_file_path = save_file_path
         self.group = group
+        self.s3_file_handler = S3FileHandler()
+        self.local_file_handler = LocalFileHandler()
 
     def start_requests(self):
         for i, url in enumerate(self.scraper_urls_raw):
+
+            # check S3 for existing data
+            if self.s3_file_handler.check_file_exists(
+                file_path=f"{WORKING_DIR}{self.save_file_path}/{self.group}_{i}.xml"
+            ):
+                self.logger.info(f"ID {self.group}_{i} already exists. Skipping...")
+                continue
+
             print(f"Starting URL {i}: {url}")
             save_response_with_index = partial(self._save_response, response_id=i)
             yield scrapy.Request(url=url, callback=save_response_with_index)
@@ -61,7 +71,7 @@ class GameSpider(scrapy.Spider):
 
         save_file_local_first(
             path=self.save_file_path,
-            file_name=f"{self.group}_{response_id}_{timestamp}.xml",
+            file_name=f"{self.group}_{response_id}.xml",
             data=response.body,
         )
 
