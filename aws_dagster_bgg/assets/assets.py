@@ -128,10 +128,6 @@ def game_dfs_clean(
     key = f'{WORKING_ENV_DIR}{configs["games"]["output_xml_directory"]}'
     data_sets = configs["games"]["data_sets"]
 
-    raw_game_files = s3_resource.list_file_keys(bucket=bucket, key=key)
-
-    assert len(raw_game_files) == 29 if ENVIRONMENT == "prod" else 1
-
     task_definition = (
         "bgg_game_data_cleaner"
         if ENVIRONMENT == "prod"
@@ -256,7 +252,7 @@ def ratings_dfs_dirty(
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 
     check_filenames = [
-        f"{WORKING_ENV_DIR}{configs['ratings']['clean_dfs_directory']}/ratings_data.pkl"
+        f"{WORKING_ENV_DIR}{configs['ratings']['dirty_dfs_directory']}/ratings_data.pkl"
     ]
     logger.info(check_filenames)
 
@@ -355,11 +351,6 @@ def user_dfs_dirty(
     configs = config_resource.get_config_file()
 
     bucket = configs["s3_scraper_bucket"]
-    key = f'{WORKING_ENV_DIR}{configs["users"]["output_xml_directory"]}'
-
-    raw_ratings_files = s3_resource.list_file_keys(bucket=bucket, key=key)
-
-    assert len(raw_ratings_files) == 29 if ENVIRONMENT == "prod" else 1
 
     task_definition = (
         "bgg_users_data_cleaner"
@@ -479,31 +470,8 @@ def scrape_data(
 
     bucket = configs["s3_scraper_bucket"]
     input_urls_key = configs[scraper_type]["raw_urls_directory"]
-    output_key_directory = configs[scraper_type]["output_xml_directory"]
-    output_key_suffix = configs[scraper_type]["output_raw_xml_suffix"]
 
     input_urls_key = f"{WORKING_ENV_DIR}{input_urls_key}"
-
-    scraper_raw_data_filenames = (
-        [
-            f"{WORKING_ENV_DIR}{output_key_directory}/{output_key_suffix.format(f'group{i}')}"
-            for i in range(1, 30)
-        ]
-        if ENVIRONMENT == "prod"
-        else [
-            f"{WORKING_ENV_DIR}{output_key_directory}/{output_key_suffix.format('group1')}"
-        ]
-    )
-
-    original_timestamps = {
-        key: s3_resource.get_last_modified(
-            bucket=bucket,
-            key=key,
-        )
-        for key in scraper_raw_data_filenames
-    }
-
-    logger.info(f"Original timestamps: {original_timestamps}")
 
     game_scraper_url_filenames = s3_resource.list_file_keys(
         bucket=bucket, key=input_urls_key
@@ -535,13 +503,18 @@ def scrape_data(
         time.sleep(10)
         logger.info(f"Launched ECS for filename: {filename}")
 
-    compare_timestamps_for_refresh(
-        original_timestamps=original_timestamps,
-        file_list_to_check=scraper_raw_data_filenames,
-        location_bucket=bucket,
-        sleep_timer=300,
-        s3_resource=s3_resource,
-    )
+    time.sleep(30)
+
+    def get_total_tasks():
+        count_running_tasks = ecs_resource.count_running_tasks(status="RUNNING")
+        count_pending_tasks = ecs_resource.count_running_tasks(status="PENDING")
+        return count_running_tasks + count_pending_tasks
+
+    allowed_tasks = 2 if os.environ.get("IS_LOCAL", "true").lower() == "false" else 1
+
+    while get_total_tasks() >= allowed_tasks:
+        logger.info(f"Waiting for tasks to finish. {get_total_tasks()} running")
+        time.sleep(300)
 
     return True
 
