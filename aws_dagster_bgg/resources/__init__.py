@@ -128,6 +128,13 @@ class ECSResource(ConfigurableResource):
             .get("taskDefinitionArns", [])
         )
 
+    def count_running_tasks(self, status) -> int:
+        return len(
+            self.get_ecs_client().list_tasks(
+                cluster="boardgamegeek", desiredStatus=status
+            )["taskArns"]
+        )
+
     def launch_ecs_task(self, task_definition: str, overrides: dict = {}):
 
         terraform_state_file = self.get_terraform_state_file_for_vpc()
