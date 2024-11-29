@@ -84,3 +84,9 @@ resource "aws_ecs_task_definition" "task_definition" {
     operating_system_family = "LINUX"
   }
 }
+
+resource "aws_cloudwatch_log_group" "cloudwatch_log_group" {
+  name = "/ecs/${var.task_definition_name}"
+
+  retention_in_days = 3
+}

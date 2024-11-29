@@ -120,7 +120,7 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_game_data_cleaner" {
       {
         Sid      = "VisualEditor1",
         Effect   = "Allow",
-        Action   = "ecs:DescribeTaskDefinition",
+        Action   = ["ecs:DescribeTaskDefinition","ecs:ListTasks"]
         Resource = "*"
       },
       {
@@ -165,7 +165,7 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_scraper" {
       {
         Sid      = "VisualEditor1",
         Effect   = "Allow",
-        Action   = "ecs:DescribeTaskDefinition",
+        Action   = ["ecs:DescribeTaskDefinition","ecs:ListTasks"]
         Resource = "*"
       },
       {
@@ -211,7 +211,7 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_ratings_data_cleaner" {
       {
         Sid      = "VisualEditor1",
         Effect   = "Allow",
-        Action   = "ecs:DescribeTaskDefinition",
+        Action   = ["ecs:DescribeTaskDefinition","ecs:ListTasks"]
         Resource = "*"
       },
       {
@@ -257,7 +257,7 @@ resource "aws_iam_policy" "ecs_run_permissions_bgg_users_data_cleaner" {
       {
         Sid      = "VisualEditor1",
         Effect   = "Allow",
-        Action   = "ecs:DescribeTaskDefinition",
+        Action   = ["ecs:DescribeTaskDefinition","ecs:ListTasks"]
         Resource = "*"
       },
       {

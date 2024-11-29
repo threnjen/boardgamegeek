@@ -28,3 +28,9 @@ resource "aws_lambda_function" "lambda" {
 output "function_name" {
   value = aws_lambda_function.lambda.function_name
 }
+
+resource "aws_cloudwatch_log_group" "cloudwatch_log_group" {
+  name = "/aws/lambda/${var.function_name}"
+
+  retention_in_days = 3
+}
