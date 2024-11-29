@@ -78,8 +78,8 @@ module "bgg_scraper_ecs" {
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_scraper}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_scraper}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_scraper}:latest"
-  cpu                    = "1024"
-  memory                 = "8192"
+  cpu                    = "512"
+  memory                 = "4096"
   region                 = var.REGION
 }
 

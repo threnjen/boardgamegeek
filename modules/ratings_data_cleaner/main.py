@@ -148,7 +148,8 @@ class DirtyDataExtractor:
                 ratings_df[ratings_df["username"].isin(ratings_names_less_than_5)].index
             )
 
-        unique_ids = {"list_of_ids": ratings_df["username"].unique().tolist()}
+        ratings_df["username"] = ratings_df["username"].astype(str)
+        unique_ids = {"list_of_ids": sorted(ratings_df["username"].unique().tolist())}
 
         save_file_local_first(
             path="ratings", file_name="unique_ids.json", data=unique_ids
