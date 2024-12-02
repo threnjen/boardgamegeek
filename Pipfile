@@ -20,6 +20,8 @@ dagster-webserver = "*"
 tzlocal = "*"
 matplotlib = "*"
 scikit-learn = "*"
+seaborn = "*"
+umap-learn = "*"
 
 [dev-packages]
 pytest = "*"

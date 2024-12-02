@@ -195,10 +195,12 @@ class SecondaryDataCleaner:
         for category in compacting_categories:
             for item in compacting_categories[category]:
                 mechanics.loc[mechanics[item] == 1, category] = 1
-                mechanics = mechanics.drop([item], axis=1)
+                if item != category:
+                    mechanics = mechanics.drop([item], axis=1)
 
-        mechanics.loc[mechanics["Legacy"] == 1, "Legacy Game"] = 1
-        mechanics = mechanics.drop(["Legacy"], axis=1)
+        if "Legacy" in mechanics.columns:
+            mechanics.loc[mechanics["Legacy"] == 1, "Legacy Game"] = 1
+            mechanics = mechanics.drop(["Legacy"], axis=1)
 
         turn_order_list = mechanics[
             [x for x in mechanics.columns if "turn order" in x.lower()]
