@@ -15,12 +15,6 @@ variable "AWSAppRunnerServicePolicyForECRAccess" {
   default     = "arn:aws:iam::aws:policy/service-role/AWSAppRunnerServicePolicyForECRAccess"
 }
 
-variable "CloudWatchLogsFullAccess" {
-  description = "The ARN of the CloudWatchLogsFullAccess"
-  type        = string
-  default     = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
-}
-
 variable "CloudWatchFullAccessV2" {
   description = "The ARN of the CloudWatchFullAccessV2"
   type        = string

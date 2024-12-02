@@ -30,11 +30,6 @@ resource "aws_iam_role_policy_attachment" "AWSAppRunnerServicePolicyForECRAccess
   policy_arn = var.AWSAppRunnerServicePolicyForECRAccess
 }
 
-resource "aws_iam_role_policy_attachment" "CloudWatchLogsFullAccess_FargateExecutionRole" {
-  role       = aws_iam_role.fargate_task_definition.name
-  policy_arn = var.CloudWatchLogsFullAccess
-}
-
 resource "aws_iam_role_policy_attachment" "CloudWatchFullAccessV2_FargateExecutionRole" {
   role       = aws_iam_role.fargate_task_definition.name
   policy_arn = var.CloudWatchFullAccessV2
