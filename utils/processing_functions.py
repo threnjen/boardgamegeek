@@ -37,7 +37,9 @@ def get_s3_keys_based_on_env(directory: str):
 
 def get_local_keys_based_on_env(directory: str):
     directory = f"{WORKING_DIR}{directory}"
-    return [f"{directory}/{x}" for x in LocalFileHandler().list_files(directory)]
+    return sorted(
+        [f"{directory}/{x}" for x in LocalFileHandler().list_files(directory)]
+    )
 
 
 def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):
@@ -59,7 +61,7 @@ def load_file_local_first(path: str = None, file_name: str = ""):
 
     load_path = f"{WORKING_DIR}{file_path}"
 
-    print(f"Loading: {load_path}")
+    # print(f"Loading: {load_path}")
 
     try:
         # open from local_pile_path

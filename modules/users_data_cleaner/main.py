@@ -25,13 +25,15 @@ IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else Fa
 class DirtyDataExtractor:
 
     def __init__(self) -> None:
-        self.total_entries = 0
+        pass
 
     def data_extraction_chain(self):
         """Main function to extract data from the XML files"""
         file_list_to_process = self._get_file_list()
-        all_entries = self._process_file_list(file_list_to_process)
-        users_df = self._create_table_from_data(all_entries)
+        all_ratings_with_dates = self._process_file_list_for_rating_dates(
+            file_list_to_process
+        )
+        users_df = self._create_table_from_data(all_ratings_with_dates)
         self._save_dfs_to_disk_or_s3(
             directory="dirty_dfs_directory", table_name="user_data", df=users_df
         )
@@ -46,22 +48,27 @@ class DirtyDataExtractor:
         """Get the list of files to process"""
 
         xml_directory = USER_CONFIGS["output_xml_directory"]
+        # file_list_to_process = []
         file_list_to_process = get_s3_keys_based_on_env(xml_directory)
-        print(f"User files to process: {len(file_list_to_process)}\n\n")
         if not file_list_to_process:
             local_files = get_local_keys_based_on_env(xml_directory)
             file_list_to_process = [x for x in local_files if x.endswith(".xml")]
+        print(f"\nUser files to process: {len(file_list_to_process)}")
+        print(file_list_to_process[-5:])
         return file_list_to_process
 
-    def _process_file_list(self, file_list_to_process: list) -> list[dict]:
+    def _process_file_list_for_rating_dates(
+        self, file_list_to_process: list
+    ) -> list[dict]:
         """Process the list of files in the S3 bucket
         This function will process the list of files in the S3 bucket
         and extract the necessary information from the XML files. The
         function will return a list of dictionaries containing the data"""
 
-        all_entries = []
+        all_ratings_with_dates = []
+        users_parsed = 0
 
-        for file_name in file_list_to_process:
+        for file_name in file_list_to_process[:1]:
 
             local_open = load_file_local_first(
                 path=USER_CONFIGS["output_xml_directory"],
@@ -71,18 +78,24 @@ class DirtyDataExtractor:
             game_page = BeautifulSoup(local_open, features="xml")
 
             username = file_name.split("user_")[-1].split(".xml")[0]
-            print(f"\nParsing user {username}")
+            # print(f"\nParsing user {username}")
 
             one_user_reviews = self._get_ratings_from_user(username, game_page)
-            print(f"Ratings for user {username}: {len(one_user_reviews)}")
+            # print(f"Ratings for user {username}: {len(one_user_reviews)}")
 
-            self.total_entries += len(one_user_reviews)
+            users_parsed += 1
 
-            all_entries += one_user_reviews
+            all_ratings_with_dates += one_user_reviews
 
-        print(f"\nTotal number of ratings ratings processed: {self.total_entries}")
+            if users_parsed % 1000 == 0:
+                print(f"\nTotal number of users processed: {users_parsed}")
+                print(
+                    f"Last user processed: {username} with {len(one_user_reviews)} ratings"
+                )
 
-        return all_entries
+        print(f"\nTotal number of ratings ratings processed: {users_parsed}")
+
+        return all_ratings_with_dates
 
     def _get_ratings_from_user(
         self, username: str, user_entry: BeautifulSoup
@@ -101,10 +114,13 @@ class DirtyDataExtractor:
 
         return user_ratings
 
-    def _create_table_from_data(self, all_entries: dict[list]) -> pd.DataFrame:
+    def _create_table_from_data(
+        self, all_ratings_with_dates: dict[list]
+    ) -> pd.DataFrame:
         """Create a DataFrame from the data"""
         df = pd.DataFrame(
-            all_entries, columns=["username", "BGGId", "rating", "lastmodified"]
+            all_ratings_with_dates,
+            columns=["username", "BGGId", "rating", "lastmodified"],
         )
         df = df.sort_values(by="username").reset_index(drop=True)
         df = df.drop_duplicates()

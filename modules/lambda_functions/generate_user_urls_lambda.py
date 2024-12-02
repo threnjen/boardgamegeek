@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 from config import CONFIGS
 from utils.processing_functions import load_file_local_first, save_file_local_first
@@ -33,9 +34,10 @@ def lambda_handler(event, context):
     will be split into blocks and saved to S3 for the scraper
     to pick up."""
 
+    timestamp = datetime.now().strftime("%Y%m%d") = datetime.now().strftime("%Y%m%d")
     users = load_file_local_first(
         path=f"ratings",
-        file_name="unique_ids.json",
+        file_name=f"unique_ids_{timestamp}.json",
     )
 
     user_ids = list(users.values())[0]

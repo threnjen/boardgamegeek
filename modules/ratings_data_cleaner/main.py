@@ -1,6 +1,6 @@
-import gc
 import os
-from collections import defaultdict
+
+from datetime import datetime
 
 import pandas as pd
 from bs4 import BeautifulSoup
@@ -151,8 +151,9 @@ class DirtyDataExtractor:
         ratings_df["username"] = ratings_df["username"].astype(str)
         unique_ids = {"list_of_ids": sorted(ratings_df["username"].unique().tolist())}
 
+        timestamp = datetime.now().strftime("%Y%m%d")
         save_file_local_first(
-            path="ratings", file_name="unique_ids.json", data=unique_ids
+            path="ratings", file_name=f"unique_ids_{timestamp}.json", data=unique_ids
         )
 
 
