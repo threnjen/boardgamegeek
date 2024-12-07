@@ -22,6 +22,11 @@ matplotlib = "*"
 scikit-learn = "*"
 seaborn = "*"
 umap-learn = "*"
+openpyxl = "*"
+weaviate-client = "*"
+langchain = "*"
+openai = "*"
+nltk = "*"
 
 [dev-packages]
 pytest = "*"
