@@ -1,28 +1,27 @@
-import pandas as pd
-import numpy as np
-import requests
-import regex as re
-import time
-import os
 import gc
 import json
+import os
+import time
 from datetime import datetime
 from typing import Tuple
 
+# # visualization packages
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import regex as re
+import requests
+import seaborn as sns
 import weaviate
 import weaviate.classes as wvc
-from weaviate.util import generate_uuid5
-from weaviate.classes.query import Filter
-from weaviate.classes.config import Configure
-from sentence_transformers import SentenceTransformer
 
 # import ruptures as rpt
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-
-# # visualization packages
-import matplotlib.pyplot as plt
-import seaborn as sns
+from sentence_transformers import SentenceTransformer
+from weaviate.classes.config import Configure
+from weaviate.classes.query import Filter
+from weaviate.util import generate_uuid5
 
 
 def filter_stopwords(text: str) -> str:
