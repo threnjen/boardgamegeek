@@ -27,6 +27,7 @@ weaviate-client = "*"
 langchain = "*"
 openai = "*"
 nltk = "*"
+sentence-transformers = "*"
 
 [dev-packages]
 pytest = "*"
