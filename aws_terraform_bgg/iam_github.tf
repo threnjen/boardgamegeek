@@ -1,7 +1,7 @@
 
 
 module "iam_github_oidc_provider" {
-  source    = "terraform-aws-modules/iam/aws//modules/iam-github-oidc-provider"
+  source = "terraform-aws-modules/iam/aws//modules/iam-github-oidc-provider"
 }
 
 output "GitHubActions_Push_Role_arn" {
@@ -121,7 +121,7 @@ resource "aws_iam_policy" "boardgamegeekscraper_github_cicd_ecr_policy" {
         # Resource = [
         #   for repo in local.ecr_repositories : format("arn:aws:ecr:${var.REGION}:${data.aws_caller_identity.current.account_id}:repository/%s", repo)
         # ]
-        Resource = [for repo in local.ecr_repositories: "${repo}"]
+        Resource = [for repo in local.ecr_repositories : "${repo}"]
       }
     ]
   })
