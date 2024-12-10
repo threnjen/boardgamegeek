@@ -14,12 +14,12 @@
 import {
   to = aws_s3_bucket.example
   id = var.S3_SCRAPER_BUCKET
-} 
+}
 
 resource "aws_s3_bucket" "example" {
   bucket = var.S3_SCRAPER_BUCKET
 
   tags = {
-    Name        = var.S3_SCRAPER_BUCKET
+    Name = var.S3_SCRAPER_BUCKET
   }
 }

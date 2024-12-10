@@ -29,7 +29,7 @@ module "bgg_generate_game_urls" {
   handler       = "generate_game_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
-  description  = "Lambda function to generate game urls"
+  description   = "Lambda function to generate game urls"
 }
 
 module "dev_bgg_generate_game_urls" {
@@ -41,7 +41,7 @@ module "dev_bgg_generate_game_urls" {
   handler       = "generate_game_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
-  description = "DEV Lambda function to generate game urls"
+  description   = "DEV Lambda function to generate game urls"
 }
 
 module "bgg_generate_user_urls" {
@@ -53,7 +53,7 @@ module "bgg_generate_user_urls" {
   handler       = "generate_user_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
-  description  = "Lambda function to generate user urls"
+  description   = "Lambda function to generate user urls"
 }
 
 module "dev_bgg_generate_user_urls" {
@@ -65,7 +65,7 @@ module "dev_bgg_generate_user_urls" {
   handler       = "generate_user_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
-  description = "DEV Lambda function to generate user urls"
+  description   = "DEV Lambda function to generate user urls"
 }
 
 module "bgg_generate_ratings_urls" {
@@ -77,7 +77,7 @@ module "bgg_generate_ratings_urls" {
   handler       = "generate_ratings_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
-  description = "Lambda function to generate ratings urls"
+  description   = "Lambda function to generate ratings urls"
 }
 
 module "dev_bgg_generate_ratings_urls" {
@@ -89,7 +89,7 @@ module "dev_bgg_generate_ratings_urls" {
   handler       = "generate_ratings_urls_lambda.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
-  description = "DEV Lambda function to generate ratings urls"
+  description   = "DEV Lambda function to generate ratings urls"
 }
 
 module "bgg_scraper_fargate_trigger" {
@@ -101,7 +101,7 @@ module "bgg_scraper_fargate_trigger" {
   handler       = "bgg_scraper_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
-  description = "Lambda function to trigger the boardgamegeek scraper fargate task"
+  description   = "Lambda function to trigger the boardgamegeek scraper fargate task"
 }
 
 module "dev_bgg_scraper_fargate_trigger" {
@@ -113,7 +113,7 @@ module "dev_bgg_scraper_fargate_trigger" {
   handler       = "bgg_scraper_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
-  description = "DEV Lambda function to trigger the boardgamegeek scraper fargate task"
+  description   = "DEV Lambda function to trigger the boardgamegeek scraper fargate task"
 }
 
 module "bgg_game_data_cleaner_fargate_trigger" {
@@ -125,7 +125,7 @@ module "bgg_game_data_cleaner_fargate_trigger" {
   handler       = "bgg_game_data_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
-  description = "Lambda function to trigger the boardgamegeek cleaner fargate task"
+  description   = "Lambda function to trigger the boardgamegeek cleaner fargate task"
 }
 
 
@@ -138,7 +138,7 @@ module "dev_bgg_game_data_cleaner_fargate_trigger" {
   handler       = "bgg_game_data_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
-  description = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
+  description   = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
 }
 
 module "bgg_orchestrator_fargate_trigger" {
@@ -150,7 +150,7 @@ module "bgg_orchestrator_fargate_trigger" {
   handler       = "bgg_orchestrator_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
-  description = "Lambda function to trigger the boardgamegeek orchestrator fargate task"
+  description   = "Lambda function to trigger the boardgamegeek orchestrator fargate task"
 }
 
 module "dev_bgg_orchestrator_fargate_trigger" {
@@ -162,7 +162,7 @@ module "dev_bgg_orchestrator_fargate_trigger" {
   handler       = "bgg_orchestrator_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
-  description = "DEV Lambda function to trigger the boardgamegeek orchestrator fargate task"
+  description   = "DEV Lambda function to trigger the boardgamegeek orchestrator fargate task"
 }
 
 module "bgg_ratings_data_cleaner_fargate_trigger" {
@@ -174,7 +174,7 @@ module "bgg_ratings_data_cleaner_fargate_trigger" {
   handler       = "bgg_ratings_data_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
-  description = "Lambda function to trigger the boardgamegeek cleaner fargate task"
+  description   = "Lambda function to trigger the boardgamegeek cleaner fargate task"
 }
 
 
@@ -187,7 +187,7 @@ module "dev_bgg_ratings_data_cleaner_fargate_trigger" {
   handler       = "bgg_ratings_data_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
-  description = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
+  description   = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
 }
 
 module "bgg_users_data_cleaner_fargate_trigger" {
@@ -199,7 +199,7 @@ module "bgg_users_data_cleaner_fargate_trigger" {
   handler       = "bgg_users_data_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
-  description = "Lambda function to trigger the boardgamegeek cleaner fargate task"
+  description   = "Lambda function to trigger the boardgamegeek cleaner fargate task"
 }
 
 
@@ -212,7 +212,7 @@ module "dev_bgg_users_data_cleaner_fargate_trigger" {
   handler       = "bgg_users_data_cleaner_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
-  description = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
+  description   = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
 }
 
 
