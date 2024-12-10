@@ -11,9 +11,11 @@ import numpy as np
 import pandas as pd
 import regex as re
 import requests
+import boto3
 import seaborn as sns
 import weaviate
 import weaviate.classes as wvc
+from weaviate.embedded import EmbeddedOptions
 
 # import ruptures as rpt
 from nltk.corpus import stopwords
@@ -22,6 +24,8 @@ from sentence_transformers import SentenceTransformer
 from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter
 from weaviate.util import generate_uuid5
+
+dynamodb_client = boto3.client("dynamodb", region_name="us-west-2")
 
 
 def filter_stopwords(text: str) -> str:
@@ -36,10 +40,64 @@ def evaluate_quality_words_over_thresh(text: str) -> str:
     return len(word_tokens) > 5
 
 
-def create_weaviate_client() -> weaviate.client:
+def divide_and_process_generated_summary(game_id, summary):
+    summary = summary.replace("**", "")
+    description = summary.split("\n\n### Pros\n")[0].replace(
+        "### What is this game about?\n", ""
+    )
+    pros = (
+        summary.split("\n\n### Pros\n")[1]
+        .split("\n\n### Cons\n")[0]
+        .replace("\n", "")
+        .replace("-", "")
+    )
+    cons = summary.split("\n\n### Cons\n")[-1].replace("\n", "").replace("-", "")
+
+    response = dynamodb_client.put_item(
+        TableName="game_generated_descriptions",
+        Item={
+            "game_id": {"S": game_id},
+            "generated_description": {"S": description},
+            "generated_pros": {"S": pros},
+            "generated_cons": {"S": cons},
+        },
+        ConditionExpression="attribute_not_exists(game_id)",
+    )
+    print(response)
+
+
+def check_dynamo_db_key(game_id):
+    try:
+        dynamodb_client.get_item(
+            TableName="game_generated_descriptions", Key={"game_id": {"S": game_id}}
+        )["Item"]
+        print(f"Game {game_id} already exists in DynamoDB")
+        return True
+    except:
+        return False
+
+
+def connect_weaviate_client_local() -> weaviate.client:
+    client = weaviate.WeaviateClient(
+        additional_headers={
+            "X-HuggingFace-Api-Key": os.environ["HUGGINGFACE_APIKEY"],
+            "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
+        },
+        embedded_options=EmbeddedOptions(
+            additional_env_vars={
+                "ENABLE_MODULES": "backup-filesystem,text2vec-openai,text2vec-cohere,text2vec-huggingface,ref2vec-centroid,generative-openai,qna-openai",
+                "BACKUP_FILESYSTEM_PATH": "/tmp/backups",
+            }
+        ),
+    )
+
+    return client
+
+
+def connect_weaviate_client_docker() -> weaviate.client:
     client = weaviate.connect_to_local(
         headers={
-            "X-HuggingFace-Api-Key": os.environ["HUGGINGFACE_APIKEY"],
+            # "X-HuggingFace-Api-Key": os.environ["HUGGINGFACE_APIKEY"],
             "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
         }
     )
@@ -66,6 +124,24 @@ def add_collection_batch(
                 collection.data.update(properties=review_item, uuid=uuid)
             else:
                 batch.add_object(properties=review_item, uuid=uuid)
+
+
+def remove_collection_batch(
+    client: weaviate.client, collection_name: str, game_id: str, reviews: list[str]
+) -> None:
+    collection = client.collections.get(collection_name)
+    print(f"Removing embeddings for game {game_id}")
+
+    with collection.batch.dynamic() as batch:
+        for review in reviews:
+            review_item = {
+                "review_text": review,
+                "product_id": game_id,
+            }
+            uuid = generate_uuid5(review_item)
+
+            if collection.data.exists(uuid):
+                collection.data.delete(uuid=uuid)
 
 
 def generate_aggregated_review(
