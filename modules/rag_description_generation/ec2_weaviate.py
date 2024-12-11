@@ -1,10 +1,11 @@
-import boto3
-import time
 import os
+import time
+
+import boto3
+import weaviate
 from pydantic import BaseModel
 from weaviate.classes.query import Filter
 from weaviate.util import generate_uuid5
-import weaviate
 
 
 class Ec2(BaseModel):
@@ -23,25 +24,6 @@ class Ec2(BaseModel):
         response = os.system(command)
 
         print(response)
-
-    def connect_weaviate_client_ec2(self) -> weaviate.client:
-        client = weaviate.connect_to_custom(
-            http_host=self.ip_address,
-            http_port=8080,
-            http_secure=False,
-            grpc_host=self.ip_address,
-            grpc_port=50051,
-            grpc_secure=False,
-            skip_init_checks=False,
-            headers={
-                # "X-HuggingFace-Api-Key": os.environ["HUGGINGFACE_APIKEY"],
-                "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
-            },
-        )
-
-        print(client.is_ready())
-
-        return client
 
     def start_docker(self):
         ssm_client = boto3.client("ssm")

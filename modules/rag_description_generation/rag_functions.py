@@ -1,73 +1,19 @@
 import os
 
+import boto3
+
 # # visualization packages
 import pandas as pd
-import boto3
 import weaviate
+import weaviate.classes as wvc
 
 # import ruptures as rpt
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from pydantic import BaseModel
+from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter
 from weaviate.util import generate_uuid5
-
-from pydantic import BaseModel
-
-
-class DynamoDB(BaseModel):
-    dynamodb_client: boto3.client = boto3.client("dynamodb")
-
-    def divide_and_process_generated_summary(self, game_id, summary):
-        summary = summary.replace("**", "")
-        description = summary.split("\n\n### Pros\n")[0].replace(
-            "### What is this game about?\n", ""
-        )
-        pros = (
-            summary.split("\n\n### Pros\n")[1]
-            .split("\n\n### Cons\n")[0]
-            .replace("\n", "")
-            .replace("-", "")
-        )
-        cons = summary.split("\n\n### Cons\n")[-1].replace("\n", "").replace("-", "")
-
-        response = self.dynamodb_client.put_item(
-            TableName="game_generated_descriptions",
-            Item={
-                "game_id": {"S": game_id},
-                "generated_description": {"S": description},
-                "generated_pros": {"S": pros},
-                "generated_cons": {"S": cons},
-            },
-            ConditionExpression="attribute_not_exists(game_id)",
-        )
-        print(response)
-
-    def check_dynamo_db_key(self, game_id):
-        try:
-            self.dynamodb_client.get_item(
-                TableName="game_generated_descriptions", Key={"game_id": {"S": game_id}}
-            )["Item"]
-            print(f"Game {game_id} already exists in DynamoDB")
-            return True
-        except:
-            return False
-
-
-def prompt_replacement(generate_prompt, overall_stats, game_name, game_mean):
-
-    # turn all stats to strings
-    overall_stats = {k: str(v) for k, v in overall_stats.items()}
-
-    current_prompt = generate_prompt.replace("{GAME_NAME_HERE}", game_name)
-    current_prompt = current_prompt.replace("{GAME_AVERAGE_HERE}", game_mean)
-    current_prompt = current_prompt.replace("{TWO_UNDER}", overall_stats["two_under"])
-    current_prompt = current_prompt.replace("{ONE_UNDER}", overall_stats["one_under"])
-    current_prompt = current_prompt.replace("{ONE_OVER}", overall_stats["one_over"])
-    current_prompt = current_prompt.replace("{HALF_OVER}", overall_stats["half_over"])
-    current_prompt = current_prompt.replace(
-        "{OVERALL_MEAN}", overall_stats["overall_mean"]
-    )
-    return current_prompt
 
 
 def filter_stopwords(text: str) -> str:
@@ -82,58 +28,7 @@ def evaluate_quality_words_over_thresh(text: str) -> str:
     return len(word_tokens) > 5
 
 
-def add_collection_batch(
-    client: weaviate.client, collection_name: str, game_id: str, reviews: list[str]
-) -> None:
-    collection = client.collections.get(collection_name)
-    print(f"Adding reviews for game {game_id}")
-
-    with collection.batch.dynamic() as batch:
-        for review in reviews:
-            review_item = {
-                "review_text": review,
-                "product_id": game_id,
-            }
-            uuid = generate_uuid5(review_item)
-
-            if collection.data.exists(uuid):
-                continue
-            else:
-                batch.add_object(properties=review_item, uuid=uuid)
-
-
-def remove_collection_items(
-    client: weaviate.client, collection_name: str, game_id: str, reviews: list[str]
-) -> None:
-    collection = client.collections.get(collection_name)
-    print(f"Removing embeddings for game {game_id}")
-
-    for review in reviews:
-        review_item = {
-            "review_text": review,
-            "product_id": game_id,
-        }
-        uuid = generate_uuid5(review_item)
-
-        if collection.data.exists(uuid):
-            collection.data.delete(uuid=uuid)
-
-
-def generate_aggregated_review(
-    client: weaviate.client, collection_name: str, game_id: str, generate_prompt: str
-) -> str:
-    print(f"Generating aggregated review for game {game_id}")
-    collection = client.collections.get(collection_name)
-    summary = collection.generate.near_text(
-        query="aggregate_review",
-        return_properties=["review_text", "product_id"],
-        filters=Filter.by_property("product_id").equal(game_id),
-        grouped_task=generate_prompt,
-    )
-    return summary
-
-
-def refine_df_for_specific_game(
+def get_single_game_row(
     df: pd.DataFrame, game_id: str, sample_pct: float = 0.1
 ) -> pd.DataFrame:
 
@@ -185,39 +80,3 @@ def refine_df_for_specific_game(
     df = df[["BGGId", "Description", "combined_review"]]
 
     return df, game_name, avg_rating
-
-
-def connect_weaviate_client_docker() -> weaviate.client:
-    client = weaviate.connect_to_local(
-        headers={
-            # "X-HuggingFace-Api-Key": os.environ["HUGGINGFACE_APIKEY"],
-            "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
-        }
-    )
-    return client
-
-
-def divide_and_process_generated_summary(game_id, summary):
-    summary = summary.replace("**", "")
-    description = summary.split("\n\n### Pros\n")[0].replace(
-        "### What is this game about?\n", ""
-    )
-    pros = (
-        summary.split("\n\n### Pros\n")[1]
-        .split("\n\n### Cons\n")[0]
-        .replace("\n", "")
-        .replace("-", "")
-    )
-    cons = summary.split("\n\n### Cons\n")[-1].replace("\n", "").replace("-", "")
-
-    response = dynamodb_client.put_item(
-        TableName="game_generated_descriptions",
-        Item={
-            "game_id": {"S": game_id},
-            "generated_description": {"S": description},
-            "generated_pros": {"S": pros},
-            "generated_cons": {"S": cons},
-        },
-        ConditionExpression="attribute_not_exists(game_id)",
-    )
-    print(response)

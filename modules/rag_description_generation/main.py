@@ -1,14 +1,13 @@
-from modules.rag_description_generation.ec2_weaviate import Ec2
-import sys
-from pydantic import BaseModel, ConfigDict
-import pandas as pd
-import json
-import weaviate
-
-# from modules.rag_description_generation.rag_functions import
-from config import CONFIGS
-import os
 import gc
+import json
+import os
+import sys
+
+import pandas as pd
+from config import CONFIGS
+from modules.rag_description_generation.ec2_weaviate import Ec2
+from modules.rag_description_generation.rag_functions import DynamoDB, WeaviateClient
+from pydantic import BaseModel, ConfigDict
 from utils.processing_functions import load_file_local_first
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
@@ -33,13 +32,12 @@ class RagDescription(BaseModel):
         self.start_block = int(self.start_block)
         self.end_block = int(self.end_block)
 
-    def connect_to_weaviate_client(self):
+    def confirm_running_ec2_host(self):
         ec2_instance = Ec2()
         ec2_instance.validate_ready_weaviate_instance()
         self.ip_address = ec2_instance.get_ip_address()
         ec2_instance.copy_docker_compose_to_instance()
         ec2_instance.start_docker()
-        return ec2_instance.connect_weaviate_client_ec2()
 
     def stop_ec2_instance(self):
         ec2_instance = Ec2()
@@ -112,11 +110,16 @@ class RagDescription(BaseModel):
         )["gpt4o_mini_generate_prompt_structured"]
 
     def rag_description_generation_chain(self):
-        # self.client = self.connect_to_weaviate_client()
+        self.confirm_running_ec2_host()
         game_df_reduced = self.load_reduced_game_df()
         all_games_df = self.merge_game_df_with_user_df(game_df_reduced)
         generate_prompt = self.load_prompt()
         print(generate_prompt)
+
+        weaviate = WeaviateClient(
+            ip_address=self.ip_address,
+            collection_name=f"reviews_{self.start_block}_{self.end_block}",
+        )
         # self.generate_rag_descriptions()
 
 
