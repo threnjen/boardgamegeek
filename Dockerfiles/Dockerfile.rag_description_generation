@@ -19,7 +19,6 @@ RUN pip3 install pipenv
 # Copy the source code into the container
 COPY modules/rag_description_generation modules/rag_description_generation
 COPY utils utils
-COPY data data
 COPY modules/rag_description_generation/Pipfile* .
 COPY config.py .
 
