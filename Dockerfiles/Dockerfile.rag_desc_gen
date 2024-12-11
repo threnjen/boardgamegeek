@@ -1,0 +1,31 @@
+FROM python:3.12-slim
+
+# Install required dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set up environment variables
+ARG FILENAME
+ENV FILENAME=$FILENAME
+
+ARG SCRAPER_TYPE
+ENV SCRAPER_TYPE=$SCRAPER_TYPE
+
+# Install pipenv
+RUN pip3 install pipenv
+
+# Copy the source code into the container
+COPY modules/bgg_scraper modules/bgg_scraper
+COPY utils utils
+COPY data data
+COPY modules/bgg_scraper/Pipfile* .
+COPY config.py .
+
+# Install dependencies with pipenv
+RUN pipenv sync
+
+# Set the entry point and command
+ENTRYPOINT ["pipenv", "run", "python", "modules/rag_description_generation/main.py"]
+
