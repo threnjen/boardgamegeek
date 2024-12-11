@@ -47,6 +47,12 @@ variable "boardgamegeek_orchestrator" {
   default     = "bgg_orchestrator"
 }
 
+variable "rag_description_generation" {
+  description = "The name of the ECS task definition for the rag_description_generation"
+  type        = string
+  default     = "rag_description_generation"
+}
+
 variable "GITHUB_USER_NAME" {
   description = "The name of the GitHub user"
   type        = string

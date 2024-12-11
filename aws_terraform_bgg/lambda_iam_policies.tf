@@ -170,8 +170,8 @@ resource "aws_iam_role_policy_attachment" "rag_description_generation_attach" {
 
 module "rag_description_generation_describe_task_def_policy" {
   source     = "./modules/lambda_ecs_trigger_policies"
-  name       = "rag_description_generation_lambda_ecs_trigger"
-  task_name  = "rag_description_generation"
+  name       = "${var.rag_description_generation}_lambda_ecs_trigger"
+  task_name  = var.rag_description_generation
   region     = var.REGION
   account_id = data.aws_caller_identity.current.account_id
 }
