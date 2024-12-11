@@ -13,13 +13,25 @@ locals {
     module.bgg_ratings_data_cleaner_ecr.ecr_repository_name,
     module.dev_bgg_ratings_data_cleaner_ecr.ecr_repository_name,
     module.bgg_users_data_cleaner_ecr.ecr_repository_name,
-    module.dev_bgg_users_data_cleaner_ecr.ecr_repository_name
+    module.dev_bgg_users_data_cleaner_ecr.ecr_repository_name,
+    module.rag_description_generation_ecr.ecr_repository_name,
+    module.dev_rag_description_generation_ecr.ecr_repository_name
   ]
 }
 
 module "bgg_boardgame_file_retrieval_ecr" {
   source              = "./modules/ecr"
   ecr_repository_name = "bgg_boardgame_file_retrieval"
+}
+
+module "rag_description_generation_ecr" {
+  source              = "./modules/ecr"
+  ecr_repository_name = "rag_description_generation"
+}
+
+module "dev_rag_description_generation_ecr" {
+  source              = "./modules/ecr"
+  ecr_repository_name = "dev_rag_description_generation"
 }
 
 module "bgg_orchestrator_ecr" {
