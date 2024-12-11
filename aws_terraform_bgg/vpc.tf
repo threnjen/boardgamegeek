@@ -23,6 +23,30 @@ module "vpc" {
   map_public_ip_on_launch = false
 }
 
+resource "aws_security_group" "shared_resources_sg" {
+  name        = "shared_resources_sg"
+  description = "Allows access amongst AWS services when attached to resources"
+  vpc_id      = module.vpc.vpc_id
+  egress = [
+    {
+      "cidr_blocks" : [
+        "0.0.0.0/0"
+      ],
+      "description" : "",
+      "from_port" : 0,
+      "ipv6_cidr_blocks" : [],
+      "prefix_list_ids" : [],
+      "protocol" : "-1",
+      "security_groups" : [],
+      "self" : false,
+      "to_port" : 0
+    }
+  ]
+  tags = {
+    Name = "shared_resources_sg"
+  }
+}
+
 resource "aws_security_group" "ec2_dagster_port_access" {
   name        = "ec2_dagster_port_access"
   description = "Allows access to port 3000 on EC2 from specific IP range"
@@ -57,7 +81,9 @@ resource "aws_security_group" "ec2_dagster_port_access" {
       "to_port" : 3000
     }
   ]
-
+  tags = {
+    Name = "ec2_dagster_port_access"
+  }
 }
 
 resource "aws_security_group" "ec2_weaviate_port_access" {
@@ -118,9 +144,23 @@ resource "aws_security_group" "ec2_weaviate_port_access" {
       "security_groups" : [],
       "self" : false,
       "to_port" : 80
-    }
+    },
+    {
+      "cidr_blocks" : [],
+      "description" : "",
+      from_port = 8080
+      to_port = 8080
+      protocol = "tcp"
+      "ipv6_cidr_blocks" : [],
+      "prefix_list_ids" : [],
+      "protocol" : "tcp",
+      "self" : false,
+      security_groups = [aws_security_group.shared_resources_sg.id]
+  }
   ]
-
+  tags = {
+    Name = "ec2_weaviate_port_access"
+  }
 }
 
 resource "aws_security_group" "ec2_ssh_access" {
@@ -157,4 +197,7 @@ resource "aws_security_group" "ec2_ssh_access" {
       "to_port" : 22
     }
   ]
+  tags = {
+    Name = "ec2_weaviate_pec2_ssh_accessort_access"
+  }
 }

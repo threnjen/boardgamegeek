@@ -4,7 +4,7 @@ resource "aws_instance" "weaviate_ec2_instance" {
   ami                         = "ami-055e3d4f0bbeb5878"
   key_name                    = "weaviate-ec2"
   monitoring                  = true
-  vpc_security_group_ids      = [aws_security_group.ec2_ssh_access.id, aws_security_group.ec2_weaviate_port_access.id]
+  vpc_security_group_ids      = [aws_security_group.ec2_ssh_access.id, aws_security_group.ec2_weaviate_port_access.id, aws_security_group.shared_resources_sg.id]
   subnet_id                   = module.vpc.public_subnets[0]
   associate_public_ip_address = true
   iam_instance_profile = aws_iam_instance_profile.weaviate_ec2_instance_role.name
