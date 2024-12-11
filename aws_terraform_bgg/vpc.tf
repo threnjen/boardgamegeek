@@ -92,6 +92,32 @@ resource "aws_security_group" "ec2_weaviate_port_access" {
       "security_groups" : [],
       "self" : false,
       "to_port" : 8080
+    },
+    {
+      "cidr_blocks" : [
+        "${var.MY_IP_FIRST_THREE_BLOCKS}.0/24"
+      ],
+      "description" : "",
+      "from_port" : 50051,
+      "ipv6_cidr_blocks" : [],
+      "prefix_list_ids" : [],
+      "protocol" : "tcp",
+      "security_groups" : [],
+      "self" : false,
+      "to_port" : 50051
+    },
+    {
+      "cidr_blocks" : [
+        "${var.MY_IP_FIRST_THREE_BLOCKS}.0/24"
+      ],
+      "description" : "",
+      "from_port" : 80,
+      "ipv6_cidr_blocks" : [],
+      "prefix_list_ids" : [],
+      "protocol" : "tcp",
+      "security_groups" : [],
+      "self" : false,
+      "to_port" : 80
     }
   ]
 
