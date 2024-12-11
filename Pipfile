@@ -28,6 +28,7 @@ langchain = "*"
 openai = "*"
 nltk = "*"
 sentence-transformers = "*"
+pydantic = "*"
 
 [dev-packages]
 pytest = "*"
