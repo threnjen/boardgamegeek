@@ -1,15 +1,22 @@
-module "weaviate_ec2_instance" {
-  source  = "terraform-aws-modules/ec2-instance/aws"
-
-  name = "weaviate"
+resource "aws_instance" "weaviate_ec2_instance" {
 
   instance_type          = "t2.micro"
+  ami = "ami-055e3d4f0bbeb5878"       
   key_name               = "oregon_key"
   monitoring             = true
-  vpc_security_group_ids = [output.sg_ec2_ssh_access, output.sg_ec2_weaviate_port_access]
-  subnet_id              = output.public_subnets[0]
+  vpc_security_group_ids = [aws_security_group.ec2_ssh_access.id, aws_security_group.ec2_weaviate_port_access.id]
+  subnet_id              = module.vpc.public_subnets[0]
+  associate_public_ip_address = true
+
+  root_block_device {
+    volume_size = 30
+    encrypted   = true
+  }
+
+
 
   tags = {
+    Name = "weaviate"
     Terraform   = "true"
     Environment = "dev"
   }
@@ -17,28 +24,10 @@ module "weaviate_ec2_instance" {
   user_data = data.cloudinit_config.weaviate_ec2_instance.rendered
 }
 
+
 data "cloudinit_config" "weaviate_ec2_instance" {
   part {
     content_type = "text/x-shellscript"
     content      = file("./weaviate_ecs_init.sh")
   }
-
-  part {
-    content_type = "text/cloud-config"
-    content = yamlencode({
-      write_files = [
-        {
-          encoding    = "b64"
-          content     = filebase64("../Dockerfiles/docker_compose.yml")
-          path        = "/home/ec2-user/docker_compose.yml"
-          owner       = "ec2-user:ec2-user"
-          permissions = "0755"
-        },
-      ]
-    })
-  }
-}
-
-output "ec2_instance_public_ip" {
-  value = module.ec2_instance.this_ec2_instance.public_ip
 }
