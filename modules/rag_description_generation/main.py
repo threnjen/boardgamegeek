@@ -37,10 +37,14 @@ class RagDescription(BaseModel):
         ec2_instance = Ec2()
         ec2_instance.validate_ready_weaviate_instance()
         self.ip_address = ec2_instance.get_ip_address()
-        # ec2_instance.stop_instance()
-        # ec2_instance.copy_docker_compose_to_instance()
-        # ec2_instance.start_docker()
-        # return ec2_instance.connect_weaviate_client_ec2()
+        ec2_instance.copy_docker_compose_to_instance()
+        ec2_instance.start_docker()
+        return ec2_instance.connect_weaviate_client_ec2()
+
+    def stop_ec2_instance(self):
+        ec2_instance = Ec2()
+        self.ip_address = ec2_instance.get_ip_address()
+        ec2_instance.stop_instance()
 
     def compute_game_overall_stats(self, game_df):
         game_mean = round(game_df["AvgRating"].describe()["mean"], 2)
