@@ -2,6 +2,9 @@ import boto3
 import time
 import os
 from pydantic import BaseModel
+from weaviate.classes.query import Filter
+from weaviate.util import generate_uuid5
+import weaviate
 
 
 class Ec2(BaseModel):
@@ -13,18 +16,38 @@ class Ec2(BaseModel):
         """Run a local command to copy the file to the instance"""
 
         ip_dashed = self.ip_address.replace(".", "-")
-        command = f"scp -i ~/.ssh/oregon_key.pem modules/rag_description_generation/docker-compose.yml ec2-user@ec2-{ip_dashed}.us-west-2.compute.amazonaws.com:/home/ec2-user"
+        command = f"scp -i ~/.ssh/weaviate-ec2.pem modules/rag_description_generation/docker-compose.yml ec2-user@ec2-{ip_dashed}.us-west-2.compute.amazonaws.com:/home/ec2-user"
 
-        print(f"\nSending the command: {command} to the instance {self.instance_id}")
+        print(f"Copying docker_compose.yml to the instance {self.instance_id}")
 
         response = os.system(command)
 
         print(response)
 
+    def connect_weaviate_client_ec2(self) -> weaviate.client:
+        client = weaviate.connect_to_custom(
+            http_host=self.ip_address,
+            http_port=8080,
+            http_secure=False,
+            grpc_host=self.ip_address,
+            grpc_port=50051,
+            grpc_secure=False,
+            skip_init_checks=False,
+            headers={
+                # "X-HuggingFace-Api-Key": os.environ["HUGGINGFACE_APIKEY"],
+                "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
+            },
+        )
+
+        print(client.is_ready())
+
+        return client
+
     def start_docker(self):
         ssm_client = boto3.client("ssm")
 
-        command = "docker compose up -d"
+        command = "sudo docker compose -f /home/ec2-user/docker-compose.yml up -d"
+        # command = "ls /home/ec2-user/"
 
         print(f"\nSending the command: {command} to the instance {self.instance_id}")
 
@@ -33,7 +56,17 @@ class Ec2(BaseModel):
             DocumentName="AWS-RunShellScript",  # For Linux instances
             Parameters={"commands": [command]},
         )
-        print(response)
+        command_id = response["Command"]["CommandId"]
+        print(f"Command ID: {command_id}")
+
+        print(f"Waiting for docker containers to start")
+        time.sleep(5)
+
+        command_invocation_result = ssm_client.get_command_invocation(
+            CommandId=command_id, InstanceId=self.instance_id
+        )
+
+        print(command_invocation_result)
 
     def get_ip_address(self):
         print(self.ip_address)

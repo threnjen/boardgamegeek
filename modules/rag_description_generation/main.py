@@ -1,9 +1,8 @@
 from modules.rag_description_generation.ec2_weaviate import Ec2
 import sys
 from pydantic import BaseModel
-from modules.rag_description_generation.rag_functions import (
-    connect_weaviate_client_ec2,
-)
+
+# from modules.rag_description_generation.rag_functions import
 from config import CONFIGS
 import os
 import weaviate
@@ -25,9 +24,9 @@ class RagDescription(BaseModel):
         ec2_instance.validate_ready_weaviate_instance()
         self.ip_address = ec2_instance.get_ip_address()
         # ec2_instance.stop_instance()
-        ec2_instance.copy_docker_compose_to_instance()
+        # ec2_instance.copy_docker_compose_to_instance()
         # ec2_instance.start_docker()
-        # self.client = connect_weaviate_client_ec2(self.ip_address)
+        self.client = ec2_instance.connect_weaviate_client_ec2()
 
 
 if __name__ == "__main__":

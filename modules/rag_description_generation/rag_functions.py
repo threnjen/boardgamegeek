@@ -18,24 +18,6 @@ class DynamoDB(BaseModel):
     dynamodb_client: boto3.client = boto3.client("dynamodb")
 
 
-def connect_weaviate_client_ec2(ip_address: str) -> weaviate.client:
-    client = weaviate.connect_to_custom(
-        http_host=ip_address,
-        http_port=80,
-        http_secure=False,
-        grpc_host=ip_address,
-        grpc_port=50051,
-        grpc_secure=False,
-        skip_init_checks=False,
-        headers={
-            # "X-HuggingFace-Api-Key": os.environ["HUGGINGFACE_APIKEY"],
-            "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
-        },
-    )
-
-    print(client.is_ready())
-
-
 def filter_stopwords(text: str) -> str:
     stop_words = set(stopwords.words("english"))
     word_tokens = word_tokenize(text)
