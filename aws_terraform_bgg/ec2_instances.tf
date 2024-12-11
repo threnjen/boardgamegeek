@@ -2,7 +2,7 @@ resource "aws_instance" "weaviate_ec2_instance" {
 
   instance_type               = "t2.micro"
   ami                         = "ami-055e3d4f0bbeb5878"
-  key_name                    = "oregon_key"
+  key_name                    = "weaviate-ec2"
   monitoring                  = true
   vpc_security_group_ids      = [aws_security_group.ec2_ssh_access.id, aws_security_group.ec2_weaviate_port_access.id]
   subnet_id                   = module.vpc.public_subnets[0]
