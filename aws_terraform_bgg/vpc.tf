@@ -198,6 +198,6 @@ resource "aws_security_group" "ec2_ssh_access" {
     }
   ]
   tags = {
-    Name = "ec2_weaviate_pec2_ssh_accessort_access"
+    Name = "ec2_ssh_access"
   }
 }
