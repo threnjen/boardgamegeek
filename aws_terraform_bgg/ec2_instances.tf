@@ -16,7 +16,7 @@ resource "aws_instance" "weaviate_ec2_instance" {
 
 
   tags = {
-    Name        = "weaviate"
+    Name        = "weaviate_embedder"
     Terraform   = "true"
     Environment = "dev"
   }
