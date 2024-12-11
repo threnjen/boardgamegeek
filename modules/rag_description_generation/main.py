@@ -6,7 +6,9 @@ import sys
 import pandas as pd
 from config import CONFIGS
 from modules.rag_description_generation.ec2_weaviate import Ec2
-from modules.rag_description_generation.rag_functions import DynamoDB, WeaviateClient
+from modules.rag_description_generation.rag_dynamodb import DynamoDB
+from modules.rag_description_generation.rag_weaviate import WeaviateClient
+from modules.rag_description_generation.rag_functions import get_single_game_entries
 from pydantic import BaseModel, ConfigDict
 from utils.processing_functions import load_file_local_first
 
@@ -27,6 +29,8 @@ class RagDescription(BaseModel):
     overall_stats: dict = {}
     game_ids: list = []
     generate_prompt: str = None
+    weaviate: WeaviateClient = None
+    dynamodb_client: DynamoDB = None
 
     def model_post_init(self, __context):
         self.start_block = int(self.start_block)
@@ -109,6 +113,26 @@ class RagDescription(BaseModel):
             open("modules/rag_description_generation/prompt.json").read()
         )["gpt4o_mini_generate_prompt_structured"]
 
+    def process_single_game(self, game_id, all_games_df):
+        if not self.dynamodb_client.check_dynamo_db_key(game_id):
+            df, game_name, game_mean = get_single_game_entries(
+                df=all_games_df, game_id=game_id, sample_pct=0.05
+            )
+            reviews = df["combined_review"].to_list()
+            self.weaviate.add_collection_batch(game_id, reviews)
+            current_prompt = self.weaviate.prompt_replacement(
+                generate_prompt=self.generate_prompt,
+                overall_stats=self.overall_stats,
+                game_name=game_name,
+                game_mean=game_mean,
+            )
+            summary = self.weaviate.generate_aggregated_review(game_id, current_prompt)
+            self.dynamodb_client.divide_and_process_generated_summary(
+                game_id, summary=summary.generated
+            )
+            print(f"\n\n{summary.generated}")
+            self.weaviate.remove_collection_items(game_id=game_id, reviews=reviews)
+
     def rag_description_generation_chain(self):
         self.confirm_running_ec2_host()
         game_df_reduced = self.load_reduced_game_df()
@@ -116,11 +140,17 @@ class RagDescription(BaseModel):
         generate_prompt = self.load_prompt()
         print(generate_prompt)
 
-        weaviate = WeaviateClient(
+        self.weaviate = WeaviateClient(
             ip_address=self.ip_address,
             collection_name=f"reviews_{self.start_block}_{self.end_block}",
         )
-        # self.generate_rag_descriptions()
+        self.weaviate.create_weaviate_collection()
+
+        self.dynamodb_client = DynamoDB()
+
+        for game_id in self.game_ids:
+            print(f"Processing game {game_id}")
+            self.process_single_game(game_id, all_games_df)
 
 
 if __name__ == "__main__":

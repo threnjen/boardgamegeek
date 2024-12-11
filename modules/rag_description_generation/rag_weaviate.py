@@ -10,21 +10,22 @@ import weaviate.classes as wvc
 # import ruptures as rpt
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter
 from weaviate.util import generate_uuid5
 
 
 class WeaviateClient(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     ip_address: str
     collection_name: str
     weaviate_client: weaviate.client = None
     collection: weaviate.collections.Collection = None
 
     def model_post_init(self, __context):
-        weaviate_client = self.connect_weaviate_client_ec2()
-        collection = weaviate_client.collections.get(self.collection_name)
+        self.weaviate_client = self.connect_weaviate_client_ec2()
+        self.collection = self.weaviate_client.collections.get(self.collection_name)
 
     def connect_weaviate_client_ec2(self) -> weaviate.client:
         return weaviate.connect_to_custom(
@@ -36,12 +37,17 @@ class WeaviateClient(BaseModel):
             grpc_secure=False,
             skip_init_checks=False,
             headers={
-                # "X-HuggingFace-Api-Key": os.environ["HUGGINGFACE_APIKEY"],
                 "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
             },
         )
 
-    def prompt_replacement(self, generate_prompt, overall_stats, game_name, game_mean):
+    def prompt_replacement(
+        self,
+        generate_prompt: str,
+        overall_stats: dict[float],
+        game_name: str,
+        game_mean: str,
+    ) -> str:
 
         # turn all stats to strings
         overall_stats = {k: str(v) for k, v in overall_stats.items()}
@@ -117,15 +123,14 @@ class WeaviateClient(BaseModel):
         )
         return summary
 
-    def create_weaviate_collection(self, client):
-        collection_name = f"reviews_{self.start_block}_{self.end_block}"
+    def create_weaviate_collection(self):
 
-        if client.collections.exists(collection_name):
-            client.collections.delete(collection_name)
+        if self.weaviate_client.collections.exists(self.collection_name):
+            self.weaviate_client.collections.delete(self.collection_name)
             pass
 
-        client.collections.create(
-            name=collection_name,
+        self.weaviate_client.collections.create(
+            name=self.collection_name,
             vectorizer_config=[
                 Configure.NamedVectors.text2vec_transformers(
                     name="title_vector",

@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter
 from weaviate.util import generate_uuid5
+from typing import Tuple
 
 
 def filter_stopwords(text: str) -> str:
@@ -28,9 +29,9 @@ def evaluate_quality_words_over_thresh(text: str) -> str:
     return len(word_tokens) > 5
 
 
-def get_single_game_row(
+def get_single_game_entries(
     df: pd.DataFrame, game_id: str, sample_pct: float = 0.1
-) -> pd.DataFrame:
+) -> Tuple[pd.DataFrame, str, str]:
 
     # immediately filter to only the game_id we're interested in
     df = df[df["BGGId"] == game_id]
@@ -76,7 +77,7 @@ def get_single_game_row(
     df["combined_review"] = df["rating"].astype("string") + " " + df["value"]
     df["combined_review"] = df["combined_review"].astype("string")
 
-    avg_rating = round(df["AvgRating"].iloc[0], 1)
+    avg_rating = str(round(df["AvgRating"].iloc[0], 1))
     df = df[["BGGId", "Description", "combined_review"]]
 
     return df, game_name, avg_rating
