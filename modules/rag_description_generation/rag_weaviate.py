@@ -108,7 +108,7 @@ class WeaviateClient(BaseModel):
             uuid = generate_uuid5(review_item)
 
             if self.collection.data.exists(uuid):
-                self.collection.data.delete(uuid=uuid)
+                self.collection.data.delete_by_id(uuid=uuid)
 
     def generate_aggregated_review(
         self,

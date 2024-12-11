@@ -28,7 +28,7 @@ class DynamoDB(BaseModel):
             },
             ConditionExpression="attribute_not_exists(game_id)",
         )
-        print(response)
+        print(f"Game {game_id} processed and added to DynamoDB")
 
     def check_dynamo_db_key(self, game_id: str) -> bool:
         try:
