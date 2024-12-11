@@ -1,5 +1,6 @@
 import boto3
 import time
+import os
 from pydantic import BaseModel
 
 
@@ -7,6 +8,18 @@ class Ec2(BaseModel):
     instance_id: str = None
     ec2_client: boto3.client = boto3.client("ec2")
     ip_address: str = None
+
+    def copy_docker_compose_to_instance(self):
+        """Run a local command to copy the file to the instance"""
+
+        ip_dashed = self.ip_address.replace(".", "-")
+        command = f"scp -i ~/.ssh/oregon_key.pem modules/rag_description_generation/docker-compose.yml ec2-user@ec2-{ip_dashed}.us-west-2.compute.amazonaws.com:/home/ec2-user"
+
+        print(f"\nSending the command: {command} to the instance {self.instance_id}")
+
+        response = os.system(command)
+
+        print(response)
 
     def start_docker(self):
         ssm_client = boto3.client("ssm")

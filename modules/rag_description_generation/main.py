@@ -25,8 +25,9 @@ class RagDescription(BaseModel):
         ec2_instance.validate_ready_weaviate_instance()
         self.ip_address = ec2_instance.get_ip_address()
         # ec2_instance.stop_instance()
+        ec2_instance.copy_docker_compose_to_instance()
         # ec2_instance.start_docker()
-        self.client = connect_weaviate_client_ec2(self.ip_address)
+        # self.client = connect_weaviate_client_ec2(self.ip_address)
 
 
 if __name__ == "__main__":
