@@ -99,8 +99,7 @@ cleanup_superfluous_files: setup_boardgamegeek
 
 copy_yml_to_ec2: cleanup_superfluous_files
 	@echo "\nCopying the docker-compose.yml file to the EC2 instance"
-	@scp -i ~/.ssh/aws_terraform_bgg.pem docker-compose.yml ec2-user@$(shell cat .env | grep -oP 'public_ip="\K[^"]*'):/home/ec2-user
-
+	
 failure-action:
 	@echo "\nScript was not ready to run Terraform. Running cleanup and exiting, do not interrupt..."
 	@output=$$(pipenv run python scripts/clean_env.py); \
