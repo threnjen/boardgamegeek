@@ -27,4 +27,6 @@ services:
     image: cr.weaviate.io/semitechnologies/transformers-inference:sentence-transformers-all-mpnet-base-v2
     environment:
       ENABLE_CUDA: 0  # Set to 1 to enable
+volumes:
+  weaviate_data:
 

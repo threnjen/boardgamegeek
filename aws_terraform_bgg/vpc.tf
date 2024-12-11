@@ -1,10 +1,6 @@
 # Copyright (c) HashiCorp, Inc.
 # SPDX-License-Identifier: MPL-2.0
 
-provider "aws" {
-  region = var.REGION
-}
-
 data "aws_availability_zones" "available" {
   state = "available"
 
