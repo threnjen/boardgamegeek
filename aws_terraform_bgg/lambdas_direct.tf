@@ -28,7 +28,7 @@ module "rag_description_generation" {
   timeout       = 900
   memory_size   = 1024
   role          = module.bgg_generate_game_urls_lambda_role.arn
-  handler       = "rag_description_generation.lambda_handler"
+  handler       = "rag_description_generation_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
   description   = "Lambda function to trigger the rag description generation fargate task"
@@ -40,7 +40,7 @@ module "dev_rag_description_generation" {
   timeout       = 900
   memory_size   = 1024
   role          = module.bgg_generate_game_urls_lambda_role.arn
-  handler       = "rag_description_generation.lambda_handler"
+  handler       = "rag_description_generation_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
   description   = "DEV Lambda function to trigger the rag description generation fargate task"
