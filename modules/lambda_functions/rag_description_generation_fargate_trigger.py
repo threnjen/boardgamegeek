@@ -70,9 +70,10 @@ def lambda_handler(event, context):
             range(block_size, total_entries + block_size, block_size),
         )
     ]
+    print(blocks)
 
     if ENVIRONMENT != "prod":
-        blocks = blocks[0]
+        blocks = [blocks[0]]
 
     for block in blocks:
         start = block[0]
@@ -101,8 +102,8 @@ def lambda_handler(event, context):
                     {
                         "name": task_definition,
                         "environment": [
-                            {"name": "START_BLOCK", "value": start},
-                            {"name": "END_BLOCK", "value": end},
+                            {"name": "START_BLOCK", "value": str(start)},
+                            {"name": "END_BLOCK", "value": str(end)},
                         ],
                     }
                 ]

@@ -1,5 +1,6 @@
 import boto3
 import time
+import sys
 
 
 def get_instance_id():
@@ -53,6 +54,12 @@ def get_instance_details(instance_id):
 
 
 if __name__ == "__main__":
+
+    start_block = sys.argv[1]
+    end_block = sys.argv[2]
+
+    print(start_block, end_block)
+
     instance_id = get_instance_id()
     print(instance_id)
     ip_address, running_code = get_instance_details(instance_id)

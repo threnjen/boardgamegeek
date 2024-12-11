@@ -27,7 +27,7 @@ module "rag_description_generation" {
   function_name = "rag_description_generation_fargate_trigger"
   timeout       = 900
   memory_size   = 1024
-  role          = module.bgg_generate_game_urls_lambda_role.arn
+  role          = module.rag_description_generation_role.arn
   handler       = "rag_description_generation_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "prod"
@@ -39,7 +39,7 @@ module "dev_rag_description_generation" {
   function_name = "dev_rag_description_generation_fargate_trigger"
   timeout       = 900
   memory_size   = 1024
-  role          = module.bgg_generate_game_urls_lambda_role.arn
+  role          = module.rag_description_generation_role.arn
   handler       = "rag_description_generation_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
