@@ -17,7 +17,7 @@ def get_terraform_state_file():
     s3_client = boto3.client("s3")
     terraform_state_file = (
         s3_client.get_object(
-            Bucket=TERRAFORM_STATE_BUCKET, key="boardgamegeek.tfstate"
+            Bucket=TERRAFORM_STATE_BUCKET, Key="boardgamegeek.tfstate"
         )["Body"]
         .read()
         .decode("utf-8")
