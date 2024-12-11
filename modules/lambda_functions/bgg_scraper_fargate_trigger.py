@@ -19,7 +19,7 @@ WORKING_DIR = (
 print(SCRAPER_TASK_DEFINITION)
 
 
-def get_terraform_state_file_for_vpc():
+def get_terraform_state_file():
     """Get the terraform state file for the VPC"""
 
     s3_client = boto3.client("s3")
@@ -45,7 +45,7 @@ def lambda_handler(event, context):
 
     print(f"Running scraper for {scraper_type}")
 
-    terraform_state_file = get_terraform_state_file_for_vpc()
+    terraform_state_file = get_terraform_state_file()
 
     print(terraform_state_file["outputs"])
 

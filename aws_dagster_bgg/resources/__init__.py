@@ -103,7 +103,7 @@ class ConfigResource(ConfigurableResource):
 class ECSResource(ConfigurableResource):
     region_name: str
 
-    def get_terraform_state_file_for_vpc(self):
+    def get_terraform_state_file(self):
         """Get the terraform state file for the VPC"""
 
         return S3Resource(region_name=REGION).load_json(
@@ -137,7 +137,7 @@ class ECSResource(ConfigurableResource):
 
     def launch_ecs_task(self, task_definition: str, overrides: dict = {}):
 
-        terraform_state_file = self.get_terraform_state_file_for_vpc()
+        terraform_state_file = self.get_terraform_state_file()
 
         logger.info(
             f"Got terraform state file. Launching ECS task for {task_definition}"

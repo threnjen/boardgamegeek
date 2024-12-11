@@ -11,7 +11,7 @@ TASK_DEFINITION = CONFIGS["orchestrator_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 
-def get_terraform_state_file_for_vpc():
+def get_terraform_state_file():
     """Get the terraform state file for the VPC"""
 
     s3_client = boto3.client("s3")
@@ -38,7 +38,7 @@ def lambda_handler(event, context):
 
     print(f"Running BGGeek Orchestrator task")
 
-    terraform_state_file = get_terraform_state_file_for_vpc()
+    terraform_state_file = get_terraform_state_file()
 
     task_definition = (
         TASK_DEFINITION if ENVIRONMENT == "prod" else f"dev_{TASK_DEFINITION}"
