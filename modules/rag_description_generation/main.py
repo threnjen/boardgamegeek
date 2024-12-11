@@ -49,17 +49,17 @@ class RagDescription(BaseModel):
         ec2_instance.stop_instance()
 
     def compute_game_overall_stats(self, game_df):
-        game_mean = round(game_df["AvgRating"].describe()["mean"], 2)
+        overall_mean = round(game_df["AvgRating"].describe()["mean"], 2)
         game_std = round(game_df["AvgRating"].describe()["std"], 2)
 
-        self.overall_stats["overall_mean"] = game_mean
+        self.overall_stats["overall_mean"] = overall_mean
         self.overall_stats["overall_std"] = game_std
-        self.overall_stats["two_under"] = round(game_mean - 2 * game_std, 2)
-        self.overall_stats["one_under"] = round(game_mean - game_std, 2)
-        self.overall_stats["half_over"] = round(game_mean + 0.5 * game_std, 2)
-        self.overall_stats["one_over"] = round(game_mean + game_std, 2)
+        self.overall_stats["two_under"] = round(overall_mean - 2 * game_std, 2)
+        self.overall_stats["one_under"] = round(overall_mean - game_std, 2)
+        self.overall_stats["half_over"] = round(overall_mean + 0.5 * game_std, 2)
+        self.overall_stats["one_over"] = round(overall_mean + game_std, 2)
 
-        print(f"Overall mean: {game_mean}")
+        print(f"Overall mean: {overall_mean}")
 
     def load_reduced_game_df(self):
         print(f"\nLoading game data from {GAME_CONFIGS['clean_dfs_directory']}")
@@ -92,7 +92,7 @@ class RagDescription(BaseModel):
         )
 
         print(
-            f"Reducing user ratings to only include games in the reduced game dataframe"
+            f"Reducing user ratings to only include games in the reduced game dataframe\n"
         )
         all_games_df = user_df.merge(
             game_df_reduced[
@@ -113,32 +113,37 @@ class RagDescription(BaseModel):
             open("modules/rag_description_generation/prompt.json").read()
         )["gpt4o_mini_generate_prompt_structured"]
 
-    def process_single_game(self, game_id, all_games_df):
-        if not self.dynamodb_client.check_dynamo_db_key(game_id):
+    def process_single_game(
+        self, game_id: str, all_games_df: pd.DataFrame, generate_prompt: str
+    ):
+        if not self.dynamodb_client.check_dynamo_db_key(game_id=game_id):
             df, game_name, game_mean = get_single_game_entries(
-                df=all_games_df, game_id=game_id, sample_pct=0.05
+                df=all_games_df, game_id=game_id, sample_pct=0.10
             )
             reviews = df["combined_review"].to_list()
-            self.weaviate.add_collection_batch(game_id, reviews)
+            self.weaviate.add_collection_batch(game_id=game_id, reviews=reviews)
             current_prompt = self.weaviate.prompt_replacement(
-                generate_prompt=self.generate_prompt,
+                current_prompt=generate_prompt,
                 overall_stats=self.overall_stats,
                 game_name=game_name,
                 game_mean=game_mean,
             )
+            print(current_prompt)
             summary = self.weaviate.generate_aggregated_review(game_id, current_prompt)
             self.dynamodb_client.divide_and_process_generated_summary(
                 game_id, summary=summary.generated
             )
-            print(f"\n\n{summary.generated}")
+            print(f"\n{summary.generated}")
             self.weaviate.remove_collection_items(game_id=game_id, reviews=reviews)
+            return
+
+        print(f"Game {game_id} already processed")
 
     def rag_description_generation_chain(self):
         self.confirm_running_ec2_host()
         game_df_reduced = self.load_reduced_game_df()
         all_games_df = self.merge_game_df_with_user_df(game_df_reduced)
         generate_prompt = self.load_prompt()
-        print(generate_prompt)
 
         self.weaviate = WeaviateClient(
             ip_address=self.ip_address,
@@ -149,8 +154,10 @@ class RagDescription(BaseModel):
         self.dynamodb_client = DynamoDB()
 
         for game_id in self.game_ids:
-            print(f"Processing game {game_id}")
-            self.process_single_game(game_id, all_games_df)
+            print(f"\nProcessing game {game_id}")
+            self.process_single_game(game_id, all_games_df, generate_prompt)
+
+        self.weaviate.close_client()
 
 
 if __name__ == "__main__":

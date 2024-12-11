@@ -23,15 +23,10 @@ class Ec2(BaseModel):
 
         response = os.system(command)
 
-        print(response)
-
     def start_docker(self):
         ssm_client = boto3.client("ssm")
 
         command = "sudo docker compose -f /home/ec2-user/docker-compose.yml up -d"
-        # command = "ls /home/ec2-user/"
-
-        print(f"\nSending the command: {command} to the instance {self.instance_id}")
 
         response = ssm_client.send_command(
             InstanceIds=[self.instance_id],
@@ -39,7 +34,6 @@ class Ec2(BaseModel):
             Parameters={"commands": [command]},
         )
         command_id = response["Command"]["CommandId"]
-        print(f"Command ID: {command_id}")
 
         print(f"Waiting for docker containers to start")
         time.sleep(5)
@@ -48,10 +42,7 @@ class Ec2(BaseModel):
             CommandId=command_id, InstanceId=self.instance_id
         )
 
-        print(command_invocation_result)
-
     def get_ip_address(self):
-        print(self.ip_address)
         return self.ip_address
 
     def validate_ready_weaviate_instance(self):

@@ -43,7 +43,7 @@ class WeaviateClient(BaseModel):
 
     def prompt_replacement(
         self,
-        generate_prompt: str,
+        current_prompt: str,
         overall_stats: dict[float],
         game_name: str,
         game_mean: str,
@@ -52,7 +52,7 @@ class WeaviateClient(BaseModel):
         # turn all stats to strings
         overall_stats = {k: str(v) for k, v in overall_stats.items()}
 
-        current_prompt = generate_prompt.replace("{GAME_NAME_HERE}", game_name)
+        current_prompt = current_prompt.replace("{GAME_NAME_HERE}", game_name)
         current_prompt = current_prompt.replace("{GAME_AVERAGE_HERE}", game_mean)
         current_prompt = current_prompt.replace(
             "{TWO_UNDER}", overall_stats["two_under"]
@@ -90,6 +90,8 @@ class WeaviateClient(BaseModel):
                 else:
                     batch.add_object(properties=review_item, uuid=uuid)
 
+        print(f"Reviews added for game {game_id}")
+
     def remove_collection_items(
         self,
         game_id: str,
@@ -126,8 +128,8 @@ class WeaviateClient(BaseModel):
     def create_weaviate_collection(self):
 
         if self.weaviate_client.collections.exists(self.collection_name):
-            self.weaviate_client.collections.delete(self.collection_name)
-            pass
+            print("Collection already exists for this block")
+            return
 
         self.weaviate_client.collections.create(
             name=self.collection_name,
@@ -153,6 +155,9 @@ class WeaviateClient(BaseModel):
                 ),
             ],
         )
+
+    def close_client(self):
+        self.weaviate_client.close()
 
 
 def connect_weaviate_client_docker() -> weaviate.client:
