@@ -24,8 +24,6 @@ class RagDescription(BaseModel):
     start_block: str
     end_block: str
     ip_address: str = None
-    # client: weaviate.client = None
-    # all_games_df: pd.DataFrame = None
     overall_stats: dict = {}
     game_ids: list = []
     generate_prompt: str = None
@@ -114,27 +112,33 @@ class RagDescription(BaseModel):
         )["gpt4o_mini_generate_prompt_structured"]
 
     def process_single_game(
-        self, game_id: str, all_games_df: pd.DataFrame, generate_prompt: str
+        self,
+        weaviate_client: WeaviateClient,
+        game_id: str,
+        all_games_df: pd.DataFrame,
+        generate_prompt: str,
     ):
         if not self.dynamodb_client.check_dynamo_db_key(game_id=game_id):
             df, game_name, game_mean = get_single_game_entries(
                 df=all_games_df, game_id=game_id, sample_pct=0.05
             )
             reviews = df["combined_review"].to_list()
-            self.weaviate.add_collection_batch(game_id=game_id, reviews=reviews)
-            current_prompt = self.weaviate.prompt_replacement(
+            weaviate_client.add_collection_batch(game_id=game_id, reviews=reviews)
+            current_prompt = weaviate_client.prompt_replacement(
                 current_prompt=generate_prompt,
                 overall_stats=self.overall_stats,
                 game_name=game_name,
                 game_mean=game_mean,
             )
             print(current_prompt)
-            summary = self.weaviate.generate_aggregated_review(game_id, current_prompt)
+            summary = weaviate_client.generate_aggregated_review(
+                game_id, current_prompt
+            )
             self.dynamodb_client.divide_and_process_generated_summary(
                 game_id, summary=summary.generated
             )
             print(f"\n{summary.generated}")
-            self.weaviate.remove_collection_items(game_id=game_id, reviews=reviews)
+            weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
             return
 
         print(f"Game {game_id} already processed")
@@ -145,19 +149,21 @@ class RagDescription(BaseModel):
         all_games_df = self.merge_game_df_with_user_df(game_df_reduced)
         generate_prompt = self.load_prompt()
 
-        self.weaviate = WeaviateClient(
+        weaviate_client = WeaviateClient(
             ip_address=self.ip_address,
             collection_name=f"reviews_{self.start_block}_{self.end_block}",
         )
-        self.weaviate.create_weaviate_collection()
+        weaviate_client.create_weaviate_collection()
 
         self.dynamodb_client = DynamoDB()
 
         for game_id in self.game_ids:
             print(f"\nProcessing game {game_id}")
-            self.process_single_game(game_id, all_games_df, generate_prompt)
+            self.process_single_game(
+                weaviate_client, game_id, all_games_df, generate_prompt
+            )
 
-        self.weaviate.close_client()
+        weaviate_client.close_client()
 
 
 if __name__ == "__main__":

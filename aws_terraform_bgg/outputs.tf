@@ -18,6 +18,11 @@ output "sg_ec2_weaviate_port_access" {
   value       = aws_security_group.ec2_weaviate_port_access.id
 }
 
+output "sg_shared_resources_sg" {
+  description = "SG id of shared_resources_sg"
+  value       = aws_security_group.shared_resources_sg.id
+}
+
 output "public_subnets" {
   description = "Subnets in the VPC"
   value       = module.vpc.public_subnets

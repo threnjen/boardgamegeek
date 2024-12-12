@@ -92,7 +92,8 @@ def lambda_handler(event, context):
                         "value"
                     ],
                     "securityGroups": [
-                        terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"]
+                        terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"],
+                        terraform_state_file["outputs"]["shared_resources_sg"]["value"],
                     ],
                     "assignPublicIp": "ENABLED",
                 },
