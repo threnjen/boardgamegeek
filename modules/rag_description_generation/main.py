@@ -7,8 +7,8 @@ import pandas as pd
 from config import CONFIGS
 from modules.rag_description_generation.ec2_weaviate import Ec2
 from modules.rag_description_generation.rag_dynamodb import DynamoDB
-from modules.rag_description_generation.rag_weaviate import WeaviateClient
 from modules.rag_description_generation.rag_functions import get_single_game_entries
+from modules.rag_description_generation.rag_weaviate import WeaviateClient
 from pydantic import BaseModel, ConfigDict
 from utils.processing_functions import load_file_local_first
 

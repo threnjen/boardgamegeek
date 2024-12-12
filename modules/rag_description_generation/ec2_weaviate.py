@@ -2,10 +2,7 @@ import os
 import time
 
 import boto3
-import weaviate
 from pydantic import BaseModel
-from weaviate.classes.query import Filter
-from weaviate.util import generate_uuid5
 
 
 class Ec2(BaseModel):

@@ -1,20 +1,8 @@
-import os
+from typing import Tuple
 
-import boto3
-
-# # visualization packages
 import pandas as pd
-import weaviate
-import weaviate.classes as wvc
-
-# import ruptures as rpt
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from pydantic import BaseModel
-from weaviate.classes.config import Configure
-from weaviate.classes.query import Filter
-from weaviate.util import generate_uuid5
-from typing import Tuple
 
 
 def filter_stopwords(text: str) -> str:

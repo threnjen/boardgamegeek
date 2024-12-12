@@ -1,15 +1,7 @@
 import os
 
-import boto3
-
-# # visualization packages
-import pandas as pd
 import weaviate
 import weaviate.classes as wvc
-
-# import ruptures as rpt
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 from pydantic import BaseModel, ConfigDict
 from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter
