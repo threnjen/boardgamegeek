@@ -118,7 +118,7 @@ class RagDescription(BaseModel):
     ):
         if not self.dynamodb_client.check_dynamo_db_key(game_id=game_id):
             df, game_name, game_mean = get_single_game_entries(
-                df=all_games_df, game_id=game_id, sample_pct=0.10
+                df=all_games_df, game_id=game_id, sample_pct=0.05
             )
             reviews = df["combined_review"].to_list()
             self.weaviate.add_collection_batch(game_id=game_id, reviews=reviews)
