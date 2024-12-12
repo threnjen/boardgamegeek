@@ -23,7 +23,7 @@ module "rag_description_generation_FargateTaskRole_role" {
 
 resource "aws_iam_role_policy_attachment" "rag_description_generation" {
   role       = module.rag_description_generation_FargateTaskRole_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMServiceRolePolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_rag_description_generation_FargateTaskRole_attach" {
