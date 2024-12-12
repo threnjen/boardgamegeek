@@ -74,8 +74,8 @@ class RagDescription(BaseModel):
         self.game_ids = game_df_reduced["BGGId"].astype(str).tolist()
 
         if ENVIRONMENT != "prod":
-            self.game_ids = self.game_ids[:2]
-            game_df_reduced = game_df_reduced.head(2)
+            self.game_ids = self.game_ids[:10]
+            game_df_reduced = game_df_reduced.head(10)
 
         del game_df
         gc.collect()
