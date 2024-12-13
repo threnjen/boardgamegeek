@@ -36,7 +36,6 @@ get_region: cleanup_env_files
 	TF_VAR_REGION=$$response; \
 	echo "\nTF_VAR_REGION=$$response" >> ../.env && \
 	echo "region=\"$$response\"" > backend.conf && \
-	echo "region=\"$$response\"" > vpc/vpc_backend.conf && \
 	export TF_VAR_REGION
 
 get_terraform_bucket: get_region
@@ -45,8 +44,6 @@ get_terraform_bucket: get_region
 	TF_VAR_BUCKET=$$response; \
 	echo "TF_VAR_BUCKET=$$response" >> ../.env && \
 	echo "bucket=\"$$response\"" >> backend.conf && \
-	echo "bucket=\"$$response\"" >> vpc/vpc_backend.conf && \
-	echo "key=\"vpc.tfstate\"" >> vpc/vpc_backend.conf && \
 	export TF_VAR_BUCKET
 
 get_current_ip: get_terraform_bucket
@@ -85,15 +82,8 @@ install_state_file_bucket:
 	cd .. && \
 	cd ..
 
-setup_vpc: install_state_file_bucket
-	cd vpc && \
-	pipenv run terraform init -backend-config vpc_backend.conf && \
-	pipenv run terraform apply && \
-	cd .. && \
-	cd ..
-
 # setup main project
-setup_boardgamegeek: setup_vpc
+setup_boardgamegeek: install_state_file_bucket
 	pipenv run terraform init -backend-config backend.conf && \
 	pipenv run terraform apply
 
@@ -104,6 +94,9 @@ cleanup_superfluous_files: setup_boardgamegeek
 	find . -type f -name '*!lambda_function.zip' -delete
 	echo "PYTHONPATH=." >> ../.env
 
+copy_yml_to_ec2: cleanup_superfluous_files
+	@echo "\nCopying the docker-compose.yml file to the EC2 instance"
+	
 failure-action:
 	@echo "\nScript was not ready to run Terraform. Running cleanup and exiting, do not interrupt..."
 	@output=$$(pipenv run python scripts/clean_env.py); \

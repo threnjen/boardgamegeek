@@ -24,6 +24,10 @@ This project uses Pipenv as its environment manager. Documentation on pipenv is 
 
 Most steps in this project are explicitly dependent on a prior step. Dependencies are noted and explained.
 
+## Creating a key pair in AWS
+
+Terraform cannot be used to create your security key in AWS, which you will need to create and connect to the retrieval augmented generation server that is created on EC2. To manually create this key, go to the *EC2* area of AWS and select *Key Pairs* at left. Create a new key and name it "weaviate-ec2" with the default RSA key-pair type and .pem file format. This key will automatically be downloaded to your machine in the Downloads folder. Move it to the ~.ssh/ folder. Then run `chmod 400 ~/.ssh/weaviate-ec2.pem` to make the key write-protected.
+
 ## Install Terraform and Make
 
 Terraform installation:

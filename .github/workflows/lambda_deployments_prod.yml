@@ -25,6 +25,7 @@ jobs:
           zip -r generate_ratings_urls_lambda.zip generate_ratings_urls_lambda.py ../../config.py ../../utils
           zip -r bgg_orchestrator_fargate_trigger.zip bgg_orchestrator_fargate_trigger.py ../../config.py ../../utils
           zip -r bgg_ratings_data_cleaner_fargate_trigger.zip bgg_ratings_data_cleaner_fargate_trigger.py ../../config.py ../../utils
+          zip -r rag_description_generation_fargate_trigger.zip rag_description_generation_fargate_trigger.py ../../config.py ../../utils
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -40,3 +41,4 @@ jobs:
           aws lambda update-function-code --function-name=bgg_generate_ratings_urls  --zip-file=fileb://generate_ratings_urls_lambda.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_orchestrator_fargate_trigger  --zip-file=fileb://bgg_orchestrator_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_ratings_data_cleaner_fargate_trigger  --zip-file=fileb://bgg_ratings_data_cleaner_fargate_trigger.zip > /dev/null 2>&1
+          aws lambda update-function-code --function-name=rag_description_generation_fargate_trigger  --zip-file=fileb://rag_description_generation_fargate_trigger.zip > /dev/null 2>&1

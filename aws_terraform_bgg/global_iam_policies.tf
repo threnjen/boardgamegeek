@@ -48,6 +48,25 @@ resource "aws_iam_policy" "Cloudwatch_Put_Metrics_policy" {
   })
 }
 
+resource "aws_iam_policy" "SSM_send_command" {
+  name = "SSM_send_command"
+  path = "/"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "VisualEditor0",
+        Effect = "Allow",
+        Action = [
+          "ssm:SendCommand",
+          "ssm:GetCommandInvocation"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 
 
 resource "aws_iam_policy" "glue_table_access" {

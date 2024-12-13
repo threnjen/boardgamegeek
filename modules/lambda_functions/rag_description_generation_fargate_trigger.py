@@ -9,14 +9,14 @@ from utils.processing_functions import get_s3_keys_based_on_env
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
+TASK_DEFINITION = CONFIGS["desc_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 WORKING_DIR = (
     CONFIGS["dev_directory"] if ENVIRONMENT == "dev" else CONFIGS["prod_directory"]
 )
 
-print(SCRAPER_TASK_DEFINITION)
+print(TASK_DEFINITION)
 
 
 def get_terraform_state_file():
@@ -39,31 +39,14 @@ def get_terraform_state_file():
 
 
 def lambda_handler(event, context):
-    """Trigger the Fargate task to process the files in the S3 bucket"""
-
-    scraper_type = event.get("scraper_type")
-
-    print(f"Running scraper for {scraper_type}")
+    """Trigger the Fargate task to process the blocks"""
 
     terraform_state_file = get_terraform_state_file()
 
     print(terraform_state_file["outputs"])
 
-    if not event.get("file_name"):
-        file_prefixes = get_s3_keys_based_on_env(
-            directory=f'{CONFIGS[scraper_type]["raw_urls_directory"]}'
-        )
-
-    else:
-        file_name = event.get("file_name")
-        file_prefixes = [
-            f"{WORKING_DIR}{CONFIGS[scraper_type]['raw_urls_directory']}/{file_name}"
-        ]
-
     task_definition = (
-        f"dev_{SCRAPER_TASK_DEFINITION}"
-        if ENVIRONMENT != "prod"
-        else SCRAPER_TASK_DEFINITION
+        f"dev_{TASK_DEFINITION}" if ENVIRONMENT != "prod" else TASK_DEFINITION
     )
     print(task_definition)
 
@@ -75,12 +58,26 @@ def lambda_handler(event, context):
         .get("revision")
     )
 
-    if ENVIRONMENT != "prod":
-        file_prefixes = file_prefixes[:1]
+    number_blocks = 10
+    total_entries = 5000
+    block_size = total_entries // number_blocks
 
-    for file in file_prefixes:
-        filename = file.split("/")[-1].split(".")[0]
-        print(filename)
+    # using block_size and number_blocks, make a list of tuples of start and end indexes
+    blocks = [
+        (x, y)
+        for x, y in zip(
+            range(0, total_entries, block_size),
+            range(block_size, total_entries + block_size, block_size),
+        )
+    ]
+    print(blocks)
+
+    if ENVIRONMENT != "prod":
+        blocks = [blocks[0]]
+
+    for block in blocks:
+        start = block[0]
+        end = block[1]
 
         response = ecs_client.run_task(
             taskDefinition=f"{task_definition}:{latest_version}",
@@ -95,7 +92,8 @@ def lambda_handler(event, context):
                         "value"
                     ],
                     "securityGroups": [
-                        terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"]
+                        terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"],
+                        terraform_state_file["outputs"]["shared_resources_sg"]["value"],
                     ],
                     "assignPublicIp": "ENABLED",
                 },
@@ -105,8 +103,8 @@ def lambda_handler(event, context):
                     {
                         "name": task_definition,
                         "environment": [
-                            {"name": "FILENAME", "value": filename},
-                            {"name": "SCRAPER_TYPE", "value": scraper_type},
+                            {"name": "START_BLOCK", "value": str(start)},
+                            {"name": "END_BLOCK", "value": str(end)},
                         ],
                     }
                 ]
@@ -115,12 +113,5 @@ def lambda_handler(event, context):
 
 
 if __name__ == "__main__":
-    scraper_type = sys.argv[1]
 
-    try:
-        file_name = sys.argv[2]
-        event = {"scraper_type": scraper_type, "file_name": file_name}
-    except IndexError:
-        event = {"scraper_type": scraper_type, "file_name": None}
-
-    lambda_handler(event, None)
+    lambda_handler(None, None)

@@ -16,8 +16,34 @@ locals {
     module.bgg_generate_user_urls.function_name,
     module.dev_bgg_generate_user_urls.function_name,
     module.bgg_users_data_cleaner_fargate_trigger.function_name,
-    module.dev_bgg_users_data_cleaner_fargate_trigger.function_name
+    module.dev_bgg_users_data_cleaner_fargate_trigger.function_name,
+    module.rag_description_generation.function_name,
+    module.dev_rag_description_generation.function_name
   ]
+}
+
+module "rag_description_generation" {
+  source        = "./modules/lambda_function_direct"
+  function_name = "rag_description_generation_fargate_trigger"
+  timeout       = 900
+  memory_size   = 1024
+  role          = module.rag_description_generation_role.arn
+  handler       = "rag_description_generation_fargate_trigger.lambda_handler"
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
+  environment   = "prod"
+  description   = "Lambda function to trigger the rag description generation fargate task"
+}
+
+module "dev_rag_description_generation" {
+  source        = "./modules/lambda_function_direct"
+  function_name = "dev_rag_description_generation_fargate_trigger"
+  timeout       = 900
+  memory_size   = 1024
+  role          = module.rag_description_generation_role.arn
+  handler       = "rag_description_generation_fargate_trigger.lambda_handler"
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
+  environment   = "dev"
+  description   = "DEV Lambda function to trigger the rag description generation fargate task"
 }
 
 module "bgg_generate_game_urls" {
