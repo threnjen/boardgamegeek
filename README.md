@@ -7,10 +7,14 @@ All projects should be run from within the primary `boardgamegeek` directory or 
 - Pipenv for environment management
 - Docker for project containerization
 - GitHub Actions CI/CD for automated AWS deployment
-- Resources running on Lambda and Fargate ECS
+- Resources running on Lambda, Fargate ECS, and EC2
 - Project orchestrated and parallelized by Dagster in Fargate ECS container
 - S3 storage with Athena/Glue data querying
+- DynamoDB key/value store
 - Web form automation with Selenium
+- Vector DB with Weaviate, hosted on-demand on EC2 server
+- Vector embeddings API from Hugging face
+- Retrieval Augmented Generation with OpenAI API
 
 ## Project Requirements
 
