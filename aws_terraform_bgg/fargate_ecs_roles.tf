@@ -41,6 +41,11 @@ resource "aws_iam_role_policy_attachment" "dynamodb_rag_description_generation_F
   policy_arn = aws_iam_policy.game_generated_descriptions_dynamodb_access.arn
 }
 
+resource "aws_iam_role_policy_attachment" "ec2_instance_access_rag_description_generation_FargateTaskRole_roleattach" {
+  role       = module.rag_description_generation_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.ec2_instance_access.arn
+}
+
 module "bgg_orchestrator_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
   task_definition = "bgg_orchestrator_FargateExecutionRole"

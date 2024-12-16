@@ -67,6 +67,24 @@ resource "aws_iam_policy" "SSM_send_command" {
   })
 }
 
+resource "aws_iam_policy" "ec2_instance_access" {
+  name = "ec2_instance_access"
+  path = "/"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "VisualEditor0",
+        Effect = "Allow",
+        Action = [
+          "ec2:StartInstances",
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 
 
 resource "aws_iam_policy" "glue_table_access" {
