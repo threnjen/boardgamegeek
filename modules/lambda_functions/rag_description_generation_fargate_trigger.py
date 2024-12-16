@@ -33,8 +33,6 @@ def get_terraform_state_file():
 
     terraform_state_file = json.loads(terraform_state_file)
 
-    print(terraform_state_file.keys())
-
     return terraform_state_file
 
 
@@ -42,8 +40,6 @@ def lambda_handler(event, context):
     """Trigger the Fargate task to process the blocks"""
 
     terraform_state_file = get_terraform_state_file()
-
-    print(terraform_state_file["outputs"])
 
     task_definition = (
         f"dev_{TASK_DEFINITION}" if ENVIRONMENT != "prod" else TASK_DEFINITION
@@ -73,7 +69,14 @@ def lambda_handler(event, context):
     print(blocks)
 
     if ENVIRONMENT != "prod":
-        blocks = [blocks[0]]
+        blocks = [(0, 10)]
+
+    security_groups = terraform_state_file["outputs"]["shared_resources_sg"]["value"]
+
+    print(security_groups)
+
+    subnets = terraform_state_file["outputs"]["public_subnets"]["value"][0]
+    print(subnets)
 
     for block in blocks:
         start = block[0]
@@ -88,16 +91,8 @@ def lambda_handler(event, context):
             enableECSManagedTags=False,
             networkConfiguration={
                 "awsvpcConfiguration": {
-                    "subnets": terraform_state_file["outputs"]["public_subnets"][
-                        "value"
-                    ],
-                    "securityGroups": [
-                        terraform_state_file["outputs"]["sg_ec2_ssh_access"]["value"],
-                        terraform_state_file["outputs"]["shared_resources_sg"]["value"],
-                        terraform_state_file["outputs"]["sg_ec2_weaviate_port_access"][
-                            "value"
-                        ],
-                    ],
+                    "subnets": [subnets],
+                    "securityGroups": [security_groups],
                     "assignPublicIp": "ENABLED",
                 },
             },

@@ -4,6 +4,8 @@ import time
 import boto3
 from pydantic import BaseModel
 
+IS_LOCAL = True if os.environ.get("IS_LOCAL", False).lower() == "True" else False
+
 
 class Ec2(BaseModel):
     instance_id: str = None
@@ -48,7 +50,11 @@ class Ec2(BaseModel):
 
         self.verify_running_instance()
 
-        self.ip_address = self.describe_instance()["Instances"][0]["PublicIpAddress"]
+        self.ip_address = (
+            self.describe_instance()["Instances"][0]["PublicIpAddress"]
+            if IS_LOCAL
+            else self.describe_instance()["Instances"][0]["PrivateIpAddress"]
+        )
 
     def get_correct_instance_id(self):
         """Get the instance id of the weaviate_embedder instance"""
