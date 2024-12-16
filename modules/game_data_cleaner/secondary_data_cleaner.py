@@ -150,8 +150,6 @@ class SecondaryDataCleaner:
                 value,
             ] = 1
 
-        print(games.head())
-
         self.save_file_set(
             data=games,
             table="games",
@@ -241,7 +239,7 @@ class SecondaryDataCleaner:
             .reset_index(drop=True)
         )
 
-        print(mechanics.head())
+        mechanics = mechanics.drop_duplicates(keep="first")
 
         self.save_file_set(data=mechanics, table="mechanics")
 
@@ -263,7 +261,6 @@ class SecondaryDataCleaner:
             .reset_index(drop=True)
         )
 
-        print(themes.head())
         self.save_file_set(data=themes, table="themes")
 
     def clean_subcategories(self):
@@ -274,49 +271,66 @@ class SecondaryDataCleaner:
             file_name="subcategories_dirty.pkl",
         )
 
-        subcategories = (
-            subcategories.dropna(subset=["boardgamecategory"])
-            .sort_values("BGGId")
-            .reset_index(drop=True)
-        )
-
-        mechanics_in_subcats_df = subcategories[
-            subcategories["boardgamecategory"].isin(
-                self.game_mappings["actually_mechanics"].keys()
-            )
-        ].reset_index(drop=True)
-
-        themes_in_subcats_df = subcategories[
-            subcategories["boardgamecategory"].isin(
-                self.game_mappings["actually_themes"]
-            )
-        ].reset_index(drop=True)
-
-        big_cats_in_subcats_df = subcategories[
-            subcategories["boardgamecategory"].isin(
-                self.game_mappings["actually_major_categories"].keys()
-            )
-        ].reset_index(drop=True)
-
         # drop rows from subcategories where boardgamecategory is in list drop
         subcategories = subcategories[
             ~subcategories["boardgamecategory"].isin(
                 self.game_mappings["drop_subcategories"]
             )
         ]
-        subcategories = subcategories[
-            ~subcategories["boardgamecategory"].isin(
+
+        print(f"Total subcategory entries: {len(subcategories)}")
+
+        # Part out MECHANICS that were stored in subcategories
+        mechanics_in_subcats_df = subcategories[
+            subcategories["boardgamecategory"].isin(
                 self.game_mappings["actually_mechanics"].keys()
             )
         ]
         subcategories = subcategories[
             ~subcategories["boardgamecategory"].isin(
-                self.game_mappings["actually_subcategories"]
+                self.game_mappings["actually_mechanics"].keys()
             )
-        ].reset_index(drop=True)
+        ]
 
-        print(subcategories.head())
+        print(
+            f"Total MECHANICS entries stored in subcategories: {len(mechanics_in_subcats_df)}"
+        )
 
+        # Part out THEMES that were stored in subcategories
+        themes_in_subcats_df = subcategories[
+            subcategories["boardgamecategory"].isin(
+                self.game_mappings["actually_themes"]
+            )
+        ]
+
+        subcategories = subcategories[
+            ~subcategories["boardgamecategory"].isin(
+                self.game_mappings["actually_themes"]
+            )
+        ]
+
+        print(
+            f"Total THEMES entries stored in subcategories: {len(themes_in_subcats_df)}"
+        )
+
+        # Part out MAJOR CATEGORIES that were stored in subcategories
+        big_cats_in_subcats_df = subcategories[
+            subcategories["boardgamecategory"].isin(
+                self.game_mappings["actually_major_categories"].keys()
+            )
+        ]
+
+        subcategories = subcategories[
+            ~subcategories["boardgamecategory"].isin(
+                self.game_mappings["actually_major_categories"]
+            )
+        ]
+
+        print(
+            f"Total MAJOR CATEGORIES entries stored in subcategories: {len(big_cats_in_subcats_df)}"
+        )
+
+        print(f"Total subcategory entries after extraction: {len(subcategories)}")
         self.save_file_set(data=subcategories, table="subcategories")
 
         return (
