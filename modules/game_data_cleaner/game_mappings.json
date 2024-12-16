@@ -100,6 +100,7 @@
         "Modern Warfare",
         "Movies / TV / Radio theme",
         "Murder/Mystery",
+        "Murder / Mystery",
         "Music",
         "Mythology",
         "Napoleonic",
@@ -117,6 +118,7 @@
         "Science Fiction",
         "Space Exploration",
         "Spies/Secret Agents",
+        "Spies / Secret Agents",
         "Sports",
         "Trains",
         "Transportation",
@@ -136,7 +138,8 @@
         "Memory": "Memory",
         "Negotiation": "Negotiation",
         "Exploration": "Exploration",
-        "Territory Building": "Territory Building"
+        "Territory Building": "Territory Building",
+        "Action / Dexterity": "Action / Dexterity"
     },
     "actually_subcategories": [
         "Abstract Strategy",
