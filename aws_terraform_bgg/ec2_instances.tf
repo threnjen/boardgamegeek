@@ -7,7 +7,7 @@ resource "aws_instance" "weaviate_ec2_instance" {
   vpc_security_group_ids      = [aws_security_group.ec2_ssh_access.id, aws_security_group.ec2_weaviate_port_access.id, aws_security_group.shared_resources_sg.id]
   subnet_id                   = module.vpc.public_subnets[0]
   associate_public_ip_address = true
-  iam_instance_profile = aws_iam_instance_profile.weaviate_ec2_instance_role.name
+  iam_instance_profile        = aws_iam_instance_profile.weaviate_ec2_instance_role.name
 
   root_block_device {
     volume_size = 30
@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "assume_role" {
     effect = "Allow"
 
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "ssm.amazonaws.com",
         "ec2.amazonaws.com"
@@ -64,7 +64,7 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_iam_role" "weaviate_ec2_instance" {
-  name = "weaviate_ec2_instance"
+  name               = "weaviate_ec2_instance"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 

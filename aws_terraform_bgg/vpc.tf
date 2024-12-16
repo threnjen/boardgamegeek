@@ -146,17 +146,53 @@ resource "aws_security_group" "ec2_weaviate_port_access" {
       "to_port" : 80
     },
     {
+      "cidr_blocks" : [var.vpc_cidr_block
+      ],
+      "description" : "",
+      "from_port" : 8080,
+      "ipv6_cidr_blocks" : [],
+      "prefix_list_ids" : [],
+      "protocol" : "tcp",
+      "security_groups" : [],
+      "self" : false,
+      "to_port" : 8080
+    },
+    {
+      "cidr_blocks" : [var.vpc_cidr_block
+      ],
+      "description" : "",
+      "from_port" : 80,
+      "ipv6_cidr_blocks" : [],
+      "prefix_list_ids" : [],
+      "protocol" : "tcp",
+      "security_groups" : [],
+      "self" : false,
+      "to_port" : 80
+    },
+    {
+      "cidr_blocks" : [var.vpc_cidr_block
+      ],
+      "description" : "",
+      "from_port" : 50051,
+      "ipv6_cidr_blocks" : [],
+      "prefix_list_ids" : [],
+      "protocol" : "tcp",
+      "security_groups" : [],
+      "self" : false,
+      "to_port" : 50051
+    },
+    {
       "cidr_blocks" : [],
       "description" : "",
       from_port = 8080
-      to_port = 8080
-      protocol = "tcp"
+      to_port   = 8080
+      protocol  = "tcp"
       "ipv6_cidr_blocks" : [],
       "prefix_list_ids" : [],
       "protocol" : "tcp",
       "self" : false,
       security_groups = [aws_security_group.shared_resources_sg.id]
-  }
+    },
   ]
   tags = {
     Name = "ec2_weaviate_port_access"
