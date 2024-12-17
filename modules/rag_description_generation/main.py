@@ -15,7 +15,7 @@ from utils.processing_functions import load_file_local_first
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["games"]
-USER_CONFIGS = CONFIGS["users"]
+RATINGS_CONFIGS = CONFIGS["ratings"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
@@ -40,6 +40,8 @@ class RagDescription(BaseModel):
         self.ip_address = ec2_instance.get_ip_address()
         ec2_instance.copy_docker_compose_to_instance()
         ec2_instance.start_docker()
+
+        print(f"\nWeaviate instance running at {self.ip_address}")
 
     def stop_ec2_instance(self):
         ec2_instance = Ec2()
@@ -73,35 +75,39 @@ class RagDescription(BaseModel):
 
         self.game_ids = game_df_reduced["BGGId"].astype(str).tolist()
 
-        if ENVIRONMENT != "prod":
-            self.game_ids = self.game_ids[:10]
-            game_df_reduced = game_df_reduced.head(10)
+        game_df_reduced = game_df_reduced[
+            ["BGGId", "Name", "Description", "AvgRating", "BayesAvgRating"]
+        ]
 
         del game_df
         gc.collect()
+        print("Loaded and refined games data")
 
         return game_df_reduced
 
-    def merge_game_df_with_user_df(self, game_df_reduced):
-        print(f"\nLoading user ratings from {USER_CONFIGS['clean_dfs_directory']}")
-        user_df = load_file_local_first(
-            path=USER_CONFIGS["clean_dfs_directory"],
-            file_name="complete_user_ratings.pkl",
+    def merge_game_df_with_ratings_df(self, game_df_reduced):
+        print(f"\nLoading user ratings from {RATINGS_CONFIGS['dirty_dfs_directory']}")
+        ratings_df = load_file_local_first(
+            path=RATINGS_CONFIGS["dirty_dfs_directory"],
+            file_name="ratings_data.pkl",
         )
+        ratings_df = ratings_df[["username", "BGGId", "rating", "value"]]
+
+        print("Loaded user ratings data")
 
         print(
             f"Reducing user ratings to only include games in the reduced game dataframe\n"
         )
-        all_games_df = user_df.merge(
-            game_df_reduced[
-                ["BGGId", "Name", "Description", "AvgRating", "BayesAvgRating"]
-            ],
+        all_games_df = ratings_df.merge(
+            game_df_reduced,
             on="BGGId",
             how="inner",
         )
-        all_games_df["BGGId"] = all_games_df["BGGId"].astype("string")
+
+        all_games_df["BGGId"] = all_games_df["BGGId"].astype(str)
+
         del game_df_reduced
-        del user_df
+        del ratings_df
         gc.collect()
 
         return all_games_df
@@ -130,14 +136,13 @@ class RagDescription(BaseModel):
                 game_name=game_name,
                 game_mean=game_mean,
             )
-            print(current_prompt)
             summary = weaviate_client.generate_aggregated_review(
                 game_id, current_prompt
             )
             self.dynamodb_client.divide_and_process_generated_summary(
                 game_id, summary=summary.generated
             )
-            print(f"\n{summary.generated}")
+            # print(f"\n{summary.generated}")
             weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
             return
 
@@ -146,7 +151,7 @@ class RagDescription(BaseModel):
     def rag_description_generation_chain(self):
         self.confirm_running_ec2_host()
         game_df_reduced = self.load_reduced_game_df()
-        all_games_df = self.merge_game_df_with_user_df(game_df_reduced)
+        all_games_df = self.merge_game_df_with_ratings_df(game_df_reduced)
         generate_prompt = self.load_prompt()
 
         weaviate_client = WeaviateClient(

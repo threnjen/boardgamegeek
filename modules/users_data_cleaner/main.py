@@ -175,8 +175,7 @@ class DirtyDataExtractor:
             file_name=f"{table_name}.csv",
             data=df,
         )
-        if ENVIRONMENT == "prod":
-            save_to_aws_glue(data=df, table=f"{table_name}")
+        save_to_aws_glue(data=df, table=f"{table_name}")
 
 
 if __name__ == "__main__":

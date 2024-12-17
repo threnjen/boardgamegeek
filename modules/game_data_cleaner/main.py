@@ -164,8 +164,7 @@ class DirtyDataExtractor:
             file_name=f"{table}_dirty.csv",
             data=data,
         )
-        if ENVIRONMENT == "prod":
-            save_to_aws_glue(data=data, table=f"{table}_dirty")
+        save_to_aws_glue(data=data, table=f"{table}_dirty")
 
     def _save_dfs_to_disk_or_s3(self, dirty_storage: dict[pd.DataFrame]):
         """Save all files as pkl files. Save to local drive in ENVIRONMENT==env, or
