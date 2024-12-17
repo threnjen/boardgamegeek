@@ -25,6 +25,16 @@ COPY config.py .
 # Install dependencies with pipenv
 RUN pipenv sync
 
+# Temporarily install nltk to download resources
+RUN pip3 install nltk
+
+# Set NLTK_DATA environment variable
+ENV NLTK_DATA /usr/share/nltk_data
+
+# Set NLTK_DATA environment variable
+RUN python3 -m nltk.downloader stopwords -d /usr/share/nltk_data
+RUN python3 -m nltk.downloader punkt -d /usr/share/nltk_data
+
 # Set the entry point and command
 ENTRYPOINT ["pipenv", "run", "python", "modules/rag_description_generation/main.py"]
 CMD ["$START_BLOCK", "$END_BLOCK"]

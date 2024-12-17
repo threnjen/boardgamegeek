@@ -18,7 +18,7 @@ module "rag_description_generation_ecs" {
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.rag_description_generation}:latest"
   cpu                    = "1024"
-  memory                 = "4096"
+  memory                 = "8192"
   region                 = var.REGION
 }
 
@@ -33,7 +33,7 @@ module "dev_rag_description_generation_ecs" {
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.rag_description_generation}:latest"
   cpu                    = "1024"
-  memory                 = "4096"
+  memory                 = "8192"
   region                 = var.REGION
 }
 

@@ -79,6 +79,7 @@ class RagDescription(BaseModel):
 
         del game_df
         gc.collect()
+        print("Loaded and refined games data")
 
         return game_df_reduced
 
@@ -88,8 +89,9 @@ class RagDescription(BaseModel):
             path=RATINGS_CONFIGS["dirty_dfs_directory"],
             file_name="ratings_data.pkl",
         )
-        ratings_df["BGGId"] = ratings_df["BGGId"].astype("string")
-        ratings_df = ratings_df[["username", "BGGId", "rating"]]
+        ratings_df = ratings_df[["username", "BGGId", "rating", "value"]]
+
+        print("Loaded user ratings data")
 
         print(
             f"Reducing user ratings to only include games in the reduced game dataframe\n"
@@ -99,6 +101,8 @@ class RagDescription(BaseModel):
             on="BGGId",
             how="inner",
         )
+
+        all_games_df["BGGId"] = all_games_df["BGGId"].astype(str)
 
         del game_df_reduced
         del ratings_df
