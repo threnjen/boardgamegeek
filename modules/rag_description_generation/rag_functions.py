@@ -31,6 +31,7 @@ def get_single_game_entries(
     # get the ratings sample distribution by taking 10% of the total ratings
     df["rounded_rating"] = df["rating"].round(0).astype(int)
     sample_size = int(len(df) * sample_pct)  # Desired total sample size
+
     group_sizes = round(
         df["rounded_rating"].value_counts(normalize=True) * sample_size, 0
     ).astype(int)
@@ -50,7 +51,11 @@ def get_single_game_entries(
         f"Total quality reviews: {len(df)}. {removed_reviews} reviews removed due to quality threshold"
     )
 
-    if len(df) < sample_size:
+    sample_size = sample_size if sample_size >= 250 else len(df)
+
+    if sample_size == len(df):
+        print("Using all quality reviews")
+    elif len(df) < sample_size:
         print("Not enough quality reviews to sample from; using all reviews")
     else:
         print(f"Stratified sampling to {sample_size} reviews")
