@@ -85,14 +85,17 @@ class RagDescription(BaseModel):
             file_name="ratings_data.pkl",
         )
         ratings_df["BGGId"] = ratings_df["BGGId"].astype("string")
+        ratings_df = ratings_df[["username", "BGGId", "rating"]]
+
+        game_df_reduced = game_df_reduced[
+            ["BGGId", "Name", "Description", "AvgRating", "BayesAvgRating"]
+        ]
 
         print(
             f"Reducing user ratings to only include games in the reduced game dataframe\n"
         )
         all_games_df = ratings_df.merge(
-            game_df_reduced[
-                ["BGGId", "Name", "Description", "AvgRating", "BayesAvgRating"]
-            ],
+            game_df_reduced,
             on="BGGId",
             how="inner",
         )
