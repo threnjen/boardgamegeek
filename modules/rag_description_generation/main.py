@@ -136,7 +136,6 @@ class RagDescription(BaseModel):
                 game_name=game_name,
                 game_mean=game_mean,
             )
-            print(current_prompt)
             summary = weaviate_client.generate_aggregated_review(
                 game_id, current_prompt
             )

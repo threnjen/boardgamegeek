@@ -35,7 +35,7 @@ class Ec2(BaseModel):
         command_id = response["Command"]["CommandId"]
 
         print(f"Waiting for docker containers to start")
-        time.sleep(5)
+        time.sleep(60)
 
         command_invocation_result = ssm_client.get_command_invocation(
             CommandId=command_id, InstanceId=self.instance_id
