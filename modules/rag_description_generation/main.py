@@ -73,23 +73,23 @@ class RagDescription(BaseModel):
 
         self.game_ids = game_df_reduced["BGGId"].astype(str).tolist()
 
+        game_df_reduced = game_df_reduced[
+            ["BGGId", "Name", "Description", "AvgRating", "BayesAvgRating"]
+        ]
+
         del game_df
         gc.collect()
 
         return game_df_reduced
 
     def merge_game_df_with_ratings_df(self, game_df_reduced):
-        print(f"\nLoading user ratings from {RATINGS_CONFIGS['clean_dfs_directory']}")
+        print(f"\nLoading user ratings from {RATINGS_CONFIGS['dirty_dfs_directory']}")
         ratings_df = load_file_local_first(
-            path=RATINGS_CONFIGS["clean_dfs_directory"],
+            path=RATINGS_CONFIGS["dirty_dfs_directory"],
             file_name="ratings_data.pkl",
         )
         ratings_df["BGGId"] = ratings_df["BGGId"].astype("string")
         ratings_df = ratings_df[["username", "BGGId", "rating"]]
-
-        game_df_reduced = game_df_reduced[
-            ["BGGId", "Name", "Description", "AvgRating", "BayesAvgRating"]
-        ]
 
         print(
             f"Reducing user ratings to only include games in the reduced game dataframe\n"
