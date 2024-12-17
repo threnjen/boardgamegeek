@@ -142,7 +142,7 @@ class RagDescription(BaseModel):
             self.dynamodb_client.divide_and_process_generated_summary(
                 game_id, summary=summary.generated
             )
-            print(f"\n{summary.generated}")
+            # print(f"\n{summary.generated}")
             weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
             return
 
