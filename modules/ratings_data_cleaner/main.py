@@ -133,8 +133,7 @@ class DirtyDataExtractor:
             file_name=f"{table_name}.csv",
             data=ratings_df,
         )
-        if ENVIRONMENT == "prod":
-            save_to_aws_glue(data=ratings_df, table=f"{table_name}")
+        save_to_aws_glue(data=ratings_df, table=f"{table_name}")
 
     def _create_file_of_unique_user_ids(self, ratings_df: pd.DataFrame) -> list:
         """Create a list of unique user IDs"""

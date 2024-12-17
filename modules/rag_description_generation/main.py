@@ -15,7 +15,7 @@ from utils.processing_functions import load_file_local_first
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["games"]
-USER_CONFIGS = CONFIGS["users"]
+RATINGS_CONFIGS = CONFIGS["ratings"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
@@ -78,26 +78,27 @@ class RagDescription(BaseModel):
 
         return game_df_reduced
 
-    def merge_game_df_with_user_df(self, game_df_reduced):
-        print(f"\nLoading user ratings from {USER_CONFIGS['clean_dfs_directory']}")
-        user_df = load_file_local_first(
-            path=USER_CONFIGS["clean_dfs_directory"],
-            file_name="complete_user_ratings.pkl",
+    def merge_game_df_with_ratings_df(self, game_df_reduced):
+        print(f"\nLoading user ratings from {RATINGS_CONFIGS['clean_dfs_directory']}")
+        ratings_df = load_file_local_first(
+            path=RATINGS_CONFIGS["clean_dfs_directory"],
+            file_name="ratings_data.pkl",
         )
+        ratings_df["BGGId"] = ratings_df["BGGId"].astype("string")
 
         print(
             f"Reducing user ratings to only include games in the reduced game dataframe\n"
         )
-        all_games_df = user_df.merge(
+        all_games_df = ratings_df.merge(
             game_df_reduced[
                 ["BGGId", "Name", "Description", "AvgRating", "BayesAvgRating"]
             ],
             on="BGGId",
             how="inner",
         )
-        all_games_df["BGGId"] = all_games_df["BGGId"].astype("string")
+
         del game_df_reduced
-        del user_df
+        del ratings_df
         gc.collect()
 
         return all_games_df
@@ -142,7 +143,7 @@ class RagDescription(BaseModel):
     def rag_description_generation_chain(self):
         self.confirm_running_ec2_host()
         game_df_reduced = self.load_reduced_game_df()
-        all_games_df = self.merge_game_df_with_user_df(game_df_reduced)
+        all_games_df = self.merge_game_df_with_ratings_df(game_df_reduced)
         generate_prompt = self.load_prompt()
 
         weaviate_client = WeaviateClient(
