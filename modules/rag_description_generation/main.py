@@ -41,6 +41,8 @@ class RagDescription(BaseModel):
         ec2_instance.copy_docker_compose_to_instance()
         ec2_instance.start_docker()
 
+        print(f"\nWeaviate instance running at {self.ip_address}")
+
     def stop_ec2_instance(self):
         ec2_instance = Ec2()
         self.ip_address = ec2_instance.get_ip_address()

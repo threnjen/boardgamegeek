@@ -4,7 +4,7 @@ import time
 import boto3
 from pydantic import BaseModel
 
-IS_LOCAL = True if os.environ.get("IS_LOCAL", False).lower() == "True" else False
+IS_LOCAL = True if os.environ.get("IS_LOCAL", False).lower() == "true" else False
 
 
 class Ec2(BaseModel):

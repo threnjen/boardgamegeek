@@ -16,24 +16,18 @@ ENV START_BLOCK=$START_BLOCK
 # Install pipenv
 RUN pip3 install pipenv
 
+# Set PYTHONPATH to the current directory
+ENV PYTHONPATH=.
+
 # Copy the source code into the container
 COPY modules/rag_description_generation modules/rag_description_generation
 COPY utils utils
 COPY modules/rag_description_generation/Pipfile* .
-COPY config.py .
+COPY config* .
+COPY modules/rag_description_generation/nltk_data root/nltk_data
 
 # Install dependencies with pipenv
 RUN pipenv sync
-
-# Temporarily install nltk to download resources
-RUN pip3 install nltk
-
-# Set NLTK_DATA environment variable
-ENV NLTK_DATA /usr/share/nltk_data
-
-# Set NLTK_DATA environment variable
-RUN python3 -m nltk.downloader stopwords -d /usr/share/nltk_data
-RUN python3 -m nltk.downloader punkt -d /usr/share/nltk_data
 
 # Set the entry point and command
 ENTRYPOINT ["pipenv", "run", "python", "modules/rag_description_generation/main.py"]
