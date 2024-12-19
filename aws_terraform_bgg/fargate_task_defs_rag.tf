@@ -40,7 +40,13 @@ resource "aws_ecs_task_definition" "weaviate_rag_generation" {
         },
         secretOptions = []
       },
-      systemControls = []
+      systemControls = [],
+      dependsOn = [
+        {
+          containerName = var.weaviate_rag_server,
+          condition     = "START"
+        }
+      ]
     },
     {
       name  = var.weaviate_rag_server,
@@ -95,7 +101,13 @@ resource "aws_ecs_task_definition" "weaviate_rag_generation" {
         },
         secretOptions = []
       },
-      systemControls = []
+      systemControls = [],
+      dependsOn = [
+        {
+          containerName = var.t2v-transformers,
+          condition     = "START"
+        }
+      ]
     },
     {
       name  = var.t2v-transformers,
@@ -190,7 +202,13 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
         },
         secretOptions = []
       },
-      systemControls = []
+      systemControls = [],
+      dependsOn = [
+        {
+          containerName = var.weaviate_rag_server,
+          condition     = "START"
+        }
+      ]
     },
     {
       name  = var.weaviate_rag_server,
@@ -245,7 +263,13 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
         },
         secretOptions = []
       },
-      systemControls = []
+      systemControls = [],
+      dependsOn = [
+        {
+          containerName = var.t2v-transformers,
+          condition     = "START"
+        }
+      ]
     },
     {
       name  = var.t2v-transformers,
