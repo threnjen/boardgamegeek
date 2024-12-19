@@ -24,6 +24,11 @@ output "shared_resources_sg" {
 }
 
 output "public_subnets" {
-  description = "Subnets in the VPC"
+  description = "Public subnets in the VPC"
   value       = module.vpc.public_subnets
+}
+
+output "private_subnets" {
+  description = "Private subnets in the VPC"
+  value       = module.vpc.private_subnets
 }

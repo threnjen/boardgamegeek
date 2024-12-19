@@ -7,36 +7,6 @@ resource "aws_ecs_cluster" "boardgamegeek" {
   }
 }
 
-module "rag_description_generation_ecs" {
-  source                 = "./modules/ecs_task_definition"
-  task_definition_family = var.rag_description_generation
-  task_definition_name   = var.rag_description_generation
-  registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.rag_description_generation}:latest"
-  environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
-  task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateTaskRole"
-  execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateExecutionRole"
-  image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.rag_description_generation}:latest"
-  cpu                    = "1024"
-  memory                 = "8192"
-  region                 = var.REGION
-}
-
-module "dev_rag_description_generation_ecs" {
-  source                 = "./modules/ecs_task_definition"
-  task_definition_family = "dev_${var.rag_description_generation}"
-  task_definition_name   = "dev_${var.rag_description_generation}"
-  registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.rag_description_generation}:latest"
-  environment            = "dev"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
-  task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateTaskRole"
-  execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateExecutionRole"
-  image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.rag_description_generation}:latest"
-  cpu                    = "1024"
-  memory                 = "8192"
-  region                 = var.REGION
-}
-
 module "boardgamegeek_orchestrator_ecs" {
   source                 = "./modules/ecs_task_definition"
   task_definition_family = var.boardgamegeek_orchestrator

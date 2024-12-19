@@ -53,6 +53,18 @@ variable "rag_description_generation" {
   default     = "rag_description_generation"
 }
 
+variable "weaviate_rag_server" {
+  description = "The name of the ECS task definition for the weaviate_rag_server"
+  type        = string
+  default     = "weaviate_rag_server"
+}
+
+variable "t2v-transformers" {
+  description = "The name of the ECS task definition for the t2v-transformers"
+  type        = string
+  default     = "t2v-transformers"
+}
+
 variable "GITHUB_USER_NAME" {
   description = "The name of the GitHub user"
   type        = string

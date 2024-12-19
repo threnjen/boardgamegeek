@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import time
 
 import boto3
 
@@ -37,7 +38,10 @@ def get_terraform_state_file():
 
 
 def lambda_handler(event, context):
-    """Trigger the Fargate task to process the blocks"""
+    """Trigger the Fargate task to process the blocks
+
+    Optional args:
+    - start_block: int"""
 
     terraform_state_file = get_terraform_state_file()
 
@@ -54,17 +58,17 @@ def lambda_handler(event, context):
         .get("revision")
     )
 
+    start_block = int(event.get("start_block", "0"))
     number_blocks = 10
     total_entries = 5000
     block_size = total_entries // number_blocks
 
+    print(start_block, number_blocks, total_entries, block_size)
+
     # using block_size and number_blocks, make a list of tuples of start and end indexes
     blocks = [
-        (x, y)
-        for x, y in zip(
-            range(0, total_entries, block_size),
-            range(block_size, total_entries + block_size, block_size),
-        )
+        (start, start + block_size)
+        for start in range(start_block, start_block + total_entries, block_size)
     ]
     print(blocks)
 
@@ -81,6 +85,7 @@ def lambda_handler(event, context):
     for block in blocks:
         start = block[0]
         end = block[1]
+        print(block)
 
         response = ecs_client.run_task(
             taskDefinition=f"{task_definition}:{latest_version}",
@@ -108,8 +113,11 @@ def lambda_handler(event, context):
                 ]
             },
         )
+        print(response)
+        print(f"Successfully launched block {block}")
+        time.sleep(60)
 
 
 if __name__ == "__main__":
 
-    lambda_handler(None, None)
+    lambda_handler({"start_block": 1000}, None)

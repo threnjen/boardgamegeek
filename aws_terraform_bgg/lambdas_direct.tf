@@ -26,7 +26,7 @@ module "rag_description_generation" {
   source        = "./modules/lambda_function_direct"
   function_name = "rag_description_generation_fargate_trigger"
   timeout       = 900
-  memory_size   = 1024
+  memory_size   = 256
   role          = module.rag_description_generation_role.arn
   handler       = "rag_description_generation_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
@@ -38,7 +38,7 @@ module "dev_rag_description_generation" {
   source        = "./modules/lambda_function_direct"
   function_name = "dev_rag_description_generation_fargate_trigger"
   timeout       = 900
-  memory_size   = 1024
+  memory_size   = 256
   role          = module.rag_description_generation_role.arn
   handler       = "rag_description_generation_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
