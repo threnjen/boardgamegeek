@@ -6,7 +6,6 @@ resource "aws_ecs_task_definition" "weaviate_rag_generation" {
       name  = var.rag_description_generation,
       image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.rag_description_generation}:latest"
       cpu   = 0,
-      memory=2048,
       essential = true,
       environment = [
         {
@@ -47,7 +46,6 @@ resource "aws_ecs_task_definition" "weaviate_rag_generation" {
       name  = var.weaviate_rag_server,
       image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.weaviate_rag_server}:latest"
       cpu   = 0,
-      memory = 4096,
       portMappings = [
         {
           containerPort = 8080,
@@ -141,8 +139,8 @@ resource "aws_ecs_task_definition" "weaviate_rag_generation" {
   network_mode = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   
-  cpu    = "1024"
-  memory = "8092"
+  cpu    = "2048"
+  memory = "8192"
   
   runtime_platform {
     cpu_architecture        = "X86_64"
