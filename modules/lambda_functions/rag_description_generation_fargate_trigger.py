@@ -45,8 +45,9 @@ def lambda_handler(event, context):
 
     terraform_state_file = get_terraform_state_file()
 
-    task_definition = TASK_DEFINITION
-
+    task_definition = (
+        f"dev_{TASK_DEFINITION}" if ENVIRONMENT != "prod" else TASK_DEFINITION
+    )
     print(task_definition)
 
     ecs_client = boto3.client("ecs")
