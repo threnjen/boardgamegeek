@@ -153,7 +153,7 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
   
   container_definitions = jsonencode([
     {
-      name  = var.rag_description_generation,
+      name  = "dev_${var.rag_description_generation}",
       image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.rag_description_generation}:latest"
       cpu   = 0,
       essential = true,
