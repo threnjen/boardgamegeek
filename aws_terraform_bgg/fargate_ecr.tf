@@ -17,7 +17,7 @@ locals {
     module.rag_description_generation_ecr.ecr_repository_name,
     module.dev_rag_description_generation_ecr.ecr_repository_name,
     module.weaviate_rag_server_ecr.ecr_repository_name,
-    module.sentence_transformers_ecr.ecr_repository_name
+    module.t2v-transformers_ecr.ecr_repository_name
   ]
 }
 
@@ -31,10 +31,11 @@ module "weaviate_rag_server_ecr" {
   ecr_repository_name = "weaviate_rag_server"
 }
 
-module "sentence_transformers_ecr" {
+module "t2v-transformers_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "sentence_transformers"
+  ecr_repository_name = "t2v-transformers"
 }
+
 module "rag_description_generation_ecr" {
   source              = "./modules/ecr"
   ecr_repository_name = "rag_description_generation"

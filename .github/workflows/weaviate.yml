@@ -41,9 +41,9 @@ jobs:
       - name: Build, tag, and push Transformers image to AWS ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: sentence_transformers
+          ECR_REPOSITORY: t2v-transformers
         run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.sentence_transformers -t $ECR_REGISTRY/$ECR_REPOSITORY:latest - <<EOF
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.t2v-transformers -t $ECR_REGISTRY/$ECR_REPOSITORY:latest - <<EOF
           FROM cr.weaviate.io/semitechnologies/transformers-inference:sentence-transformers-all-mpnet-base-v2
           ENV ENABLE_CUDA=0
           EOF

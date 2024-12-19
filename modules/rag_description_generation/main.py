@@ -6,7 +6,8 @@ import time
 
 import pandas as pd
 from config import CONFIGS
-from modules.rag_description_generation.ec2_weaviate import Ec2
+
+# from modules.rag_description_generation.ec2_weaviate import Ec2
 from modules.rag_description_generation.rag_dynamodb import DynamoDB
 from modules.rag_description_generation.rag_functions import get_single_game_entries
 from modules.rag_description_generation.rag_weaviate import WeaviateClient
@@ -36,19 +37,19 @@ class RagDescription(BaseModel):
         self.end_block = int(self.end_block)
         self.num_completed_games = self.start_block
 
-    def confirm_running_ec2_host(self):
-        ec2_instance = Ec2()
-        ec2_instance.validate_ready_weaviate_instance()
-        self.ip_address = ec2_instance.get_ip_address()
-        ec2_instance.copy_docker_compose_to_instance()
-        ec2_instance.start_docker()
+    # def confirm_running_ec2_host(self):
+    #     ec2_instance = Ec2()
+    #     ec2_instance.validate_ready_weaviate_instance()
+    #     self.ip_address = ec2_instance.get_ip_address()
+    #     ec2_instance.copy_docker_compose_to_instance()
+    #     ec2_instance.start_docker()
 
-        print(f"\nWeaviate instance running at {self.ip_address}")
+    #     print(f"\nWeaviate instance running at {self.ip_address}")
 
-    def stop_ec2_instance(self):
-        ec2_instance = Ec2()
-        self.ip_address = ec2_instance.get_ip_address()
-        ec2_instance.stop_instance()
+    # def stop_ec2_instance(self):
+    #     ec2_instance = Ec2()
+    #     self.ip_address = ec2_instance.get_ip_address()
+    #     ec2_instance.stop_instance()
 
     def compute_game_overall_stats(self, game_df):
         overall_mean = round(game_df["AvgRating"].describe()["mean"], 2)
@@ -151,13 +152,13 @@ class RagDescription(BaseModel):
         print(f"Game {game_id} already processed")
 
     def rag_description_generation_chain(self):
-        self.confirm_running_ec2_host()
+        # self.confirm_running_ec2_host()
         game_df_reduced = self.load_reduced_game_df()
         all_games_df = self.merge_game_df_with_ratings_df(game_df_reduced)
         generate_prompt = self.load_prompt()
 
         weaviate_client = WeaviateClient(
-            ip_address=self.ip_address,
+            # ip_address=self.ip_address,
             collection_name=f"reviews_{self.start_block}_{self.end_block}",
         )
         weaviate_client.create_weaviate_collection()

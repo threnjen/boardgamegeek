@@ -59,10 +59,10 @@ variable "weaviate_rag_server" {
   default     = "weaviate_rag_server"
 }
 
-variable "sentence_transformers" {
-  description = "The name of the ECS task definition for the sentence_transformers"
+variable "t2v-transformers" {
+  description = "The name of the ECS task definition for the t2v-transformers"
   type        = string
-  default     = "sentence_transformers"
+  default     = "t2v-transformers"
 }
 
 variable "GITHUB_USER_NAME" {
