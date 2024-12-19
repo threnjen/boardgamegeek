@@ -1,26 +1,26 @@
-resource "aws_instance" "weaviate_ec2_instance" {
+# resource "aws_instance" "weaviate_ec2_instance" {
 
-  instance_type               = "t3.medium"
-  ami                         = "ami-055e3d4f0bbeb5878"
-  key_name                    = "weaviate-ec2"
-  monitoring                  = true
-  vpc_security_group_ids      = [aws_security_group.ec2_ssh_access.id, aws_security_group.ec2_weaviate_port_access.id, aws_security_group.shared_resources_sg.id]
-  subnet_id                   = module.vpc.public_subnets[0]
-  associate_public_ip_address = true
-  iam_instance_profile        = aws_iam_instance_profile.weaviate_ec2_instance_role.name
+#   instance_type               = "t3.large"
+#   ami                         = "ami-055e3d4f0bbeb5878"
+#   key_name                    = "weaviate-ec2"
+#   monitoring                  = true
+#   vpc_security_group_ids      = [aws_security_group.ec2_ssh_access.id, aws_security_group.ec2_weaviate_port_access.id, aws_security_group.shared_resources_sg.id]
+#   subnet_id                   = module.vpc.public_subnets[0]
+#   associate_public_ip_address = true
+#   iam_instance_profile        = aws_iam_instance_profile.weaviate_ec2_instance_role.name
 
-  root_block_device {
-    volume_size = 30
-    encrypted   = true
-  }
-  tags = {
-    Name        = "weaviate_embedder"
-    Terraform   = "true"
-    Environment = "dev"
-  }
+#   root_block_device {
+#     volume_size = 30
+#     encrypted   = true
+#   }
+#   tags = {
+#     Name        = "weaviate_embedder"
+#     Terraform   = "true"
+#     Environment = "dev"
+#   }
 
-  user_data = data.cloudinit_config.weaviate_ec2_instance.rendered
-}
+#   user_data = data.cloudinit_config.weaviate_ec2_instance.rendered
+# }
 
 resource "aws_iam_instance_profile" "weaviate_ec2_instance_role" {
   name = "test_profile"
