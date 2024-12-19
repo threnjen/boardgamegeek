@@ -1,0 +1,50 @@
+name: Build and Push Weaviate and Transformers Images
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, tag, and push Weaviate image to AWS ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: weaviate_rag_server
+        run: |
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.weaviate -t $ECR_REGISTRY/$ECR_REPOSITORY:latest - <<EOF
+          FROM cr.weaviate.io/semitechnologies/weaviate:1.27.7
+          CMD ["--host", "0.0.0.0", "--port", "8080", "--scheme", "http"]
+          EOF
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Build, tag, and push Transformers image to AWS ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: sentence_transformers
+        run: |
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.sentence_transformers -t $ECR_REGISTRY/$ECR_REPOSITORY:latest - <<EOF
+          FROM cr.weaviate.io/semitechnologies/transformers-inference:sentence-transformers-all-mpnet-base-v2
+          ENV ENABLE_CUDA=0
+          EOF
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
