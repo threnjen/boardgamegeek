@@ -1,4 +1,4 @@
-name: Build and Push Weaviate and Transformers Images
+name: Build and Push Weaviate VectorDB Image
 
 on:
   push:
@@ -36,12 +36,4 @@ jobs:
           ECR_REPOSITORY: weaviate_rag_server
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.weaviate -t $ECR_REGISTRY/$ECR_REPOSITORY .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY
-
-      - name: Build, tag, and push Transformers image to AWS ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: t2v-transformers
-        run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.t2v-transformers -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
