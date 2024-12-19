@@ -25,6 +25,7 @@ class RagDescription(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     start_block: str
     end_block: str
+    num_completed_games: int = 0
     ip_address: str = None
     overall_stats: dict = {}
     game_ids: list = []
