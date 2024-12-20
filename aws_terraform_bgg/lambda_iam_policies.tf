@@ -176,9 +176,6 @@ module "rag_description_generation_describe_task_def_policy" {
   account_id = data.aws_caller_identity.current.account_id
 }
 
-
-
-
 module "trigger_bgg_generate_game_urls_lambda" {
   source        = "./modules/iam_lambda_run_permissions"
   function_name = module.bgg_generate_game_urls.function_name

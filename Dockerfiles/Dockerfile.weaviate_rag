@@ -1,0 +1,14 @@
+# Dockerfile.weaviate_rag
+FROM cr.weaviate.io/semitechnologies/weaviate:1.27.7
+
+# Set environment variables
+ENV QUERY_DEFAULTS_LIMIT=25
+ENV AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED=true
+ENV PERSISTENCE_DATA_PATH=/var/lib/weaviate
+ENV DEFAULT_VECTORIZER_MODULE=text2vec-transformers
+ENV ENABLE_MODULES=text2vec-transformers
+ENV CLUSTER_HOSTNAME=node1
+ENV TRANSFORMERS_INFERENCE_API=http://t2v-transformers:8080
+
+# Define entrypoint command
+CMD ["--host", "0.0.0.0", "--port", "8081", "--scheme", "http"]

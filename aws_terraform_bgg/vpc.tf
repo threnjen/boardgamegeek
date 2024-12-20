@@ -9,7 +9,18 @@ data "aws_availability_zones" "available" {
     values = ["availability-zone"]
   }
 }
+# resource "aws_eip" "nat-gateway" {
+#   domain   = "vpc"
+# }
+# resource "aws_nat_gateway" "example" {
+#   allocation_id = aws_eip.nat-gateway.id
+#   subnet_id     = module.vpc.private_subnets[0]
 
+#   tags = {
+#     Name = "t2v-transformers"
+#   }
+
+# }
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
   name   = "meeplemasters"

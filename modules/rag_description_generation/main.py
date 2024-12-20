@@ -2,10 +2,12 @@ import gc
 import json
 import os
 import sys
+import time
 
 import pandas as pd
 from config import CONFIGS
-from modules.rag_description_generation.ec2_weaviate import Ec2
+
+# from modules.rag_description_generation.ec2_weaviate import Ec2
 from modules.rag_description_generation.rag_dynamodb import DynamoDB
 from modules.rag_description_generation.rag_functions import get_single_game_entries
 from modules.rag_description_generation.rag_weaviate import WeaviateClient
@@ -23,6 +25,7 @@ class RagDescription(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     start_block: str
     end_block: str
+    num_completed_games: int = 0
     ip_address: str = None
     overall_stats: dict = {}
     game_ids: list = []
@@ -33,20 +36,21 @@ class RagDescription(BaseModel):
     def model_post_init(self, __context):
         self.start_block = int(self.start_block)
         self.end_block = int(self.end_block)
+        self.num_completed_games = self.start_block
 
-    def confirm_running_ec2_host(self):
-        ec2_instance = Ec2()
-        ec2_instance.validate_ready_weaviate_instance()
-        self.ip_address = ec2_instance.get_ip_address()
-        ec2_instance.copy_docker_compose_to_instance()
-        ec2_instance.start_docker()
+    # def confirm_running_ec2_host(self):
+    #     ec2_instance = Ec2()
+    #     ec2_instance.validate_ready_weaviate_instance()
+    #     self.ip_address = ec2_instance.get_ip_address()
+    #     ec2_instance.copy_docker_compose_to_instance()
+    #     ec2_instance.start_docker()
 
-        print(f"\nWeaviate instance running at {self.ip_address}")
+    #     print(f"\nWeaviate instance running at {self.ip_address}")
 
-    def stop_ec2_instance(self):
-        ec2_instance = Ec2()
-        self.ip_address = ec2_instance.get_ip_address()
-        ec2_instance.stop_instance()
+    # def stop_ec2_instance(self):
+    #     ec2_instance = Ec2()
+    #     self.ip_address = ec2_instance.get_ip_address()
+    #     ec2_instance.stop_instance()
 
     def compute_game_overall_stats(self, game_df):
         overall_mean = round(game_df["AvgRating"].describe()["mean"], 2)
@@ -143,19 +147,19 @@ class RagDescription(BaseModel):
                 game_id, summary=summary.generated
             )
             # print(f"\n{summary.generated}")
-            weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
+            # weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
             return
 
         print(f"Game {game_id} already processed")
 
     def rag_description_generation_chain(self):
-        self.confirm_running_ec2_host()
+        # self.confirm_running_ec2_host()
         game_df_reduced = self.load_reduced_game_df()
         all_games_df = self.merge_game_df_with_ratings_df(game_df_reduced)
         generate_prompt = self.load_prompt()
 
         weaviate_client = WeaviateClient(
-            ip_address=self.ip_address,
+            # ip_address=self.ip_address,
             collection_name=f"reviews_{self.start_block}_{self.end_block}",
         )
         weaviate_client.create_weaviate_collection()
@@ -163,10 +167,13 @@ class RagDescription(BaseModel):
         self.dynamodb_client = DynamoDB()
 
         for game_id in self.game_ids:
-            print(f"\nProcessing game {game_id}")
+            print(
+                f"\nProcessing game {game_id}\n{self.num_completed_games} of {self.end_block}"
+            )
             self.process_single_game(
                 weaviate_client, game_id, all_games_df, generate_prompt
             )
+            self.num_completed_games += 1
 
         weaviate_client.close_client()
 
@@ -177,6 +184,8 @@ if __name__ == "__main__":
     end_block = sys.argv[2]
 
     print(start_block, end_block)
+
+    # time.sleep(48000)
 
     rag_description = RagDescription(start_block=start_block, end_block=end_block)
     rag_description.rag_description_generation_chain()

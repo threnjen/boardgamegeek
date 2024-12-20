@@ -1,4 +1,4 @@
-name: DEV deployment to boardgamegeek game data cleaner
+name: Build and Push Weaviate VectorDB Image
 
 on:
   push:
@@ -7,19 +7,18 @@ on:
   pull_request:
     branches:
       - main
-      
+
 permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read  # This is required for actions/checkout
+  id-token: write
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -30,12 +29,11 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-          
-      - name: Build, tag, push image to AWS ECR dev_bgg_game_data_cleaner
+
+      - name: Build, tag, and push Weaviate image to AWS ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev_bgg_game_data_cleaner
+          ECR_REPOSITORY: weaviate_rag_server
         run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.weaviate_rag -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
-      

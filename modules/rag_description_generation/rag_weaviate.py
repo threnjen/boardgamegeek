@@ -10,28 +10,40 @@ from weaviate.util import generate_uuid5
 
 class WeaviateClient(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
-    ip_address: str
-    collection_name: str
+    # ip_address: str
+    collection_name: str = "None"
     weaviate_client: weaviate.client = None
     collection: weaviate.collections.Collection = None
 
     def model_post_init(self, __context):
-        self.weaviate_client = self.connect_weaviate_client_ec2()
+        # self.weaviate_client = self.connect_weaviate_client_ec2()
+        self.weaviate_client = self.connect_weaviate_client_docker()
         self.collection = self.weaviate_client.collections.get(self.collection_name)
 
-    def connect_weaviate_client_ec2(self) -> weaviate.client:
-        return weaviate.connect_to_custom(
-            http_host=self.ip_address,
-            http_port=8080,
-            http_secure=False,
-            grpc_host=self.ip_address,
+    def connect_weaviate_client_docker(self) -> weaviate.client:
+        client = weaviate.connect_to_local(
+            host="127.0.0.1",
+            port=8081,
             grpc_port=50051,
-            grpc_secure=False,
-            skip_init_checks=False,
             headers={
                 "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
             },
         )
+        return client
+
+    # def connect_weaviate_client_ec2(self) -> weaviate.client:
+    #     return weaviate.connect_to_custom(
+    #         http_host=self.ip_address,
+    #         http_port=8080,
+    #         http_secure=False,
+    #         grpc_host=self.ip_address,
+    #         grpc_port=50051,
+    #         grpc_secure=False,
+    #         skip_init_checks=False,
+    #         headers={
+    #             "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
+    #         },
+    #     )
 
     def prompt_replacement(
         self,
@@ -150,13 +162,3 @@ class WeaviateClient(BaseModel):
 
     def close_client(self):
         self.weaviate_client.close()
-
-
-def connect_weaviate_client_docker() -> weaviate.client:
-    client = weaviate.connect_to_local(
-        headers={
-            # "X-HuggingFace-Api-Key": os.environ["HUGGINGFACE_APIKEY"],
-            "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
-        }
-    )
-    return client

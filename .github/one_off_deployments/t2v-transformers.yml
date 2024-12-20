@@ -1,4 +1,4 @@
-name: DEV deployment to boardgamegeek users data cleaner
+name: Build and Push all-mpnet-base-v2 Transformers Image
 
 on:
   push:
@@ -7,19 +7,18 @@ on:
   pull_request:
     branches:
       - main
-      
+
 permissions:
-  id-token: write # This is required for requesting the JWT
-  contents: read  # This is required for actions/checkout
+  id-token: write
+  contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out code
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -30,12 +29,11 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-          
-      - name: Build, tag, push image to AWS ECR dev_bgg_users_data_cleaner
+
+      - name: Build, tag, and push Transformers image to AWS ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev_bgg_users_data_cleaner
+          ECR_REPOSITORY: t2v-transformers
         run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.users-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.t2v-transformers -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
-      
