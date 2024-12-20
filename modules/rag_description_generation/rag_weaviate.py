@@ -7,6 +7,8 @@ from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter
 from weaviate.util import generate_uuid5
 
+IS_LOCAL = True if os.environ.get("IS_LOCAL", "True").lower() == "true" else False
+
 
 class WeaviateClient(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -21,15 +23,23 @@ class WeaviateClient(BaseModel):
         self.collection = self.weaviate_client.collections.get(self.collection_name)
 
     def connect_weaviate_client_docker(self) -> weaviate.client:
-        client = weaviate.connect_to_local(
-            host="127.0.0.1",
+        if not IS_LOCAL:
+            client = weaviate.connect_to_local(
+                host="127.0.0.1",
+                port=8081,
+                grpc_port=50051,
+                headers={
+                    "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
+                },
+            )
+            return client
+
+        return weaviate.connect_to_local(
             port=8081,
-            grpc_port=50051,
             headers={
                 "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
             },
         )
-        return client
 
     # def connect_weaviate_client_ec2(self) -> weaviate.client:
     #     return weaviate.connect_to_custom(
@@ -137,12 +147,12 @@ class WeaviateClient(BaseModel):
 
         self.weaviate_client.collections.create(
             name=self.collection_name,
-            vectorizer_config=[
-                Configure.NamedVectors.text2vec_transformers(
-                    name="title_vector",
-                    source_properties=["title"],
-                )
-            ],
+            # vectorizer_config=[
+            #     Configure.NamedVectors.text2vec_transformers(
+            #         name="title_vector",
+            #         source_properties=["title"],
+            #     )
+            # ],
             generative_config=wvc.config.Configure.Generative.openai(
                 model="gpt-4o-mini"
             ),
@@ -150,6 +160,8 @@ class WeaviateClient(BaseModel):
                 wvc.config.Property(
                     name="review_text",
                     data_type=wvc.config.DataType.TEXT,
+                    skip_vectorization=True,
+                    vectorize_property_name=False,
                 ),
                 wvc.config.Property(
                     name="product_id",
