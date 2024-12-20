@@ -60,7 +60,7 @@ def lambda_handler(event, context):
 
     start_block = int(event.get("start_block", "0"))
     number_blocks = 10
-    total_entries = 5000
+    total_entries = 1000
     block_size = total_entries // number_blocks
 
     print(start_block, number_blocks, total_entries, block_size)
