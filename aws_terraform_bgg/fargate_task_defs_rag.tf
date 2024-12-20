@@ -1,3 +1,179 @@
+resource "aws_ecs_task_definition" "weaviate_rag_generation" {
+  family = var.rag_description_generation
+  
+
+  container_definitions = jsonencode([
+    {
+      name      = var.rag_description_generation,
+      image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.rag_description_generation}:latest"
+      cpu       = 0,
+      essential = true,
+      environment = [
+        {
+          name  = "ENVIRONMENT",
+          value = "prod"
+        },
+        {
+          name  = "IS_LOCAL",
+          value = "false"
+        }
+      ],
+      environmentFiles = [
+        {
+          value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env",
+          type  = "s3"
+        },
+        {
+          value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/weaviate.env",
+          type  = "s3"
+        }
+      ],
+      mountPoints = [],
+      volumesFrom = [],
+      ulimits     = [],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          "awslogs-group"         = "/ecs/${var.rag_description_generation}",
+          "awslogs-create-group"  = "true",
+          "awslogs-region"        = var.REGION,
+          "awslogs-stream-prefix" = "ecs"
+        },
+        secretOptions = []
+      },
+      systemControls = [],
+      dependsOn = [
+        {
+          containerName = var.weaviate_rag_server,
+          condition     = "START"
+        }
+      ]
+    },
+    {
+      name  = var.weaviate_rag_server,
+      image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.weaviate_rag_server}:latest"
+      cpu   = 0,
+      portMappings = [
+        {
+          containerPort = 8081,
+          hostPort      = 8081
+        },
+        {
+          containerPort = 50051,
+          hostPort      = 50051
+        },
+      ],
+      essential = true,
+      environment = [
+        {
+          name  = "ENVIRONMENT",
+          value = "prod"
+        },
+        {
+          name  = "IS_LOCAL",
+          value = "false"
+        },
+        {
+          name  = "TRANSFORMERS_INFERENCE_API"
+          value = "http://127.0.0.1:8080"
+        }
+      ],
+      environmentFiles = [
+        {
+          value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env",
+          type  = "s3"
+        },
+        {
+          value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/weaviate.env",
+          type  = "s3"
+        }
+      ],
+      command = [
+        "--host", "0.0.0.0",
+        "--port", "8081",
+        "--scheme", "http"
+      ],
+      mountPoints = [],
+      volumesFrom = [],
+      ulimits     = [],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          "awslogs-group"         = "/ecs/${var.weaviate_rag_server}",
+          "awslogs-create-group"  = "true",
+          "awslogs-region"        = var.REGION,
+          "awslogs-stream-prefix" = "ecs"
+        },
+        secretOptions = []
+      },
+      systemControls = [],
+      dependsOn = [
+        {
+          containerName = var.t2v-transformers,
+          condition     = "START"
+        }
+      ]
+    },
+    {
+      name      = var.t2v-transformers,
+      image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.t2v-transformers}:latest"
+      cpu       = 0,
+      essential = true,
+      environment = [
+        {
+          name  = "ENVIRONMENT",
+          value = "prod"
+        },
+        {
+          name  = "IS_LOCAL",
+          value = "false"
+        },
+        {
+          name  = "ENABLE_CUDA",
+          value = "0"
+      }],
+      mountPoints = [],
+      volumesFrom = [],
+      ulimits     = [],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          "awslogs-group"         = "/ecs/${var.t2v-transformers}",
+          "awslogs-create-group"  = "true",
+          "awslogs-region"        = var.REGION,
+          "awslogs-stream-prefix" = "ecs"
+        },
+        secretOptions = []
+      },
+      systemControls = [],
+      healthCheck = {
+        command     = ["CMD-SHELL", "curl -f http://127.0.0.1:8080/health || exit 1"],
+        interval    = 30,
+        retries     = 3,
+        startPeriod = 60,
+        timeout     = 5
+      }
+    },
+    
+    ],
+    
+  )
+
+  task_role_arn      = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateTaskRole"
+  execution_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateExecutionRole"
+
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+
+  cpu    = "2048"
+  memory = "8192"
+
+  runtime_platform {
+    cpu_architecture        = "X86_64"
+    operating_system_family = "LINUX"
+  }
+}
+
 resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
   family = "dev_${var.rag_description_generation}"
   
