@@ -3,52 +3,52 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
   
 
   container_definitions = jsonencode([
-    # {
-    #   name      = "dev_${var.rag_description_generation}",
-    #   image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.rag_description_generation}:latest"
-    #   cpu       = 0,
-    #   essential = true,
-    #   environment = [
-    #     {
-    #       name  = "ENVIRONMENT",
-    #       value = "prod"
-    #     },
-    #     {
-    #       name  = "IS_LOCAL",
-    #       value = "false"
-    #     }
-    #   ],
-    #   environmentFiles = [
-    #     {
-    #       value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env",
-    #       type  = "s3"
-    #     },
-    #     {
-    #       value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/weaviate.env",
-    #       type  = "s3"
-    #     }
-    #   ],
-    #   mountPoints = [],
-    #   volumesFrom = [],
-    #   ulimits     = [],
-    #   logConfiguration = {
-    #     logDriver = "awslogs",
-    #     options = {
-    #       "awslogs-group"         = "/ecs/dev_${var.rag_description_generation}",
-    #       "awslogs-create-group"  = "true",
-    #       "awslogs-region"        = var.REGION,
-    #       "awslogs-stream-prefix" = "ecs"
-    #     },
-    #     secretOptions = []
-    #   },
-    #   systemControls = [],
-    #   dependsOn = [
-    #     {
-    #       containerName = var.weaviate_rag_server,
-    #       condition     = "START"
-    #     }
-    #   ]
-    # },
+    {
+      name      = "dev_${var.rag_description_generation}",
+      image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.rag_description_generation}:latest"
+      cpu       = 0,
+      essential = true,
+      environment = [
+        {
+          name  = "ENVIRONMENT",
+          value = "prod"
+        },
+        {
+          name  = "IS_LOCAL",
+          value = "false"
+        }
+      ],
+      environmentFiles = [
+        {
+          value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env",
+          type  = "s3"
+        },
+        {
+          value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/weaviate.env",
+          type  = "s3"
+        }
+      ],
+      mountPoints = [],
+      volumesFrom = [],
+      ulimits     = [],
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          "awslogs-group"         = "/ecs/dev_${var.rag_description_generation}",
+          "awslogs-create-group"  = "true",
+          "awslogs-region"        = var.REGION,
+          "awslogs-stream-prefix" = "ecs"
+        },
+        secretOptions = []
+      },
+      systemControls = [],
+      dependsOn = [
+        {
+          containerName = var.weaviate_rag_server,
+          condition     = "START"
+        }
+      ]
+    },
     {
       name  = var.weaviate_rag_server,
       image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.weaviate_rag_server}:latest"
@@ -90,7 +90,7 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
       ],
       command = [
         "--host", "0.0.0.0",
-        "--port", "8080",
+        "--port", "8081",
         "--scheme", "http"
       ],
       mountPoints = [],
