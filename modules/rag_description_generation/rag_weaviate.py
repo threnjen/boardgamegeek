@@ -22,9 +22,12 @@ class WeaviateClient(BaseModel):
 
     def connect_weaviate_client_docker(self) -> weaviate.client:
         client = weaviate.connect_to_local(
+            host="127.0.0.1",
+            port=8081,
+            grpc_port=50051,
             headers={
                 "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
-            }
+            },
         )
         return client
 

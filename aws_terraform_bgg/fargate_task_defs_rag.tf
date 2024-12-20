@@ -1,61 +1,62 @@
 resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
   family = "dev_${var.rag_description_generation}"
+  
 
   container_definitions = jsonencode([
-    {
-      name      = "dev_${var.rag_description_generation}",
-      image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.rag_description_generation}:latest"
-      cpu       = 0,
-      essential = true,
-      environment = [
-        {
-          name  = "ENVIRONMENT",
-          value = "prod"
-        },
-        {
-          name  = "IS_LOCAL",
-          value = "false"
-        }
-      ],
-      environmentFiles = [
-        {
-          value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env",
-          type  = "s3"
-        },
-        {
-          value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/weaviate.env",
-          type  = "s3"
-        }
-      ],
-      mountPoints = [],
-      volumesFrom = [],
-      ulimits     = [],
-      logConfiguration = {
-        logDriver = "awslogs",
-        options = {
-          "awslogs-group"         = "/ecs/dev_${var.rag_description_generation}",
-          "awslogs-create-group"  = "true",
-          "awslogs-region"        = var.REGION,
-          "awslogs-stream-prefix" = "ecs"
-        },
-        secretOptions = []
-      },
-      systemControls = [],
-      dependsOn = [
-        {
-          containerName = var.weaviate_rag_server,
-          condition     = "START"
-        }
-      ]
-    },
+    # {
+    #   name      = "dev_${var.rag_description_generation}",
+    #   image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.rag_description_generation}:latest"
+    #   cpu       = 0,
+    #   essential = true,
+    #   environment = [
+    #     {
+    #       name  = "ENVIRONMENT",
+    #       value = "prod"
+    #     },
+    #     {
+    #       name  = "IS_LOCAL",
+    #       value = "false"
+    #     }
+    #   ],
+    #   environmentFiles = [
+    #     {
+    #       value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env",
+    #       type  = "s3"
+    #     },
+    #     {
+    #       value = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/weaviate.env",
+    #       type  = "s3"
+    #     }
+    #   ],
+    #   mountPoints = [],
+    #   volumesFrom = [],
+    #   ulimits     = [],
+    #   logConfiguration = {
+    #     logDriver = "awslogs",
+    #     options = {
+    #       "awslogs-group"         = "/ecs/dev_${var.rag_description_generation}",
+    #       "awslogs-create-group"  = "true",
+    #       "awslogs-region"        = var.REGION,
+    #       "awslogs-stream-prefix" = "ecs"
+    #     },
+    #     secretOptions = []
+    #   },
+    #   systemControls = [],
+    #   dependsOn = [
+    #     {
+    #       containerName = var.weaviate_rag_server,
+    #       condition     = "START"
+    #     }
+    #   ]
+    # },
     {
       name  = var.weaviate_rag_server,
       image = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.weaviate_rag_server}:latest"
       cpu   = 0,
       portMappings = [
         {
-          containerPort = 8080,
-          hostPort      = 8080
+          containerPort = 8081,
+          hostPort      = 8081
         },
         {
           containerPort = 50051,
@@ -74,7 +75,7 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
         },
         {
           name  = "TRANSFORMERS_INFERENCE_API"
-          value = "http://localhost:8080"
+          value = "http://127.0.0.1:8080"
         }
       ],
       environmentFiles = [
@@ -146,17 +147,17 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
       },
       systemControls = [],
       healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"],
+        command     = ["CMD-SHELL", "curl -f http://127.0.0.1:8080/health || exit 1"],
         interval    = 30,
         retries     = 3,
         startPeriod = 60,
         timeout     = 5
       }
     },
-    ]
+    
+    ],
+    
   )
-
-
 
   task_role_arn      = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateTaskRole"
   execution_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateExecutionRole"

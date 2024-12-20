@@ -75,7 +75,10 @@ def lambda_handler(event, context):
     if ENVIRONMENT != "prod":
         blocks = [(10, 20)]
 
-    security_groups = terraform_state_file["outputs"]["shared_resources_sg"]["value"]
+    security_groups = [
+        terraform_state_file["outputs"]["shared_resources_sg"]["value"],
+        # terraform_state_file["outputs"]["sg_ec2_weaviate_port_access"]["value"],
+    ]
 
     print(security_groups)
 
@@ -97,7 +100,7 @@ def lambda_handler(event, context):
             networkConfiguration={
                 "awsvpcConfiguration": {
                     "subnets": [subnets],
-                    "securityGroups": [security_groups],
+                    "securityGroups": security_groups,
                     "assignPublicIp": "ENABLED",
                 },
             },
