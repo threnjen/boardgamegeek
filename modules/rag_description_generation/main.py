@@ -128,27 +128,25 @@ class RagDescription(BaseModel):
         all_games_df: pd.DataFrame,
         generate_prompt: str,
     ):
-        if not self.dynamodb_client.check_dynamo_db_key(game_id=game_id):
-            df, game_name, game_mean = get_single_game_entries(
-                df=all_games_df, game_id=game_id, sample_pct=0.05
-            )
-            reviews = df["combined_review"].to_list()
-            weaviate_client.add_collection_batch(game_id=game_id, reviews=reviews)
-            current_prompt = weaviate_client.prompt_replacement(
-                current_prompt=generate_prompt,
-                overall_stats=self.overall_stats,
-                game_name=game_name,
-                game_mean=game_mean,
-            )
-            summary = weaviate_client.generate_aggregated_review(
-                game_id, current_prompt
-            )
-            self.dynamodb_client.divide_and_process_generated_summary(
-                game_id, summary=summary.generated
-            )
-            # print(f"\n{summary.generated}")
-            # weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
-            return
+        # if not self.dynamodb_client.check_dynamo_db_key(game_id=game_id):
+        df, game_name, game_mean = get_single_game_entries(
+            df=all_games_df, game_id=game_id, sample_pct=0.05
+        )
+        reviews = df["combined_review"].to_list()
+        weaviate_client.add_collection_batch(game_id=game_id, reviews=reviews)
+        current_prompt = weaviate_client.prompt_replacement(
+            current_prompt=generate_prompt,
+            overall_stats=self.overall_stats,
+            game_name=game_name,
+            game_mean=game_mean,
+        )
+        summary = weaviate_client.generate_aggregated_review(game_id, current_prompt)
+        self.dynamodb_client.divide_and_process_generated_summary(
+            game_id, summary=summary.generated
+        )
+        # print(f"\n{summary.generated}")
+        # weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
+        return
 
         print(f"Game {game_id} already processed")
 

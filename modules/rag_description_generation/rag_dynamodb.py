@@ -26,7 +26,7 @@ class DynamoDB(BaseModel):
                 "generated_pros": {"S": pros},
                 "generated_cons": {"S": cons},
             },
-            ConditionExpression="attribute_not_exists(game_id)",
+            # ConditionExpression="attribute_not_exists(game_id)",
         )
         print(f"Game {game_id} processed and added to DynamoDB")
 

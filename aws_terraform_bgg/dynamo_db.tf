@@ -9,21 +9,6 @@ resource "aws_dynamodb_table" "game_generated_descriptions-dynamodb-table" {
     type = "S"
   }
 
-  #   attribute {
-  #     name = "game_description"
-  #     type = "S"
-  #   }
-
-  #   attribute {
-  #     name = "game_pros"
-  #     type = "S"
-  #   }
-
-  #   attribute {
-  #     name = "game_cons"
-  #     type = "S"
-  #   }
-
   tags = {
     Name        = "game_generated_descriptions"
     Environment = "production"
