@@ -147,7 +147,7 @@ class RagDescription(BaseModel):
                 game_id, summary=summary.generated
             )
             # print(f"\n{summary.generated}")
-            weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
+            # weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
             return
 
         print(f"Game {game_id} already processed")
