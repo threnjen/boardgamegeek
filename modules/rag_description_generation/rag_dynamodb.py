@@ -5,7 +5,7 @@ from datetime import datetime
 
 class DynamoDB(BaseModel):
     dynamodb_client: boto3.client = boto3.client("dynamodb")
-    today_timestring = datetime.now().strftime("%Y%m%d")
+    today_timestring: str = datetime.now().strftime("%Y%m%d")
 
     def divide_and_process_generated_summary(self, game_id: str, summary: str) -> None:
         summary = summary.replace("**", "")
