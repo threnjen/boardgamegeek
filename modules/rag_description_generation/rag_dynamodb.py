@@ -43,7 +43,7 @@ class DynamoDB(BaseModel):
             item = self.dynamodb_client.get_item(
                 TableName="game_generated_descriptions", Key={"game_id": {"S": game_id}}
             )["Item"]
-            db_timestamp_str = item.get("timestamp", {"S": default_timestamp})["S"]
+            db_timestamp_str = item.get("date_updated", {"S": default_timestamp})["S"]
             db_timestamp = datetime.strptime(db_timestamp_str, "%Y%m%d")
 
             # determine if datetime.now() is more than three days after the db_timestamp

@@ -73,7 +73,7 @@ def lambda_handler(event, context):
     print(blocks)
 
     if ENVIRONMENT != "prod":
-        blocks = [(10, 20)]
+        blocks = [(1000, 1010)]
 
     security_groups = [
         terraform_state_file["outputs"]["shared_resources_sg"]["value"],
