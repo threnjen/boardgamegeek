@@ -1,9 +1,11 @@
 import boto3
 from pydantic import BaseModel
+from datetime import datetime
 
 
 class DynamoDB(BaseModel):
     dynamodb_client: boto3.client = boto3.client("dynamodb")
+    today_timestring = datetime.now().strftime("%Y%m%d")
 
     def divide_and_process_generated_summary(self, game_id: str, summary: str) -> None:
         summary = summary.replace("**", "")
@@ -25,17 +27,27 @@ class DynamoDB(BaseModel):
                 "generated_description": {"S": description},
                 "generated_pros": {"S": pros},
                 "generated_cons": {"S": cons},
+                "date_updated": {"S": self.today_timestring},
             },
             # ConditionExpression="attribute_not_exists(game_id)",
         )
         print(f"Game {game_id} processed and added to DynamoDB")
 
     def check_dynamo_db_key(self, game_id: str) -> bool:
+
+        # make a default timestamp that is the standard 1970 01 01 default
+        default_timestamp = "19700101"
+
         try:
-            self.dynamodb_client.get_item(
+            item = self.dynamodb_client.get_item(
                 TableName="game_generated_descriptions", Key={"game_id": {"S": game_id}}
             )["Item"]
-            print(f"Game {game_id} already exists in DynamoDB")
-            return True
+            db_timestamp_str = item.get("timestamp", {"S": default_timestamp})["S"]
+            db_timestamp = datetime.strptime(db_timestamp_str, "%Y%m%d")
+
+            # determine if datetime.now() is more than three days after the db_timestamp
+            if (datetime.now() - db_timestamp).days < 3:
+                return True
+            return False
         except:
             return False
