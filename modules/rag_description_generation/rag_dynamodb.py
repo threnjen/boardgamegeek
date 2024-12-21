@@ -37,6 +37,7 @@ class DynamoDB(BaseModel):
 
         # make a default timestamp that is the standard 1970 01 01 default
         default_timestamp = "19700101"
+        days_since_last_process = 3
 
         try:
             item = self.dynamodb_client.get_item(
@@ -46,8 +47,15 @@ class DynamoDB(BaseModel):
             db_timestamp = datetime.strptime(db_timestamp_str, "%Y%m%d")
 
             # determine if datetime.now() is more than three days after the db_timestamp
-            if (datetime.now() - db_timestamp).days < 3:
+            if (datetime.now() - db_timestamp).days < days_since_last_process:
+                print(
+                    f"Game {game_id} already processed within last {days_since_last_process} days"
+                )
                 return True
+            print(
+                f"Game {game_id} found but not processed within last {days_since_last_process} days"
+            )
             return False
         except:
+            print(f"Game {game_id} not found in DynamoDB")
             return False
