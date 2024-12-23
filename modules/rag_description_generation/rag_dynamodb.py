@@ -17,8 +17,14 @@ class DynamoDB(BaseModel):
             .split("\n\n### Cons\n")[0]
             .replace("\n", "")
             .replace("-", "")
+            .strip()
         )
-        cons = summary.split("\n\n### Cons\n")[-1].replace("\n", "").replace("-", "")
+        cons = (
+            summary.split("\n\n### Cons\n")[-1]
+            .replace("\n", "")
+            .replace("-", "")
+            .strip()
+        )
 
         response = self.dynamodb_client.put_item(
             TableName="game_generated_descriptions",

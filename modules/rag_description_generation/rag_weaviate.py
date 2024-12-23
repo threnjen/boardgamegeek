@@ -147,12 +147,12 @@ class WeaviateClient(BaseModel):
 
         self.weaviate_client.collections.create(
             name=self.collection_name,
-            # vectorizer_config=[
-            #     Configure.NamedVectors.text2vec_transformers(
-            #         name="title_vector",
-            #         source_properties=["title"],
-            #     )
-            # ],
+            vectorizer_config=[
+                Configure.NamedVectors.text2vec_transformers(
+                    name="title_vector",
+                    source_properties=["title"],
+                )
+            ],
             generative_config=wvc.config.Configure.Generative.openai(
                 model="gpt-4o-mini"
             ),

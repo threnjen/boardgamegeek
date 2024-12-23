@@ -24,7 +24,7 @@ COPY modules/rag_description_generation modules/rag_description_generation
 COPY utils utils
 COPY modules/rag_description_generation/Pipfile* .
 COPY config* .
-COPY modules/rag_description_generation/nltk_data root/nltk_data
+COPY nltk_data root/nltk_data
 
 # Install dependencies with pipenv
 RUN pipenv sync
