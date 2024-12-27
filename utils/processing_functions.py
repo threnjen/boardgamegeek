@@ -30,6 +30,16 @@ import re
 # from nltk.tokenize import word_tokenize
 
 
+def explode_columnar_df(df: pd.DataFrame):
+    """
+    Explodes a columnar dataframe into a row based dataframe
+    """
+    explode_column = df.columns[1]
+    df = pd.crosstab(df["BGGId"], df[explode_column]).reset_index()
+    df.index.name = None
+    return df
+
+
 def get_s3_keys_based_on_env(directory: str):
     directory = f"s3://{S3_SCRAPER_BUCKET}/{WORKING_DIR}{directory}"
     return S3FileHandler().list_files(directory)

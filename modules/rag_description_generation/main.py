@@ -10,7 +10,7 @@ from config import CONFIGS
 # from modules.rag_description_generation.ec2_weaviate import Ec2
 from modules.rag_description_generation.rag_dynamodb import DynamoDB
 from modules.rag_description_generation.rag_functions import get_single_game_entries
-from modules.rag_description_generation.rag_weaviate import WeaviateClient
+from utils.weaviate_client import WeaviateClient
 from pydantic import BaseModel, ConfigDict
 from utils.processing_functions import load_file_local_first
 
@@ -133,7 +133,9 @@ class RagDescription(BaseModel):
                 df=all_games_df, game_id=game_id, sample_pct=0.05
             )
             reviews = df["combined_review"].to_list()
-            weaviate_client.add_collection_batch(game_id=game_id, reviews=reviews)
+            weaviate_client.add_reviews_collection_batch(
+                game_id=game_id, reviews=reviews
+            )
             current_prompt = weaviate_client.prompt_replacement(
                 current_prompt=generate_prompt,
                 overall_stats=self.overall_stats,
@@ -162,7 +164,7 @@ class RagDescription(BaseModel):
             # ip_address=self.ip_address,
             collection_name=f"reviews_{self.start_block}_{self.end_block}",
         )
-        weaviate_client.create_weaviate_collection()
+        weaviate_client.create_rag_collection()
 
         self.dynamodb_client = DynamoDB()
 

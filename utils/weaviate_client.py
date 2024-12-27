@@ -1,10 +1,10 @@
 import os
-
+import pandas as pd
 import weaviate
 import weaviate.classes as wvc
 from pydantic import BaseModel, ConfigDict
 from weaviate.classes.config import Configure
-from weaviate.classes.query import Filter
+from weaviate.classes.query import Filter, MetadataQuery
 from weaviate.util import generate_uuid5
 
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "True").lower() == "true" else False
@@ -18,9 +18,7 @@ class WeaviateClient(BaseModel):
     collection: weaviate.collections.Collection = None
 
     def model_post_init(self, __context):
-        # self.weaviate_client = self.connect_weaviate_client_ec2()
         self.weaviate_client = self.connect_weaviate_client_docker()
-        self.collection = self.weaviate_client.collections.get(self.collection_name)
 
     def connect_weaviate_client_docker(self) -> weaviate.client:
         if not IS_LOCAL:
@@ -83,7 +81,51 @@ class WeaviateClient(BaseModel):
         )
         return current_prompt
 
-    def add_collection_batch(
+    def find_near_objects(self, collection_name, uuid, limit: int = 20):
+        self.collection = self.weaviate_client.collections.get(collection_name)
+        response = self.collection.query.near_object(
+            near_object=uuid,
+            limit=limit,
+            return_metadata=MetadataQuery(distance=True),
+        )
+        return response.objects
+
+    def add_bgg_collection_batch(
+        self,
+        df: pd.DataFrame,
+        collection_name: str,
+        use_about=True,
+        attributes: list = [],
+    ) -> None:
+
+        self.collection = self.weaviate_client.collections.get(collection_name)
+        uuids = []
+
+        with self.collection.batch.dynamic() as batch:
+
+            for index, item in df.iterrows():
+
+                game_object = {
+                    "bggid": str(item["bggid"]),
+                    "name": str(item["name"]).lower(),
+                }
+                if use_about:
+                    game_object.update({"about": str(item["about"]).lower()})
+                if len(attributes):
+                    game_object.update({x: float(item[x]) for x in attributes})
+
+                uuid = generate_uuid5(game_object)
+                uuids.append(uuid)
+
+                if self.collection.data.exists(uuid):
+                    continue
+                else:
+                    batch.add_object(properties=game_object, uuid=uuid)
+
+        df["UUID"] = uuids
+        return df
+
+    def add_reviews_collection_batch(
         self,
         game_id: str,
         reviews: list[str],
@@ -139,7 +181,7 @@ class WeaviateClient(BaseModel):
         )
         return summary
 
-    def create_weaviate_collection(self):
+    def create_rag_collection(self):
 
         if self.weaviate_client.collections.exists(self.collection_name):
             print("Collection already exists for this block")
@@ -170,6 +212,57 @@ class WeaviateClient(BaseModel):
                     vectorize_property_name=False,
                 ),
             ],
+        )
+
+    def create_bgg_collection(
+        self, collection_name: str, reset=True, use_about=True, attributes: list = []
+    ) -> None:
+
+        if self.weaviate_client.collections.exists(collection_name):
+            print("Collection already exists for this block")
+            if reset:
+                self.weaviate_client.collections.delete(collection_name)
+                print("Deleted and recreating collection")
+            return
+
+        build_properties = [
+            wvc.config.Property(
+                name="bggid",
+                data_type=wvc.config.DataType.TEXT,
+                skip_vectorization=True,
+                vectorize_property_name=False,
+            ),
+            wvc.config.Property(
+                name="name",
+                data_type=wvc.config.DataType.TEXT,
+                skip_vectorization=True,
+                vectorize_property_name=False,
+            ),
+        ]
+        if use_about:
+            build_properties.append(
+                wvc.config.Property(name="about", data_type=wvc.config.DataType.TEXT)
+            )
+        if len(attributes):
+            build_properties += [
+                wvc.config.Property(
+                    name=x,
+                    data_type=wvc.config.DataType.NUMBER,
+                    vectorize_property_name=False,
+                    skip_vectorization=True,
+                )
+                for x in attributes
+            ]
+
+        self.weaviate_client.collections.create(
+            name=collection_name,
+            vectorizer_config=[
+                Configure.NamedVectors.text2vec_transformers(
+                    name="title_vector",
+                    source_properties=["title"],
+                )
+            ],
+            properties=build_properties,
         )
 
     def close_client(self):

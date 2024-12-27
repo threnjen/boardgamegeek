@@ -70,7 +70,7 @@ class WeaviateClient(BaseModel):
         )
         return response.objects
 
-    def create_weaviate_collection(self):
+    def create_rag_collection(self):
 
         if self.weaviate_client.collections.exists(self.collection_name):
             print("Collection already exists for this block")
@@ -144,7 +144,7 @@ class WeaviateClient(BaseModel):
     #     )
     #     return summary
 
-    # def add_collection_batch(
+    # def add_reviews_collection_batch(
     #     self,
     #     game_id: str,
     #     reviews: list[str],
