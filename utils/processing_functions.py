@@ -35,8 +35,7 @@ def explode_columnar_df(df: pd.DataFrame):
     Explodes a columnar dataframe into a row based dataframe
     """
     explode_column = df.columns[1]
-    df = pd.crosstab(df["BGGId"], df[explode_column]).reset_index()
-    df.index.name = None
+    df = pd.crosstab(df["BGGId"], df[explode_column])
     return df
 
 
