@@ -179,7 +179,8 @@ class WeaviateClient(BaseModel):
         self,
         collection_name: str,
         reset: bool = True,
-        use_about: bool = True,
+        use_about: bool = False,
+        use_description: bool = False,
         attributes: list = [],
     ) -> None:
 
@@ -205,6 +206,12 @@ class WeaviateClient(BaseModel):
                         name="about", data_type=wvc.config.DataType.TEXT
                     )
                 )
+            if use_description:
+                build_properties.append(
+                    wvc.config.Property(
+                        name="description", data_type=wvc.config.DataType.TEXT
+                    )
+                )
             if len(attributes):
                 build_properties += [
                     wvc.config.Property(
@@ -225,7 +232,8 @@ class WeaviateClient(BaseModel):
         self,
         df: pd.DataFrame,
         collection_name: str,
-        use_about=True,
+        use_about=False,
+        use_description=False,
         attributes: list = [],
     ) -> None:
 
@@ -242,16 +250,21 @@ class WeaviateClient(BaseModel):
                 }
                 if use_about:
                     game_object.update({"about": str(item["about"]).lower()})
+                if use_description:
+                    game_object.update(
+                        {"description": str(item["description"]).lower()}
+                    )
+
                 if len(attributes):
                     game_object.update({x: float(item[x]) for x in attributes})
 
                 uuid = generate_uuid5(game_object)
                 uuids.append(uuid)
 
-                # if collection.data.exists(uuid):
-                #     continue
-                # else:
-                batch.add_object(properties=game_object, uuid=uuid)
+                if collection.data.exists(uuid):
+                    continue
+                else:
+                    batch.add_object(properties=game_object, uuid=uuid)
 
         df["UUID"] = uuids
         return df
