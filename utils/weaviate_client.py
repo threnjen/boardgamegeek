@@ -193,12 +193,12 @@ class WeaviateClient(BaseModel):
                     skip_vectorization=True,
                     vectorize_property_name=False,
                 ),
-                wvc.config.Property(
-                    name="name",
-                    data_type=wvc.config.DataType.TEXT,
-                    skip_vectorization=True,
-                    vectorize_property_name=False,
-                ),
+                # wvc.config.Property(
+                #     name="name",
+                #     data_type=wvc.config.DataType.TEXT,
+                #     skip_vectorization=True,
+                #     vectorize_property_name=False,
+                # ),
             ]
             if use_about:
                 build_properties.append(
@@ -246,7 +246,7 @@ class WeaviateClient(BaseModel):
 
                 game_object = {
                     "bggid": str(item["bggid"]),
-                    "name": str(item["name"]).lower(),
+                    # "name": str(item["name"]).lower(),
                 }
                 if use_about:
                     game_object.update({"about": str(item["about"]).lower()})
