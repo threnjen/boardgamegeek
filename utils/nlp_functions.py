@@ -12,6 +12,11 @@ def filter_stopwords(text: str) -> str:
     return " ".join(filtered_sentence)
 
 
+def strip_special_chars_and_lower(text: str) -> str:
+    text = re.sub(r"[^\w\s.]", "", text)
+    return text.strip().lower()
+
+
 def replace_from_replacement_dict(text: str, replace_dict: dict) -> str:
     for k, v in replace_dict.items():
         if v != "PLACEHOLDER":
@@ -50,6 +55,7 @@ def clean_simplify_major_categories(text, category_dict: dict, strip_list: list)
 def clean_field_to_integral_components(row):
     row = initial_components_processing(row)
     components = [x.split(". ")[-1] for x in row.split(":")][:-1]
+    # components = [initial_components_processing(x) for x in components]
     components = [
         re.sub(r"[^\w\s]", "", x).replace("  ", " ").replace("''", "").strip()
         for x in components
