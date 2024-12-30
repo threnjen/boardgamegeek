@@ -16,18 +16,7 @@ WORKING_DIR = (
     CONFIGS["prod_directory"] if ENVIRONMENT == "prod" else CONFIGS["dev_directory"]
 )
 
-# from statistics import mean
-
-# # NLP tools
-# import spacy
-
-
-# nlp = spacy.load("en_core_web_sm")
 import re
-
-# import nltk
-# from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-# from nltk.tokenize import word_tokenize
 
 
 def explode_columnar_df(df: pd.DataFrame):
