@@ -192,7 +192,7 @@ class SecondaryDataCleaner:
             [x for x in mechanics.columns if "legacy" in x.lower()]
         ].columns.to_list()
 
-        compacting_categories = {
+        compacting_mechanics = {
             "Auction or Bidding": auction_list,
             "Drafting": drafting,
             "Worker Placement": worker_placement,
@@ -200,10 +200,10 @@ class SecondaryDataCleaner:
             "Legacy Game": legacy_game,
         }
 
-        for category in compacting_categories:
-            for item in compacting_categories[category]:
-                mechanics.loc[mechanics[item] == 1, category] = 1
-                if item != category:
+        for mechanic in compacting_mechanics:
+            for item in compacting_mechanics[mechanic]:
+                mechanics.loc[mechanics[item] == 1, mechanic] = 1
+                if item != mechanic:
                     mechanics = mechanics.drop([item], axis=1)
 
         turn_order_list = mechanics[
