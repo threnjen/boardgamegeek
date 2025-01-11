@@ -13,6 +13,7 @@ from utils.processing_functions import (
     load_file_local_first,
     save_file_local_first,
     save_to_aws_glue,
+    save_dfs_to_disk_or_s3,
 )
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
@@ -34,14 +35,16 @@ class DirtyDataExtractor:
             file_list_to_process
         )
         users_df = self._create_table_from_data(all_ratings_with_dates)
-        self._save_dfs_to_disk_or_s3(
-            directory="dirty_dfs_directory", table_name="user_data", df=users_df
+        save_dfs_to_disk_or_s3(
+            df=users_df,
+            table_name="user_data",
+            path=USER_CONFIGS["dirty_dfs_directory"],
         )
         merged_df = self.merge_with_other_ratings_file()
-        self._save_dfs_to_disk_or_s3(
-            directory="clean_dfs_directory",
-            table_name="complete_user_ratings",
+        save_dfs_to_disk_or_s3(
             df=merged_df,
+            table_name="complete_user_ratings",
+            path=USER_CONFIGS["clean_dfs_directory"],
         )
 
     def _get_file_list(self) -> list[str]:
@@ -147,35 +150,6 @@ class DirtyDataExtractor:
         )
 
         return merged_df
-
-    def _save_dfs_to_disk_or_s3(self, directory, table_name, df: dict[pd.DataFrame]):
-        """Save all files as pkl files and csv files"""
-
-        print(f"\nSaving ratings data to disk and uploading to S3")
-
-        # save and load as csv to properly infer data types
-        save_file_local_first(
-            path=USER_CONFIGS[directory],
-            file_name=f"{table_name}.csv",
-            data=df,
-        )
-
-        df = load_file_local_first(
-            path=USER_CONFIGS[directory], file_name=f"{table_name}.csv"
-        )
-
-        # save completed dataframes
-        save_file_local_first(
-            path=USER_CONFIGS[directory],
-            file_name=f"{table_name}.pkl",
-            data=df,
-        )
-        save_file_local_first(
-            path=USER_CONFIGS[directory],
-            file_name=f"{table_name}.csv",
-            data=df,
-        )
-        save_to_aws_glue(data=df, table=f"{table_name}")
 
 
 if __name__ == "__main__":

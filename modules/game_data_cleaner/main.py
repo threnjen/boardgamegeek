@@ -15,6 +15,7 @@ from utils.processing_functions import (
     load_file_local_first,
     save_file_local_first,
     save_to_aws_glue,
+    save_dfs_to_disk_or_s3,
 )
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
@@ -153,19 +154,6 @@ class DirtyDataExtractor:
         del raw_storage
         return dirty_storage
 
-    def save_file_set(self, data, table):
-        save_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"],
-            file_name=f"{table}_dirty.pkl",
-            data=data,
-        )
-        save_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"],
-            file_name=f"{table}_dirty.csv",
-            data=data,
-        )
-        save_to_aws_glue(data=data, table=f"{table}_dirty")
-
     def _save_dfs_to_disk_or_s3(self, dirty_storage: dict[pd.DataFrame]):
         """Save all files as pkl files. Save to local drive in ENVIRONMENT==env, or
         copy pkl to s3 if ENVIRONMENT==prod"""
@@ -174,21 +162,11 @@ class DirtyDataExtractor:
 
             print(f"Saving {table_name} to disk and uploading to S3")
 
-            print(table.dtypes)
-
-            save_file_local_first(
+            save_dfs_to_disk_or_s3(
+                df=table,
+                table_name=table_name,
                 path=GAME_CONFIGS["dirty_dfs_directory"],
-                file_name=f"{table_name}.csv",
-                data=table,
             )
-
-            table = load_file_local_first(
-                path=GAME_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
-            )
-
-            print(table.dtypes)
-
-            self.save_file_set(data=table, table=table_name)
 
             del table
             gc.collect()
