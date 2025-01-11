@@ -17,7 +17,9 @@ locals {
     module.rag_description_generation_ecr.ecr_repository_name,
     module.dev_rag_description_generation_ecr.ecr_repository_name,
     module.weaviate_rag_server_ecr.ecr_repository_name,
-    module.t2v-transformers_ecr.ecr_repository_name
+    module.t2v-transformers_ecr.ecr_repository_name,
+    module.ratings_embedder.ecr_repository_name,
+    module.dev_ratings_embedder.ecr_repository_name,
   ]
 }
 
@@ -34,6 +36,16 @@ module "weaviate_rag_server_ecr" {
 module "t2v-transformers_ecr" {
   source              = "./modules/ecr"
   ecr_repository_name = "t2v-transformers"
+}
+
+module "ratings_embedder" {
+  source              = "./modules/ecr"
+  ecr_repository_name = "ratings_embedder"
+}
+
+module "dev_ratings_embedder" {
+  source              = "./modules/ecr"
+  ecr_repository_name = "dev_ratings_embedder"
 }
 
 module "rag_description_generation_ecr" {

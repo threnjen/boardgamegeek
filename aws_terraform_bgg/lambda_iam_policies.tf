@@ -190,6 +190,29 @@ module "trigger_bgg_generate_ratings_urls_lambda" {
   account_id    = data.aws_caller_identity.current.account_id
 }
 
+module "bgg_ratings_embedder_fargate_trigger_role" {
+  source    = "./modules/iam_lambda_roles"
+  role_name = "bgg_ratings_embedder_fargate_trigger_role"
+}
+
+resource "aws_iam_role_policy_attachment" "bgg_ratings_embedder_describe_attach" {
+  role       = module.bgg_ratings_embedder_fargate_trigger_role.role_name
+  policy_arn = module.bgg_ratings_embedder_describe_task_def_policy.lambda_ecs_trigger_arn
+}
+
+resource "aws_iam_role_policy_attachment" "bgg_ratings_embedder_s3_attach" {
+  role       = module.bgg_ratings_embedder_fargate_trigger_role.role_name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
+}
+
+module "bgg_ratings_embedder_describe_task_def_policy" {
+  source     = "./modules/lambda_ecs_trigger_policies"
+  name       = "${var.bgg_ratings_embedder}_lambda_ecs_trigger"
+  task_name  = var.bgg_ratings_embedder
+  region     = var.REGION
+  account_id = data.aws_caller_identity.current.account_id
+}
+
 resource "aws_iam_policy" "lambda_direct_permissions" {
   name        = "lambda_run_permissions"
   description = "Policy to allow running of the Lambda functions"

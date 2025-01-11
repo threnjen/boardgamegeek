@@ -1,6 +1,6 @@
 resource "aws_ecs_task_definition" "weaviate_rag_generation" {
   family = var.rag_description_generation
-  
+
 
   container_definitions = jsonencode([
     {
@@ -154,9 +154,9 @@ resource "aws_ecs_task_definition" "weaviate_rag_generation" {
         timeout     = 5
       }
     },
-    
+
     ],
-    
+
   )
 
   task_role_arn      = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateTaskRole"
@@ -176,7 +176,7 @@ resource "aws_ecs_task_definition" "weaviate_rag_generation" {
 
 resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
   family = "dev_${var.rag_description_generation}"
-  
+
 
   container_definitions = jsonencode([
     {
@@ -330,9 +330,9 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
         timeout     = 5
       }
     },
-    
+
     ],
-    
+
   )
 
   task_role_arn      = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.rag_description_generation}_FargateTaskRole"

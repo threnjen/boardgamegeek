@@ -41,6 +41,12 @@ variable "bgg_users_data_cleaner" {
   default     = "bgg_users_data_cleaner"
 }
 
+variable "bgg_ratings_embedder" {
+  description = "The name of the ECS task definition for the bgg_ratings_embedder"
+  type        = string
+  default     = "bgg_ratings_embedder"
+}
+
 variable "boardgamegeek_orchestrator" {
   description = "The name of the ECS task definition for the boardgamegeek_orchestrator"
   type        = string
