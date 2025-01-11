@@ -91,9 +91,9 @@ class RagDescription(BaseModel):
         return game_df_reduced
 
     def merge_game_df_with_ratings_df(self, game_df_reduced):
-        print(f"\nLoading user ratings from {RATINGS_CONFIGS['dirty_dfs_directory']}")
+        print(f"\nLoading user ratings from {RATINGS_CONFIGS['clean_dfs_directory']}")
         ratings_df = load_file_local_first(
-            path=RATINGS_CONFIGS["ratings_dfs_clean"],
+            path=RATINGS_CONFIGS["clean_dfs_directory"],
             file_name="embeddings.pkl",
         )
         ratings_df = ratings_df[["BGGId", "rating", "embedding"]]
