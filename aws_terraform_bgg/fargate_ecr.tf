@@ -40,12 +40,12 @@ module "t2v-transformers_ecr" {
 
 module "ratings_embedder" {
   source              = "./modules/ecr"
-  ecr_repository_name = "ratings_embedder"
+  ecr_repository_name = "bgg_ratings_embedder"
 }
 
 module "dev_ratings_embedder" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_ratings_embedder"
+  ecr_repository_name = "dev_bgg_ratings_embedder"
 }
 
 module "rag_description_generation_ecr" {

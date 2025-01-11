@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import weaviate
 import weaviate.classes as wvc
+import numpy as np
 from pydantic import BaseModel, ConfigDict
 from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter, MetadataQuery
@@ -102,23 +103,38 @@ class WeaviateClient(BaseModel):
         game_id: str,
         collection_name: str,
         reviews: list[str],
+        vectors: list[np.array],
     ) -> None:
 
         print(f"Adding reviews for game {game_id}")
         collection = self.weaviate_client.collections.get(collection_name)
 
-        with collection.batch.dynamic() as batch:
-            for review in reviews:
-                review_item = {
-                    "review_text": review,
-                    "product_id": game_id,
-                }
-                uuid = generate_uuid5(review_item)
+        # with collection.batch.dynamic() as batch:
+        #     for review in reviews:
+        #         review_item = {
+        #             "review_text": review,
+        #             "product_id": game_id,
+        #         }
+        #         uuid = generate_uuid5(review_item)
 
-                if collection.data.exists(uuid):
-                    continue
-                else:
-                    batch.add_object(properties=review_item, uuid=uuid)
+        #         if collection.data.exists(uuid):
+        #             continue
+        #         else:
+        #             batch.add_object(properties=review_item, uuid=uuid)
+
+        collection_objs = list()
+        for review, vector in zip(reviews, vectors):
+            collection_objs.append(
+                wvc.data.DataObject(
+                    properties={
+                        "review_text": review,
+                        "product_id": game_id,
+                    },
+                    vector=vector,
+                )
+            )
+
+        collection.data.insert_many(collection_objs)
 
         print(f"Reviews added for game {game_id}")
 
@@ -192,13 +208,7 @@ class WeaviateClient(BaseModel):
                     data_type=wvc.config.DataType.TEXT,
                     skip_vectorization=True,
                     vectorize_property_name=False,
-                ),
-                # wvc.config.Property(
-                #     name="name",
-                #     data_type=wvc.config.DataType.TEXT,
-                #     skip_vectorization=True,
-                #     vectorize_property_name=False,
-                # ),
+                )
             ]
             if use_about:
                 build_properties.append(

@@ -4,6 +4,7 @@
     "file_name": "quality_ratings.pkl",
     "keep_columns": [
         "BGGId",
+        "rating",
         "value"
     ],
     "embed_column": "value"

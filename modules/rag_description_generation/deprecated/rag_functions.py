@@ -27,7 +27,7 @@ def prompt_replacement(
 
 
 def get_single_game_entries(
-    df: pd.DataFrame, game_id: str, sample_pct: float = 0.3
+    df: pd.DataFrame, game_id: str, sample_pct: float = 0.1
 ) -> Tuple[pd.DataFrame, str, str]:
 
     # immediately filter to only the game_id we're interested in
@@ -46,7 +46,19 @@ def get_single_game_entries(
     ).astype(int)
     print(f"Desired sample size: {sample_size}")
 
-    print(f"Total quality reviews: {len(df)}")
+    # refine to only ratings with comments and clean all comments
+    df = df[df["value"].notna()]
+    count_reviews_all_comments = len(df)
+    print(f"Total reviews with comments: {count_reviews_all_comments}")
+    df["value"] = df["value"].replace(r"[^A-Za-z0-9 ]+", "", regex=True)
+    df["value"] = df["value"].str.lower().apply(lambda x: filter_stopwords(x))
+
+    df["quality_review"] = df["value"].apply(evaluate_quality_words_over_thresh)
+    df = df[df["quality_review"] == True]
+    removed_reviews = count_reviews_all_comments - len(df)
+    print(
+        f"Total quality reviews: {len(df)}. {removed_reviews} reviews removed due to quality threshold"
+    )
 
     sample_size = sample_size if sample_size >= 250 else len(df)
 
