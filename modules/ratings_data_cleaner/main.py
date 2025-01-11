@@ -11,7 +11,7 @@ from utils.processing_functions import (
     get_s3_keys_based_on_env,
     load_file_local_first,
     save_file_local_first,
-    save_to_aws_glue,
+    save_dfs_to_disk_or_s3,
 )
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
@@ -30,7 +30,11 @@ class DirtyDataExtractor:
         file_list_to_process = self._get_file_list()
         all_entries = self._process_file_list(file_list_to_process)
         ratings_df = self._create_table_from_data(all_entries)
-        self._save_dfs_to_disk_or_s3(ratings_df)
+        save_dfs_to_disk_or_s3(
+            df=ratings_df,
+            table_name="ratings_data",
+            path=RATING_CONFIGS["dirty_dfs_directory"],
+        )
         self._create_file_of_unique_user_ids(ratings_df)
 
     def _get_file_list(self) -> list[str]:
@@ -104,36 +108,6 @@ class DirtyDataExtractor:
         print(df.head())
 
         return df
-
-    def _save_dfs_to_disk_or_s3(self, ratings_df: dict[pd.DataFrame]):
-        """Save all files as pkl files and csv files"""
-
-        print(f"\nSaving ratings data to disk and uploading to S3")
-
-        table_name = "ratings_data"
-
-        # save and load as csv to properly infer data types
-        save_file_local_first(
-            path=RATING_CONFIGS["dirty_dfs_directory"],
-            file_name=f"{table_name}.csv",
-            data=ratings_df,
-        )
-
-        ratings_df = load_file_local_first(
-            path=RATING_CONFIGS["dirty_dfs_directory"], file_name=f"{table_name}.csv"
-        )
-
-        save_file_local_first(
-            path=RATING_CONFIGS["dirty_dfs_directory"],
-            file_name=f"{table_name}.pkl",
-            data=ratings_df,
-        )
-        save_file_local_first(
-            path=RATING_CONFIGS["dirty_dfs_directory"],
-            file_name=f"{table_name}.csv",
-            data=ratings_df,
-        )
-        save_to_aws_glue(data=ratings_df, table=f"{table_name}")
 
     def _create_file_of_unique_user_ids(self, ratings_df: pd.DataFrame) -> list:
         """Create a list of unique user IDs"""

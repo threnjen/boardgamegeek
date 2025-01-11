@@ -40,6 +40,35 @@ def get_local_keys_based_on_env(directory: str):
     )
 
 
+def save_dfs_to_disk_or_s3(df: dict[pd.DataFrame], table_name: str, path: str):
+    """Save all files as pkl files and csv files"""
+
+    print(f"\nSaving ratings data to disk and uploading to S3")
+
+    table_name = "ratings_data"
+
+    # save and load as csv to properly infer data types
+    save_file_local_first(
+        path=path,
+        file_name=f"{table_name}.csv",
+        data=df,
+    )
+
+    df = load_file_local_first(path=path, file_name=f"{table_name}.csv")
+
+    save_file_local_first(
+        path=path,
+        file_name=f"{table_name}.pkl",
+        data=df,
+    )
+    save_file_local_first(
+        path=path,
+        file_name=f"{table_name}.csv",
+        data=df,
+    )
+    save_to_aws_glue(data=df, table=f"{table_name}")
+
+
 def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, dict]):
     file_path = f"{path}/{file_name}"
 
