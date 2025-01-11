@@ -1,0 +1,10 @@
+{
+    "category": "ratings",
+    "directory": "clean_dfs_directory",
+    "file_name": "quality_ratings.pkl",
+    "keep_columns": [
+        "BGGId",
+        "value"
+    ],
+    "embed_column": "value"
+}

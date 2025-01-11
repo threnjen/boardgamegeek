@@ -1,7 +1,12 @@
 from utils.text_embedder import TextEmbedderToFile
+from utils.local_file_handler import LocalFileHandler
 
 if __name__ == "__main__":
-    embedder = TextEmbedderToFile(config_file="ratings/config.json")
+    configs = LocalFileHandler().load_file(
+        file_path="modules/ratings_embedder/config.json"
+    )
+    embedder = TextEmbedderToFile(info_configs=configs)
     print(embedder.df.head())
+
     embedder.embed_text()
     embedder.save_embeddings()

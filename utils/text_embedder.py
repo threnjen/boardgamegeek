@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 from sentence_transformers import SentenceTransformer
 from pydantic import BaseModel
 from config import CONFIGS
@@ -12,7 +13,7 @@ sample_configs = {}
 
 
 class TextEmbedderToFile(BaseModel):
-    config_file: str = ""
+    info_configs: dict = {}
     path: str = ""
     df: PandasDataFrame = pd.DataFrame()
     embed_column: str = "name"
@@ -21,18 +22,20 @@ class TextEmbedderToFile(BaseModel):
     )
 
     def model_post_init(self, __context):
-        info_configs = load_file_local_first(file_name=self.config_file)
 
-        configs = CONFIGS[info_configs["category"]]
-        self.path = configs[info_configs["directory"]]
-        file_name = info_configs["file_name"]
+        configs = CONFIGS[self.info_configs["category"]]
+        self.path = configs[self.info_configs["directory"]]
+        file_name = self.info_configs["file_name"]
 
         self.df = load_file_local_first(path=self.path, file_name=file_name)
 
-        keep_columns = info_configs["keep_columns"]
+        if os.environ.get("ENVIRONMENT", "dev") != "prod":
+            self.df = self.df[:100]
+
+        keep_columns = self.info_configs["keep_columns"]
         self.df = self.df[keep_columns]
 
-        self.embed_column = info_configs["embed_column"]
+        self.embed_column = self.info_configs["embed_column"]
 
     def embed_text(self):
         sentences = self.df["value"].values
