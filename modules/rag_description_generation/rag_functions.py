@@ -1,13 +1,7 @@
 from typing import Tuple
 
 import pandas as pd
-from nltk.tokenize import word_tokenize
-from utils.nlp_functions import filter_stopwords
-
-
-def evaluate_quality_words_over_thresh(text: str) -> str:
-    word_tokens = word_tokenize(text)
-    return len(word_tokens) > 5
+from utils.nlp_functions import filter_stopwords, evaluate_quality_words_over_thresh
 
 
 def prompt_replacement(
