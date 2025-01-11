@@ -18,8 +18,6 @@ variable "MY_IP_FIRST_THREE_BLOCKS" {
   }
 }
 
-
-
 variable "GITHUB_USER_NAME" {
   description = "The name of the GitHub user"
   type        = string

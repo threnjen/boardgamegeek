@@ -1,3 +1,60 @@
+variable "rag_description_generation" {
+  description = "The name of the ECS task definition for the rag_description_generation"
+  type        = string
+  default     = "rag_description_generation"
+}
+
+module "rag_description_generation_ecr" {
+  source              = "./modules/ecr"
+  ecr_repository_name = var.rag_description_generation
+}
+
+module "dev_rag_description_generation_ecr" {
+  source              = "./modules/ecr"
+  ecr_repository_name = "dev_${var.rag_description_generation}"
+}
+
+module "rag_description_generation_FargateExecutionRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "${var.rag_description_generation}_FargateExecutionRole"
+}
+
+module "rag_description_generation_FargateTaskRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "${var.rag_description_generation}_FargateTaskRole"
+}
+
+resource "aws_iam_role_policy_attachment" "S3_Access_rag_description_generation_FargateExecutionRole_attach" {
+  role       = module.rag_description_generation_FargateExecutionRole_role.name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "S3_Access_rag_description_generation_FargateTaskRole_attach" {
+  role       = module.rag_description_generation_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metrics_rag_description_generation_FargateTaskRole_roleattach" {
+  role       = module.rag_description_generation_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.Cloudwatch_Put_Metrics_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "dynamodb_rag_description_generation_FargateTaskRole_roleattach" {
+  role       = module.rag_description_generation_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.game_generated_descriptions_dynamodb_access.arn
+}
+
+# not currently using EC2 for Weaviate server, but we'll keep this here for future use
+# resource "aws_iam_role_policy_attachment" "rag_description_generation_SSM_send_command_attach" {
+#   role       = module.rag_description_generation_FargateTaskRole_role.name
+#   policy_arn = aws_iam_policy.SSM_send_command.arn
+# }
+# resource "aws_iam_role_policy_attachment" "ec2_instance_access_rag_description_generation_FargateTaskRole_roleattach" {
+#   role       = module.rag_description_generation_FargateTaskRole_role.name
+#   policy_arn = aws_iam_policy.ec2_instance_access.arn
+# }
+
+
 resource "aws_ecs_task_definition" "weaviate_rag_generation" {
   family = var.rag_description_generation
 

@@ -22,57 +22,52 @@
 #   user_data = data.cloudinit_config.weaviate_ec2_instance.rendered
 # }
 
-resource "aws_iam_instance_profile" "weaviate_ec2_instance_role" {
-  name = "test_profile"
-  role = aws_iam_role.weaviate_ec2_instance.name
-}
+# resource "aws_iam_instance_profile" "weaviate_ec2_instance_role" {
+#   name = "test_profile"
+#   role = aws_iam_role.weaviate_ec2_instance.name
+# }
 
-resource "aws_iam_role_policy_attachment" "weaviate_ec2_ssm_policy_attach" {
-  role       = aws_iam_role.weaviate_ec2_instance.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
+# resource "aws_iam_role_policy_attachment" "weaviate_ec2_ssm_policy_attach" {
+#   role       = aws_iam_role.weaviate_ec2_instance.name
+#   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+# }
 
-resource "aws_ssm_activation" "weaviate_ec2_instance" {
-  name               = "ssm_activation"
-  description        = "Activate Weaviate EC2 instance"
-  iam_role           = aws_iam_role.weaviate_ec2_instance.id
-  registration_limit = "5"
-  depends_on         = [aws_iam_role_policy_attachment.weaviate_ec2_ssm_policy_attach]
-}
+# resource "aws_ssm_activation" "weaviate_ec2_instance" {
+#   name               = "ssm_activation"
+#   description        = "Activate Weaviate EC2 instance"
+#   iam_role           = aws_iam_role.weaviate_ec2_instance.id
+#   registration_limit = "5"
+#   depends_on         = [aws_iam_role_policy_attachment.weaviate_ec2_ssm_policy_attach]
+# }
 
-data "cloudinit_config" "weaviate_ec2_instance" {
-  part {
-    content_type = "text/x-shellscript"
-    content      = file("./weaviate_ecs_init.sh")
-  }
-}
+# data "cloudinit_config" "weaviate_ec2_instance" {
+#   part {
+#     content_type = "text/x-shellscript"
+#     content      = file("./weaviate_ecs_init.sh")
+#   }
+# }
 
-data "aws_iam_policy_document" "assume_role" {
-  statement {
-    effect = "Allow"
+# data "aws_iam_policy_document" "assume_role" {
+#   statement {
+#     effect = "Allow"
 
-    principals {
-      type = "Service"
-      identifiers = [
-        "ssm.amazonaws.com",
-        "ec2.amazonaws.com"
-      ]
-    }
+#     principals {
+#       type = "Service"
+#       identifiers = [
+#         "ssm.amazonaws.com",
+#         "ec2.amazonaws.com"
+#       ]
+#     }
 
-    actions = ["sts:AssumeRole"]
-  }
-}
+#     actions = ["sts:AssumeRole"]
+#   }
+# }
 
-resource "aws_iam_role" "weaviate_ec2_instance" {
-  name               = "weaviate_ec2_instance"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
-}
+# resource "aws_iam_role" "weaviate_ec2_instance" {
+#   name               = "weaviate_ec2_instance"
+#   assume_role_policy = data.aws_iam_policy_document.assume_role.json
+# }
 
-
-
-
-
-
-module "ssm_default_host_management" {
-  source = "github.com/plus3it/terraform-aws-tardigrade-ssm-default-host-management"
-}
+# module "ssm_default_host_management" {
+#   source = "github.com/plus3it/terraform-aws-tardigrade-ssm-default-host-management"
+# }

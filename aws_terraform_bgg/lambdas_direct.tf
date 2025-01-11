@@ -1,28 +1,3 @@
-# Locals block to aggregate the function names or other relevant outputs
-locals {
-  lambda_functions = [
-    module.bgg_scraper_fargate_trigger.function_name,
-    module.dev_bgg_scraper_fargate_trigger.function_name,
-    module.bgg_generate_game_urls.function_name,
-    module.dev_bgg_generate_game_urls.function_name,
-    module.bgg_generate_ratings_urls.function_name,
-    module.dev_bgg_generate_ratings_urls.function_name,
-    module.bgg_game_data_cleaner_fargate_trigger.function_name,
-    module.dev_bgg_game_data_cleaner_fargate_trigger.function_name,
-    module.bgg_orchestrator_fargate_trigger.function_name,
-    module.dev_bgg_orchestrator_fargate_trigger.function_name,
-    module.bgg_ratings_data_cleaner_fargate_trigger.function_name,
-    module.dev_bgg_ratings_data_cleaner_fargate_trigger.function_name,
-    module.bgg_generate_user_urls.function_name,
-    module.dev_bgg_generate_user_urls.function_name,
-    module.bgg_users_data_cleaner_fargate_trigger.function_name,
-    module.dev_bgg_users_data_cleaner_fargate_trigger.function_name,
-    module.rag_description_generation.function_name,
-    module.dev_rag_description_generation.function_name,
-    module.bgg_ratings_embedder_fargate_trigger.function_name,
-    module.dev_bgg_ratings_embedder_fargate_trigger.function_name
-  ]
-}
 
 module "rag_description_generation" {
   source        = "./modules/lambda_function_direct"
