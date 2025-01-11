@@ -1,0 +1,28 @@
+FROM python:3.12
+
+# Install required dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install pipenv
+RUN pip3 install pipenv
+
+# Create necessary directories
+RUN mkdir -p modules 
+
+# Set PYTHONPATH to the current directory
+ENV PYTHONPATH=.
+
+# Copy the source code into the container
+COPY modules/ratings_embedder modules/ratings_embedder
+COPY utils utils
+COPY data data
+COPY modules/ratings_embedder/Pipfile* .
+COPY config* .
+
+# Install dependencies with pipenv
+RUN pipenv sync
+
+ENTRYPOINT ["pipenv", "run", "python", "modules/ratings_embedder/main.py"]

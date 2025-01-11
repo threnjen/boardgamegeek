@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 from sentence_transformers import SentenceTransformer
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from config import CONFIGS
 from utils.processing_functions import load_file_local_first, save_file_local_first
 
@@ -13,6 +13,7 @@ sample_configs = {}
 
 
 class TextEmbedderToFile(BaseModel):
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     info_configs: dict = {}
     path: str = ""
     df: PandasDataFrame = pd.DataFrame()
