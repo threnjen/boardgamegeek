@@ -122,6 +122,7 @@ class DirtyDataExtractor:
 
         df["value"] = df["value"].replace(r"[^A-Za-z0-9 ]+", "", regex=True)
         df["value"] = df["value"].str.lower().apply(lambda x: filter_stopwords(x))
+        df["value"] = df["value"].str.replace("  ", " ")
 
         df["quality_review"] = df["value"].apply(evaluate_quality_words_over_thresh)
         df = df[df["quality_review"] == True]
