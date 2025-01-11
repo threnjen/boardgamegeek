@@ -1,20 +1,35 @@
 from typing import Tuple
 
 import pandas as pd
-from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-
-
-def filter_stopwords(text: str) -> str:
-    stop_words = set(stopwords.words("english"))
-    word_tokens = word_tokenize(text)
-    filtered_sentence = [w for w in word_tokens if not w.lower() in stop_words]
-    return " ".join(filtered_sentence)
+from utils.nlp_functions import filter_stopwords
 
 
 def evaluate_quality_words_over_thresh(text: str) -> str:
     word_tokens = word_tokenize(text)
     return len(word_tokens) > 5
+
+
+def prompt_replacement(
+    current_prompt: str,
+    overall_stats: dict[float],
+    game_name: str,
+    game_mean: str,
+) -> str:
+
+    # turn all stats to strings
+    overall_stats = {k: str(v) for k, v in overall_stats.items()}
+
+    current_prompt = current_prompt.replace("{GAME_NAME_HERE}", game_name)
+    current_prompt = current_prompt.replace("{GAME_AVERAGE_HERE}", game_mean)
+    current_prompt = current_prompt.replace("{TWO_UNDER}", overall_stats["two_under"])
+    current_prompt = current_prompt.replace("{ONE_UNDER}", overall_stats["one_under"])
+    current_prompt = current_prompt.replace("{ONE_OVER}", overall_stats["one_over"])
+    current_prompt = current_prompt.replace("{HALF_OVER}", overall_stats["half_over"])
+    current_prompt = current_prompt.replace(
+        "{OVERALL_MEAN}", overall_stats["overall_mean"]
+    )
+    return current_prompt
 
 
 def get_single_game_entries(

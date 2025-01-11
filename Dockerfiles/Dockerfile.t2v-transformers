@@ -1,5 +1,6 @@
 # Dockerfile.t2v-transformers
-FROM cr.weaviate.io/semitechnologies/transformers-inference:sentence-transformers-all-mpnet-base-v2
+# FROM cr.weaviate.io/semitechnologies/transformers-inference:sentence-transformers-all-mpnet-base-v2
+FROM cr.weaviate.io/semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
 
 # Set environment variables
 ENV ENABLE_CUDA=0
