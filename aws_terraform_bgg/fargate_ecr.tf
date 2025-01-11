@@ -25,86 +25,86 @@ locals {
 
 module "bgg_boardgame_file_retrieval_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "bgg_boardgame_file_retrieval"
+  ecr_repository_name = var.bgg_boardgame_file_retrieval
 }
 
 module "weaviate_rag_server_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "weaviate_rag_server"
+  ecr_repository_name = var.weaviate_rag_server
 }
 
 module "t2v-transformers_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "t2v-transformers"
+  ecr_repository_name = var.t2v-transformers
 }
 
 module "ratings_embedder" {
   source              = "./modules/ecr"
-  ecr_repository_name = "bgg_ratings_embedder"
+  ecr_repository_name = var.bgg_ratings_embedder
 }
 
 module "dev_ratings_embedder" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_bgg_ratings_embedder"
+  ecr_repository_name = "dev_${var.bgg_ratings_embedder}"
 }
 
 module "rag_description_generation_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "rag_description_generation"
+  ecr_repository_name = var.rag_description_generation
 }
 
 module "dev_rag_description_generation_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_rag_description_generation"
+  ecr_repository_name = "dev_${var.rag_description_generation}"
 }
 
 module "bgg_orchestrator_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "bgg_orchestrator"
+  ecr_repository_name = var.bgg_orchestrator
 }
 
 module "dev_bgg_orchestrator_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_bgg_orchestrator"
+  ecr_repository_name = "dev_${var.bgg_orchestrator}"
 }
 
 module "bgg_game_data_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "bgg_game_data_cleaner"
+  ecr_repository_name = var.bgg_game_data_cleaner
 }
 
 module "dev_bgg_game_data_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_bgg_game_data_cleaner"
+  ecr_repository_name = "dev_${var.bgg_game_data_cleaner}"
 }
 
 module "bgg_ratings_data_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "bgg_ratings_data_cleaner"
+  ecr_repository_name = var.bgg_ratings_data_cleaner
 }
 
 module "dev_bgg_ratings_data_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_bgg_ratings_data_cleaner"
+  ecr_repository_name = "dev_${var.bgg_ratings_data_cleaner}"
 }
 
 module "bgg_scraper_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "bgg_scraper"
+  ecr_repository_name = var.bgg_scraper
 }
 
 module "dev_bgg_scraper_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_bgg_scraper"
+  ecr_repository_name = "dev_${var.bgg_scraper}"
 }
 
 module "bgg_users_data_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "bgg_users_data_cleaner"
+  ecr_repository_name = var.bgg_users_data_cleaner
 }
 
 module "dev_bgg_users_data_cleaner_ecr" {
   source              = "./modules/ecr"
-  ecr_repository_name = "dev_bgg_users_data_cleaner"
+  ecr_repository_name = "dev_${var.bgg_users_data_cleaner}"
 }
 

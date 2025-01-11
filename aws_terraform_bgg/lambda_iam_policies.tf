@@ -63,7 +63,7 @@ module "bgg_scraper_describe_task_def_policy" {
 
 module "bgg_game_data_cleaner_fargate_trigger_role" {
   source    = "./modules/iam_lambda_roles"
-  role_name = "bgg_game_data_cleaner_fargate_trigger_role"
+  role_name = "${var.bgg_game_data_cleaner}_fargate_trigger_role"
 }
 
 resource "aws_iam_role_policy_attachment" "bgg_game_data_cleaner_describe_attach" {
@@ -101,15 +101,15 @@ resource "aws_iam_role_policy_attachment" "bgg_orchestrator_s3_attach" {
 
 module "bgg_orchestrator_task_def_policy" {
   source     = "./modules/lambda_ecs_trigger_policies"
-  name       = "${var.boardgamegeek_orchestrator}_lambda_ecs_trigger"
-  task_name  = var.boardgamegeek_orchestrator
+  name       = "${var.bgg_orchestrator}_lambda_ecs_trigger"
+  task_name  = var.bgg_orchestrator
   region     = var.REGION
   account_id = data.aws_caller_identity.current.account_id
 }
 
 module "bgg_ratings_data_cleaner_fargate_trigger_role" {
   source    = "./modules/iam_lambda_roles"
-  role_name = "bgg_ratings_data_cleaner_fargate_trigger_role"
+  role_name = "${var.bgg_ratings_data_cleaner}_fargate_trigger_role"
 }
 
 resource "aws_iam_role_policy_attachment" "bgg_ratings_data_cleaner_describe_attach" {
@@ -192,7 +192,7 @@ module "trigger_bgg_generate_ratings_urls_lambda" {
 
 module "bgg_ratings_embedder_fargate_trigger_role" {
   source    = "./modules/iam_lambda_roles"
-  role_name = "bgg_ratings_embedder_fargate_trigger_role"
+  role_name = "${var.bgg_ratings_embedder}_fargate_trigger_role"
 }
 
 resource "aws_iam_role_policy_attachment" "bgg_ratings_embedder_describe_attach" {

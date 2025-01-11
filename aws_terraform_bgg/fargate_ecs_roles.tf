@@ -6,17 +6,17 @@ resource "aws_s3_object" "file_upload" {
 
 module "bgg_ratings_embedder_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_ratings_embedder_FargateExecutionRole"
+  task_definition = "${var.bgg_ratings_embedder}_FargateExecutionRole"
+}
+
+module "bgg_ratings_embedder_FargateTaskRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "${var.bgg_ratings_embedder}_FargateTaskRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_bgg_ratings_embedder_FargateExecutionRole_attach" {
   role       = module.bgg_ratings_embedder_FargateExecutionRole_role.name
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
-}
-
-module "bgg_ratings_embedder_FargateTaskRole_role" {
-  source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_ratings_embedder_FargateTaskRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_boardgamegeekbgg_ratings_embedder_FargateTaskRoleattach" {
@@ -31,17 +31,17 @@ resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metricsbgg_ratings_emb
 
 module "bgg_game_data_cleaner_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_game_data_cleaner_FargateExecutionRole"
+  task_definition = "${var.bgg_game_data_cleaner}_FargateExecutionRole"
+}
+
+module "bgg_game_data_cleaner_FargateTaskRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "${var.bgg_game_data_cleaner}_FargateTaskRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_bgg_game_data_cleaner_FargateExecutionRole_attach" {
   role       = module.bgg_game_data_cleaner_FargateExecutionRole_role.name
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
-}
-
-module "bgg_game_data_cleaner_FargateTaskRole_role" {
-  source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_game_data_cleaner_FargateTaskRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_boardgamegeekbgg_game_data_cleaner_FargateTaskRoleattach" {
@@ -61,12 +61,12 @@ resource "aws_iam_role_policy_attachment" "glue_boardgamegeekbgg_game_data_clean
 
 module "bgg_ratings_data_cleaner_FargateTaskRole_role" {
   source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_ratings_data_cleaner_FargateTaskRole"
+  task_definition = "${var.bgg_ratings_data_cleaner}_FargateTaskRole"
 }
 
 module "bgg_ratings_data_cleaner_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_ratings_data_cleaner_FargateExecutionRole"
+  task_definition = "${var.bgg_ratings_data_cleaner}_FargateExecutionRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_bgg_ratings_data_cleaner_FargateExecutionRole_attach" {
@@ -91,17 +91,18 @@ resource "aws_iam_role_policy_attachment" "glue_boardgamegeekbgg_ratings_data_cl
 
 module "bgg_scraper_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_scraper_FargateExecutionRole"
+  task_definition = "${var.bgg_scraper}_FargateExecutionRole"
+}
+
+module "bgg_scraper_FargateTaskRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "${var.bgg_scraper}_FargateTaskRole"
 }
 resource "aws_iam_role_policy_attachment" "S3_Access_bgg_scraperbgg_scraper_FargateExecutionRole" {
   role       = module.bgg_scraper_FargateExecutionRole_role.name
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
 }
 
-module "bgg_scraper_FargateTaskRole_role" {
-  source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_scraper_FargateTaskRole"
-}
 resource "aws_iam_role_policy_attachment" "S3_Access_boardgamegeekbgg_scraper_FargateTaskRoleattach" {
   role       = module.bgg_scraper_FargateTaskRole_role.name
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
@@ -112,15 +113,14 @@ resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metric_bgg_scraper_Far
   policy_arn = aws_iam_policy.Cloudwatch_Put_Metrics_policy.arn
 }
 
-
 module "bgg_users_data_cleaner_FargateTaskRole_role" {
   source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_users_data_cleaner_FargateTaskRole"
+  task_definition = "${var.bgg_users_data_cleaner}_FargateTaskRole"
 }
 
 module "bgg_users_data_cleaner_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_users_data_cleaner_FargateExecutionRole"
+  task_definition = "${var.bgg_users_data_cleaner}_FargateExecutionRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_bgg_users_data_cleaner_FargateExecutionRole_attach" {
@@ -144,17 +144,17 @@ resource "aws_iam_role_policy_attachment" "glue_boardgamegeekbgg_users_data_clea
 }
 module "rag_description_generation_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
-  task_definition = "rag_description_generation_FargateExecutionRole"
+  task_definition = "${var.rag_description_generation}_FargateExecutionRole"
+}
+
+module "rag_description_generation_FargateTaskRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "${var.rag_description_generation}_FargateTaskRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_rag_description_generation_FargateExecutionRole_attach" {
   role       = module.rag_description_generation_FargateExecutionRole_role.name
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
-}
-
-module "rag_description_generation_FargateTaskRole_role" {
-  source          = "./modules/iam_ecs_roles"
-  task_definition = "rag_description_generation_FargateTaskRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_rag_description_generation_FargateTaskRole_attach" {
@@ -184,17 +184,17 @@ resource "aws_iam_role_policy_attachment" "dynamodb_rag_description_generation_F
 
 module "bgg_orchestrator_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_orchestrator_FargateExecutionRole"
+  task_definition = "${var.bgg_orchestrator}_FargateExecutionRole"
+}
+
+module "bgg_orchestrator_FargateTaskRole_role" {
+  source          = "./modules/iam_ecs_roles"
+  task_definition = "${var.bgg_orchestrator}_FargateTaskRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_bgg_orchestrator_FargateExecutionRole_attach" {
   role       = module.bgg_orchestrator_FargateExecutionRole_role.name
   policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
-}
-
-module "bgg_orchestrator_FargateTaskRole_role" {
-  source          = "./modules/iam_ecs_roles"
-  task_definition = "bgg_orchestrator_FargateTaskRole"
 }
 
 resource "aws_iam_role_policy_attachment" "S3_Access_bgg_orchestrator_FargateTaskRole_attach" {

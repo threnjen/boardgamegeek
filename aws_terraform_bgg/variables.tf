@@ -18,58 +18,7 @@ variable "MY_IP_FIRST_THREE_BLOCKS" {
   }
 }
 
-variable "bgg_scraper" {
-  description = "The name of the ECS task definition for the bgg_scraper"
-  type        = string
-  default     = "bgg_scraper"
-}
-variable "bgg_game_data_cleaner" {
-  description = "The name of the ECS task definition for the bgg_game_data_cleaner"
-  type        = string
-  default     = "bgg_game_data_cleaner"
-}
 
-variable "bgg_ratings_data_cleaner" {
-  description = "The name of the ECS task definition for the bgg_ratings_data_cleaner"
-  type        = string
-  default     = "bgg_ratings_data_cleaner"
-}
-
-variable "bgg_users_data_cleaner" {
-  description = "The name of the ECS task definition for the bgg_users_data_cleaner"
-  type        = string
-  default     = "bgg_users_data_cleaner"
-}
-
-variable "bgg_ratings_embedder" {
-  description = "The name of the ECS task definition for the bgg_ratings_embedder"
-  type        = string
-  default     = "bgg_ratings_embedder"
-}
-
-variable "boardgamegeek_orchestrator" {
-  description = "The name of the ECS task definition for the boardgamegeek_orchestrator"
-  type        = string
-  default     = "bgg_orchestrator"
-}
-
-variable "rag_description_generation" {
-  description = "The name of the ECS task definition for the rag_description_generation"
-  type        = string
-  default     = "rag_description_generation"
-}
-
-variable "weaviate_rag_server" {
-  description = "The name of the ECS task definition for the weaviate_rag_server"
-  type        = string
-  default     = "weaviate_rag_server"
-}
-
-variable "t2v-transformers" {
-  description = "The name of the ECS task definition for the t2v-transformers"
-  type        = string
-  default     = "t2v-transformers"
-}
 
 variable "GITHUB_USER_NAME" {
   description = "The name of the GitHub user"

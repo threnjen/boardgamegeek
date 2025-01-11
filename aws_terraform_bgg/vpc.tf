@@ -17,7 +17,7 @@ data "aws_availability_zones" "available" {
 #   subnet_id     = module.vpc.private_subnets[0]
 
 #   tags = {
-#     Name = "t2v-transformers"
+#     Name = var.t2v-transformers
 #   }
 
 # }
