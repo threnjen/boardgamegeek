@@ -24,11 +24,11 @@ resource "aws_ecr_lifecycle_policy" "lifecycle_policy" {
     "rules": [
         {
             "rulePriority": 1,
-            "description": "Expire more than 3 images",
+            "description": "Expire more than 1 images",
             "selection": {
                 "tagStatus": "any",
                 "countType": "imageCountMoreThan",
-                "countNumber": 3
+                "countNumber": 1
             },
             "action": {
                 "type": "expire"
