@@ -13,6 +13,7 @@ from utils.processing_functions import (
     save_file_local_first,
     save_dfs_to_disk_or_s3,
 )
+from utils.nlp_functions import filter_stopwords, evaluate_quality_words_over_thresh
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
@@ -34,6 +35,12 @@ class DirtyDataExtractor:
             df=ratings_df,
             table_name="ratings_data",
             path=RATING_CONFIGS["dirty_dfs_directory"],
+        )
+        quality_df = self._create_quality_review_table(ratings_df)
+        save_dfs_to_disk_or_s3(
+            df=quality_df,
+            table_name="quality_ratings",
+            path=RATING_CONFIGS["clean_dfs_directory"],
         )
         self._create_file_of_unique_user_ids(ratings_df)
 
@@ -107,6 +114,18 @@ class DirtyDataExtractor:
         df = df.drop_duplicates()
         print(df.head())
 
+        return df
+
+    def _create_quality_review_table(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Create a cleaned and refined table of data"""
+
+        df["value"] = df["value"].replace(r"[^A-Za-z0-9 ]+", "", regex=True)
+        df["value"] = df["value"].str.lower().apply(lambda x: filter_stopwords(x))
+
+        df["quality_review"] = df["value"].apply(evaluate_quality_words_over_thresh)
+        df = df[df["quality_review"] == True]
+
+        df = df.drop(columns=["quality_review"])
         return df
 
     def _create_file_of_unique_user_ids(self, ratings_df: pd.DataFrame) -> list:

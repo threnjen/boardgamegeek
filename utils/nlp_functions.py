@@ -1,8 +1,11 @@
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from nltk import PorterStemmer
-from nltk.stem import WordNetLemmatizer
 import re
+
+
+def evaluate_quality_words_over_thresh(text: str) -> str:
+    word_tokens = word_tokenize(text)
+    return len(word_tokens) > 5
 
 
 def filter_stopwords(text: str) -> str:
