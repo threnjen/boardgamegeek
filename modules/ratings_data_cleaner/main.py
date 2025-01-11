@@ -118,6 +118,7 @@ class DirtyDataExtractor:
 
     def _create_quality_review_table(self, df: pd.DataFrame) -> pd.DataFrame:
         """Create a cleaned and refined table of data"""
+        df = df[df["value"].notna()]
 
         df["value"] = df["value"].replace(r"[^A-Za-z0-9 ]+", "", regex=True)
         df["value"] = df["value"].str.lower().apply(lambda x: filter_stopwords(x))
