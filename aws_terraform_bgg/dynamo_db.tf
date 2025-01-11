@@ -26,8 +26,8 @@ resource "aws_iam_policy" "game_generated_descriptions_dynamodb_access" {
         Effect = "Allow",
         Action = [
           "dynamodb:PutItem",
-				"dynamodb:ListTables",
-				"dynamodb:GetItem"
+          "dynamodb:ListTables",
+          "dynamodb:GetItem"
         ],
         Resource = "*"
       }
