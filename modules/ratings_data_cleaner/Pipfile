@@ -12,6 +12,7 @@ regex = "*"
 boto3 = "*"
 awswrangler = "*"
 xmltodict = "*"
+nltk = "*"
 
 [dev-packages]
 pytest = "*"
