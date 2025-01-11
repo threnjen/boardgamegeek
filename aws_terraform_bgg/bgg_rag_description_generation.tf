@@ -54,6 +54,53 @@ resource "aws_iam_role_policy_attachment" "dynamodb_rag_description_generation_F
 #   policy_arn = aws_iam_policy.ec2_instance_access.arn
 # }
 
+module "rag_description_generation" {
+  source        = "./modules/lambda_function_direct"
+  function_name = "rag_description_generation_fargate_trigger"
+  timeout       = 900
+  memory_size   = 256
+  role          = module.rag_description_generation_role.arn
+  handler       = "${var.rag_description_generation}_fargate_trigger.lambda_handler"
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
+  environment   = "prod"
+  description   = "Lambda function to trigger the rag description generation fargate task"
+}
+
+module "dev_rag_description_generation" {
+  source        = "./modules/lambda_function_direct"
+  function_name = "dev_rag_description_generation_fargate_trigger"
+  timeout       = 900
+  memory_size   = 256
+  role          = module.rag_description_generation_role.arn
+  handler       = "${var.rag_description_generation}_fargate_trigger.lambda_handler"
+  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
+  environment   = "dev"
+  description   = "DEV Lambda function to trigger the rag description generation fargate task"
+}
+
+module "rag_description_generation_role" {
+  source    = "./modules/iam_lambda_roles"
+  role_name = "rag_description_generation_retrieval_role"
+}
+
+resource "aws_iam_role_policy_attachment" "rag_description_generation_role_describe_attach" {
+  role       = module.rag_description_generation_role.role_name
+  policy_arn = module.rag_description_generation_describe_task_def_policy.lambda_ecs_trigger_arn
+}
+
+resource "aws_iam_role_policy_attachment" "rag_description_generation_attach" {
+  role       = module.rag_description_generation_role.role_name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
+}
+
+module "rag_description_generation_describe_task_def_policy" {
+  source     = "./modules/lambda_ecs_trigger_policies"
+  name       = "${var.rag_description_generation}_lambda_ecs_trigger"
+  task_name  = var.rag_description_generation
+  region     = var.REGION
+  account_id = data.aws_caller_identity.current.account_id
+}
+
 
 resource "aws_ecs_task_definition" "weaviate_rag_generation" {
   family = var.rag_description_generation

@@ -1,27 +1,5 @@
 
-module "rag_description_generation" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "rag_description_generation_fargate_trigger"
-  timeout       = 900
-  memory_size   = 256
-  role          = module.rag_description_generation_role.arn
-  handler       = "${var.rag_description_generation}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
-  description   = "Lambda function to trigger the rag description generation fargate task"
-}
 
-module "dev_rag_description_generation" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_rag_description_generation_fargate_trigger"
-  timeout       = 900
-  memory_size   = 256
-  role          = module.rag_description_generation_role.arn
-  handler       = "${var.rag_description_generation}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the rag description generation fargate task"
-}
 
 module "bgg_generate_game_urls" {
   source        = "./modules/lambda_function_direct"
@@ -45,6 +23,15 @@ module "dev_bgg_generate_game_urls" {
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
   environment   = "dev"
   description   = "DEV Lambda function to generate game urls"
+}
+
+module "bgg_generate_game_urls_lambda_role" {
+  source    = "./modules/iam_lambda_roles"
+  role_name = "bgg_generate_game_urls_lambda_role"
+}
+resource "aws_iam_role_policy_attachment" "bgg_generate_game_urls_lambda_role" {
+  role       = module.bgg_generate_game_urls_lambda_role.role_name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
 }
 
 module "bgg_generate_user_urls" {
@@ -71,6 +58,19 @@ module "dev_bgg_generate_user_urls" {
   description   = "DEV Lambda function to generate user urls"
 }
 
+
+
+module "bgg_generate_user_urls_lambda_role" {
+  source    = "./modules/iam_lambda_roles"
+  role_name = "bgg_generate_user_urls_lambda_role"
+}
+
+
+resource "aws_iam_role_policy_attachment" "bgg_generate_user_urls_lambda_role" {
+  role       = module.bgg_generate_user_urls_lambda_role.role_name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
+}
+
 module "bgg_generate_ratings_urls" {
   source        = "./modules/lambda_function_direct"
   function_name = "bgg_generate_ratings_urls"
@@ -82,7 +82,6 @@ module "bgg_generate_ratings_urls" {
   environment   = "prod"
   description   = "Lambda function to generate ratings urls"
 }
-
 module "dev_bgg_generate_ratings_urls" {
   source        = "./modules/lambda_function_direct"
   function_name = "dev_bgg_generate_ratings_urls"
@@ -95,152 +94,39 @@ module "dev_bgg_generate_ratings_urls" {
   description   = "DEV Lambda function to generate ratings urls"
 }
 
-module "bgg_scraper_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "bgg_scraper_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_scraper_fargate_trigger_role.arn
-  handler       = "${var.bgg_scraper}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
-  description   = "Lambda function to trigger the boardgamegeek scraper fargate task"
+module "trigger_bgg_generate_ratings_urls_lambda" {
+  source        = "./modules/iam_lambda_run_permissions"
+  function_name = module.bgg_generate_ratings_urls.function_name
+  region        = var.REGION
+  account_id    = data.aws_caller_identity.current.account_id
 }
 
-module "dev_bgg_scraper_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_scraper_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_scraper_fargate_trigger_role.arn
-  handler       = "${var.bgg_scraper}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the boardgamegeek scraper fargate task"
+module "bgg_generate_ratings_urls_lambda_role" {
+  source    = "./modules/iam_lambda_roles"
+  role_name = "bgg_generate_ratings_urls_lambda"
 }
 
-module "bgg_game_data_cleaner_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "${var.bgg_game_data_cleaner}_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_game_data_cleaner_fargate_trigger_role.arn
-  handler       = "${var.bgg_game_data_cleaner}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
-  description   = "Lambda function to trigger the boardgamegeek cleaner fargate task"
+resource "aws_iam_role_policy_attachment" "bgg_generate_ratings_urls_lambda_attach" {
+  role       = module.bgg_generate_ratings_urls_lambda_role.role_name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
 }
 
 
-module "dev_bgg_game_data_cleaner_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_game_data_cleaner_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_game_data_cleaner_fargate_trigger_role.arn
-  handler       = "${var.bgg_game_data_cleaner}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
+resource "aws_iam_policy" "lambda_direct_permissions" {
+  name        = "lambda_run_permissions"
+  description = "Policy to allow running of the Lambda functions"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid = "TriggerLambdaFunction"
+        Action = [
+          "lambda:InvokeFunction*",
+        ]
+        Effect   = "Allow"
+        Resource = concat([for function in local.lambda_functions : "arn:aws:lambda:${var.REGION}:${data.aws_caller_identity.current.account_id}:function:${function}"], ["${aws_lambda_function.bgg_boardgame_file_retrieval_lambda.arn}"])
+      },
+    ]
+  })
 }
-
-module "bgg_orchestrator_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "bgg_orchestrator_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_orchestrator_fargate_trigger_role.arn
-  handler       = "${var.bgg_orchestrator}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
-  description   = "Lambda function to trigger the boardgamegeek orchestrator fargate task"
-}
-
-module "dev_bgg_orchestrator_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_orchestrator_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_orchestrator_fargate_trigger_role.arn
-  handler       = "${var.bgg_orchestrator}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the boardgamegeek orchestrator fargate task"
-}
-
-module "bgg_ratings_data_cleaner_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "bgg_ratings_data_cleaner_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_ratings_data_cleaner_fargate_trigger_role.arn
-  handler       = "${var.bgg_ratings_data_cleaner}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
-  description   = "Lambda function to trigger the boardgamegeek cleaner fargate task"
-}
-
-
-module "dev_bgg_ratings_data_cleaner_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_ratings_data_cleaner_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_ratings_data_cleaner_fargate_trigger_role.arn
-  handler       = "${var.bgg_ratings_data_cleaner}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
-}
-
-module "bgg_users_data_cleaner_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "bgg_users_data_cleaner_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_users_data_cleaner_fargate_trigger_role.arn
-  handler       = "${var.bgg_users_data_cleaner}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
-  description   = "Lambda function to trigger the boardgamegeek cleaner fargate task"
-}
-
-
-module "dev_bgg_users_data_cleaner_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_users_data_cleaner_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_users_data_cleaner_fargate_trigger_role.arn
-  handler       = "${var.bgg_users_data_cleaner}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
-}
-
-module "bgg_ratings_embedder_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "${var.bgg_ratings_embedder}_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_ratings_embedder_fargate_trigger_role.arn
-  handler       = "${var.bgg_ratings_embedder}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
-  description   = "Lambda function to trigger the boardgamegeek cleaner fargate task"
-}
-
-
-module "dev_bgg_ratings_embedder_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_ratings_embedder_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_ratings_embedder_fargate_trigger_role.arn
-  handler       = "${var.bgg_ratings_embedder}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
-}
-
-
