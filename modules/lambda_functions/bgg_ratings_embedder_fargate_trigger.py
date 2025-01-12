@@ -44,6 +44,16 @@ def lambda_handler(event, context):
 
     ecs_client = boto3.client("ecs")
 
+    security_groups = [
+        terraform_state_file["outputs"]["shared_resources_sg"]["value"],
+        # terraform_state_file["outputs"]["sg_ec2_weaviate_port_access"]["value"],
+    ]
+
+    print(security_groups)
+
+    subnets = terraform_state_file["outputs"]["public_subnets"]["value"][0]
+    print(subnets)
+
     latest_version = (
         ecs_client.describe_task_definition(taskDefinition=task_definition)
         .get("taskDefinition")
@@ -59,7 +69,8 @@ def lambda_handler(event, context):
         enableECSManagedTags=False,
         networkConfiguration={
             "awsvpcConfiguration": {
-                "subnets": terraform_state_file["outputs"]["public_subnets"]["value"],
+                "subnets": [subnets],
+                "securityGroups": security_groups,
                 "assignPublicIp": "ENABLED",
             },
         },
