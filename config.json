@@ -1,5 +1,4 @@
 {
-    "s3_scraper_bucket": "boardgamegeek-scraper",
     "game_dfs_dirty": "game_dfs_dirty",
     "scraper_task_definition": "bgg_scraper",
     "desc_task_definition": "rag_description_generation",

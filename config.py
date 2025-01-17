@@ -16,3 +16,5 @@ if LocalFileHandler().check_file_exists(file_path="config.json"):
 else:
     print("Loading config from S3")
     CONFIGS = S3FileHandler().load_file(file_path="config.json")
+
+CONFIGS["s3_scraper_bucket"] = os.environ.get("S3_SCRAPER_BUCKET")
