@@ -19,13 +19,13 @@ ENV PYTHONPATH=.
 ENV ENABLE_CUDA=0
 
 # Copy the source code into the container
-COPY modules/ratings_embedder modules/ratings_embedder
+COPY modules/rag_ratings_embedder modules/ratings_embedder
 COPY utils utils
 COPY data data
-COPY modules/ratings_embedder/Pipfile* .
+COPY modules/rag_ratings_embedder/Pipfile* .
 COPY config* .
 
 # Install dependencies with pipenv
 RUN pipenv sync
 
-ENTRYPOINT ["pipenv", "run", "python", "modules/ratings_embedder/main.py"]
+ENTRYPOINT ["pipenv", "run", "python", "modules/rag_ratings_embedder/main.py"]

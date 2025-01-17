@@ -1,4 +1,4 @@
-name: PROD deployment to boardgamegeek game data cleaner
+name: PROD deployment to rag ratings embedder
 
 on:
   push:

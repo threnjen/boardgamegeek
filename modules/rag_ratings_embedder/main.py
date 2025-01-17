@@ -3,7 +3,7 @@ from utils.local_file_handler import LocalFileHandler
 
 if __name__ == "__main__":
     configs = LocalFileHandler().load_file(
-        file_path="modules/ratings_embedder/config.json"
+        file_path="modules/rag_ratings_embedder/config.json"
     )
     embedder = TextEmbedderToFile(info_configs=configs)
     print(embedder.df.head())

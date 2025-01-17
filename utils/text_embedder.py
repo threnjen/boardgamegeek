@@ -1,6 +1,10 @@
 import pandas as pd
 import os
-from sentence_transformers import SentenceTransformer
+
+# from sentence_transformers import SentenceTransformer
+from transformers import AutoTokenizer, AutoModel, BertTokenizerFast, BertModel
+import torch
+import torch.nn.functional as F
 from pydantic import BaseModel, ConfigDict
 from config import CONFIGS
 from utils.processing_functions import load_file_local_first, save_file_local_first
@@ -18,7 +22,13 @@ class TextEmbedderToFile(BaseModel):
     path: str = ""
     df: PandasDataFrame = pd.DataFrame()
     embed_column: str = "name"
-    model: SentenceTransformer = SentenceTransformer(
+    # model: SentenceTransformer = SentenceTransformer(
+    #     "sentence-transformers/all-MiniLM-L6-v2"
+    # )
+    tokenizer: BertTokenizerFast = AutoTokenizer.from_pretrained(
+        "sentence-transformers/all-MiniLM-L6-v2"
+    )
+    model: BertModel = AutoModel.from_pretrained(
         "sentence-transformers/all-MiniLM-L6-v2"
     )
 
@@ -38,10 +48,45 @@ class TextEmbedderToFile(BaseModel):
 
         self.embed_column = self.info_configs["embed_column"]
 
+    def mean_pooling(self, model_output, attention_mask):
+        token_embeddings = model_output[
+            0
+        ]  # First element of model_output contains all token embeddings
+        input_mask_expanded = (
+            attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        )
+        return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
+            input_mask_expanded.sum(1), min=1e-9
+        )
+
     def embed_text(self):
-        sentences = self.df["value"].values
-        embeddings = self.model.encode(sentences)
-        self.df["embedding"] = list(embeddings)
+        sentences = list(self.df["value"].values)
+        # embeddings = self.model.encode(sentences)
+        # self.df["embedding"] = list(embeddings)
+
+        # Tokenize sentences
+        encoded_input = self.tokenizer(
+            sentences, padding=True, truncation=True, return_tensors="pt"
+        )
+
+        # Compute token embeddings
+        with torch.no_grad():
+            model_output = self.model(**encoded_input)
+
+        # Perform pooling
+        sentence_embeddings = self.mean_pooling(
+            model_output, encoded_input["attention_mask"]
+        )
+
+        # Normalize embeddings
+        sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
+
+        print("Sentence embeddings:")
+        print(sentence_embeddings)
+
+        raw_embeddings = sentence_embeddings.numpy()
+
+        self.df["embedding"] = list(raw_embeddings)
 
     def save_embeddings(self):
         save_file_local_first(

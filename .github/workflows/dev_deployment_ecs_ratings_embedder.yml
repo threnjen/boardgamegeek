@@ -1,4 +1,4 @@
-name: DEV deployment to boardgamegeek game data cleaner
+name: DEV deployment to rag ratings embedder
 
 on:
   push:

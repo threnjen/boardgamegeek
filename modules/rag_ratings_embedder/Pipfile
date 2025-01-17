@@ -12,6 +12,7 @@ pydantic = "*"
 awswrangler = "*"
 sentence-transformers = "*"
 torch = "*"
+transformers = "*"
 
 [dev-packages]
 pytest = "*"

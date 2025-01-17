@@ -28,6 +28,7 @@ openai = "*"
 nltk = "*"
 sentence-transformers = "*"
 pydantic = "*"
+transformers = "*"
 
 [dev-packages]
 pytest = "*"
