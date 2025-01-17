@@ -11,6 +11,7 @@ boto3 = "*"
 pydantic = "*"
 awswrangler = "*"
 sentence-transformers = "*"
+torch = "*"
 
 [dev-packages]
 pytest = "*"
