@@ -24,6 +24,7 @@ COPY utils utils
 COPY data data
 COPY modules/rag_ratings_embedder/Pipfile* .
 COPY config* .
+COPY embedding_model_huggingface embedding_model_huggingface
 
 # Install dependencies with pipenv
 RUN pipenv sync

@@ -25,12 +25,16 @@ class TextEmbedderToFile(BaseModel):
     # model: SentenceTransformer = SentenceTransformer(
     #     "sentence-transformers/all-MiniLM-L6-v2"
     # )
+    # tokenizer: BertTokenizerFast = AutoTokenizer.from_pretrained(
+    #     "sentence-transformers/all-MiniLM-L6-v2"
+    # )
+    # model: BertModel = AutoModel.from_pretrained(
+    #     "sentence-transformers/all-MiniLM-L6-v2"
+    # )
     tokenizer: BertTokenizerFast = AutoTokenizer.from_pretrained(
-        "sentence-transformers/all-MiniLM-L6-v2"
+        "embedding_model_huggingface/"
     )
-    model: BertModel = AutoModel.from_pretrained(
-        "sentence-transformers/all-MiniLM-L6-v2"
-    )
+    model: BertModel = AutoModel.from_pretrained("embedding_model_huggingface/")
 
     def model_post_init(self, __context):
 
