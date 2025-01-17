@@ -94,9 +94,9 @@ Primary chain chain; Dagster job `bgg_job`
 - `modules/bgg_boardgame_file_retrieval` - Gets the `boardgames_ranks.csv` file from BGG and saves it to S3.
 - `lambda_functions.generate_game_urls_lambda.py` - Generates games urls for the games scraper.
 - `modules/bgg_scraper/main.py` with `scraper_type="games"` - scrape game info from the games urls.
-- `modules/game_data_cleaner/mian.py` - Clean the scraped games data.
+- `modules/bgg_game_data_cleaner/main.py` - Clean the scraped games data.
 - `lambda_functions.generate_ratings_urls_lambda.py` - Generate ratings urls for the ratings scraper.
-- `modules/bgg_scraper/mian.py` with `scraper_type="ratings"` - Scrapes ratings info from the game data.
+- `modules/bgg_scraper/main.py` with `scraper_type="ratings"` - Scrapes ratings info from the game data.
 - `modules/ratings_daga_cleaner/main.py` - Clean the scraped ratings data.
 
 Optional chain; Dagster job `user_job`
@@ -141,7 +141,7 @@ Optional chain; Dagster job `user_job`
 
 ### 04 Clean raw scraped GAME data
 
-- `modules.game_data_cleaner.main.py`
+- `modules.bgg_game_data_cleaner.main.py`
     - Takes the scraped files and composes into various dirty data frames of full data. Writes these locally. Will only write to S3 if run on AWS.
     - Step 03 needs to have run at least once for this to work, although two sample files from local will also suffice for testing.
     - If files are present on S3, it will download all of them for this process. If there are no files on S3 yet, it will use files in `data/prod/games/scraped_xml_raw`
