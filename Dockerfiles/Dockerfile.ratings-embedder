@@ -12,8 +12,11 @@ RUN pip3 install pipenv
 # Create necessary directories
 RUN mkdir -p modules 
 
+RUN ldconfig /usr/local/cuda/lib64
+
 # Set PYTHONPATH to the current directory
 ENV PYTHONPATH=.
+ENV ENABLE_CUDA=0
 
 # Copy the source code into the container
 COPY modules/ratings_embedder modules/ratings_embedder
