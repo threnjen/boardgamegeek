@@ -31,8 +31,8 @@ module "bgg_ratings_embedder_ecs" {
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_embedder}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_embedder}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_ratings_embedder}:latest"
-  cpu                    = "512"
-  memory                 = "4096"
+  cpu                    = "1024"
+  memory                 = "8192"
   region                 = var.REGION
 }
 
@@ -46,8 +46,8 @@ module "dev_bgg_ratings_embedder_ecs" {
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_embedder}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_embedder}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_ratings_embedder}:latest"
-  cpu                    = "512"
-  memory                 = "4096"
+  cpu                    = "1024"
+  memory                 = "8192"
   region                 = var.REGION
 }
 

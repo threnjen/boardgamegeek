@@ -1,4 +1,4 @@
-FROM python:3.12
+FROM python:3.12-slim
 
 # Install required dependencies
 RUN apt-get update && apt-get install -y \
@@ -15,18 +15,19 @@ ENV CUDA_VISIBLE_DEVICES=""
 ENV ENABLE_CUDA=0
 
 # Create and switch to a new user
-RUN useradd --create-home appuser
-USER appuser
-RUN python -c 'from sentence_transformers import SentenceTransformer; embedder = SentenceTransformer("all-mpnet-base-v2")'
-COPY . /app
+# RUN pip install sentence_transformers
+# RUN python -c 'from sentence_transformers import SentenceTransformer; embedder = SentenceTransformer("all-MiniLM-L6-v2")'
+# COPY . /app
 
 # Create necessary directories
 RUN mkdir -p modules 
 # Copy the source code into the container
 COPY modules/rag_ratings_embedder modules/rag_ratings_embedder
+COPY modules/rag_ratings_embedder/Pipfile* .
 COPY utils utils
 COPY data data
-COPY modules/rag_ratings_embedder/Pipfile* .
+# COPY data/prod/ratings/ratings_dfs_clean/quality_ratings.pkl data/prod/ratings/ratings_dfs_clean/quality_ratings.pkl
+# COPY data/test/ratings/ratings_dfs_clean/quality_ratings.pkl data/test/ratings/ratings_dfs_clean/quality_ratings.pkl
 COPY config* .
 COPY embedding_model_huggingface embedding_model_huggingface
 
