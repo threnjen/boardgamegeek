@@ -12,8 +12,6 @@ RUN pip3 install pipenv
 # Create necessary directories
 RUN mkdir -p modules 
 
-RUN mkdir ~/.cache
-
 # Set PYTHONPATH to the current directory
 ENV PYTHONPATH=.
 
