@@ -23,6 +23,8 @@ COPY data data
 COPY modules/rag_ratings_embedder/Pipfile* .
 COPY config* .
 
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', cache_folder='/tmp')"
+
 # Install dependencies with pipenv
 RUN pipenv sync
 
