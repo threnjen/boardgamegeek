@@ -14,6 +14,7 @@ RUN mkdir -p modules
 
 # Set PYTHONPATH to the current directory
 ENV PYTHONPATH=.
+ENV CUDA_VISIBLE_DEVICES=""
 
 # Copy the source code into the container
 COPY modules/rag_ratings_embedder modules/rag_ratings_embedder
