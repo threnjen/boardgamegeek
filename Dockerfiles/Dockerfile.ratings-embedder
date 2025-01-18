@@ -9,14 +9,19 @@ RUN apt-get update && apt-get install -y \
 # Install pipenv
 RUN pip3 install pipenv
 
-# Create necessary directories
-RUN mkdir -p modules 
-
 # Set PYTHONPATH to the current directory
 ENV PYTHONPATH=.
 ENV CUDA_VISIBLE_DEVICES=""
 ENV ENABLE_CUDA=0
 
+# Create and switch to a new user
+RUN useradd --create-home appuser
+USER appuser
+RUN python -c 'from sentence_transformers import SentenceTransformer; embedder = SentenceTransformer("all-mpnet-base-v2")'
+COPY . /app
+
+# Create necessary directories
+RUN mkdir -p modules 
 # Copy the source code into the container
 COPY modules/rag_ratings_embedder modules/rag_ratings_embedder
 COPY utils utils
