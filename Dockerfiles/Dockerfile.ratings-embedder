@@ -12,6 +12,8 @@ RUN pip3 install pipenv
 # Create necessary directories
 RUN mkdir -p modules 
 
+RUN mkdir ~/.cache
+
 # Set PYTHONPATH to the current directory
 ENV PYTHONPATH=.
 
@@ -21,7 +23,6 @@ COPY utils utils
 COPY data data
 COPY modules/rag_ratings_embedder/Pipfile* .
 COPY config* .
-COPY embedding_model_huggingface embedding_model_huggingface
 
 # Install dependencies with pipenv
 RUN pipenv sync
