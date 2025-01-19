@@ -43,7 +43,7 @@ class DynamoDB(BaseModel):
 
         # make a default timestamp that is the standard 1970 01 01 default
         default_timestamp = "19700101"
-        days_since_last_process = 3
+        days_since_last_process = 30
 
         try:
             item = self.dynamodb_client.get_item(

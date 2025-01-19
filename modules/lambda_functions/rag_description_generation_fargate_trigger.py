@@ -59,8 +59,8 @@ def lambda_handler(event, context):
     )
 
     start_block = int(event.get("start_block", "0"))
-    number_blocks = 10
-    total_entries = 1000
+    number_blocks = 30
+    total_entries = 5000
     block_size = total_entries // number_blocks
 
     print(start_block, number_blocks, total_entries, block_size)
@@ -118,7 +118,7 @@ def lambda_handler(event, context):
         )
         print(response)
         print(f"Successfully launched block {block}")
-        time.sleep(60)
+        time.sleep(5)
 
 
 if __name__ == "__main__":
