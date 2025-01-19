@@ -15,9 +15,9 @@ ENV CUDA_VISIBLE_DEVICES=""
 ENV ENABLE_CUDA=0
 
 # Create and switch to a new user
-RUN pip install sentence_transformers
-RUN python -c 'from sentence_transformers import SentenceTransformer; embedder = SentenceTransformer("all-MiniLM-L6-v2")'
-COPY . /app
+# RUN pip install sentence_transformers
+# RUN python -c 'from sentence_transformers import SentenceTransformer; embedder = SentenceTransformer("all-MiniLM-L6-v2")'
+# COPY . /app
 
 # Create necessary directories
 RUN mkdir -p modules 
