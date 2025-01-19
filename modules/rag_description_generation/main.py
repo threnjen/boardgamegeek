@@ -91,14 +91,14 @@ class RagDescription(BaseModel):
         return game_df_reduced
 
     def merge_game_df_with_ratings_df(self, game_df_reduced):
-        print(f"\nLoading user ratings from {RATINGS_CONFIGS['clean_dfs_directory']}")
+        print(f"\nLoading user ratings from {RATINGS_CONFIGS['dirty_dfs_directory']}")
         ratings_df = load_file_local_first(
-            path=RATINGS_CONFIGS["clean_dfs_directory"],
-            file_name="embeddings.pkl",
+            path=RATINGS_CONFIGS["dirty_dfs_directory"],
+            file_name="ratings_data.pkl",
         )
-        ratings_df = ratings_df[["BGGId", "rating", "embedding"]]
+        ratings_df = ratings_df[["username", "BGGId", "rating", "value"]]
 
-        print("Loaded ratings embeddings data")
+        print("Loaded user ratings data")
 
         print(
             f"Reducing user ratings to only include games in the reduced game dataframe\n"
@@ -131,12 +131,12 @@ class RagDescription(BaseModel):
     ):
         if not self.dynamodb_client.check_dynamo_db_key(game_id=game_id):
             df, game_name, game_mean = get_single_game_entries(
-                df=all_games_df, game_id=game_id, sample_pct=0.3
+                df=all_games_df, game_id=game_id, sample_pct=0.1
             )
             reviews = df["combined_review"].to_list()
             vectors = df["embedding"].to_list()
             weaviate_client.add_reviews_collection_batch(
-                game_id=game_id, reviews=reviews, vectors=vectors
+                game_id=game_id, reviews=reviews  # , vectors=vectors
             )
             current_prompt = prompt_replacement(
                 current_prompt=generate_prompt,
