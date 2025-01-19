@@ -29,6 +29,7 @@ class RagDescription(BaseModel):
     start_block: str
     end_block: str
     num_completed_games: int = 0
+    collection_name: str = ""
     ip_address: str = None
     overall_stats: dict = {}
     game_ids: list = []
@@ -37,6 +38,7 @@ class RagDescription(BaseModel):
     dynamodb_client: DynamoDB = None
 
     def model_post_init(self, __context):
+        self.collection_name = f"reviews_{self.start_block}_{self.end_block}"
         self.start_block = int(self.start_block)
         self.end_block = int(self.end_block)
         self.num_completed_games = self.start_block
@@ -134,9 +136,11 @@ class RagDescription(BaseModel):
                 df=all_games_df, game_id=game_id, sample_pct=0.1
             )
             reviews = df["combined_review"].to_list()
-            vectors = df["embedding"].to_list()
+            # vectors = df["embedding"].to_list()
             weaviate_client.add_reviews_collection_batch(
-                game_id=game_id, reviews=reviews  # , vectors=vectors
+                collection_name=self.collection_name,
+                game_id=game_id,
+                reviews=reviews,  # , vectors=vectors
             )
             current_prompt = prompt_replacement(
                 current_prompt=generate_prompt,
@@ -165,9 +169,7 @@ class RagDescription(BaseModel):
         weaviate_client = WeaviateClient(
             # ip_address=self.ip_address,
         )
-        weaviate_client.create_reviews_collection(
-            collection_name=f"reviews_{self.start_block}_{self.end_block}"
-        )
+        weaviate_client.create_reviews_collection(collection_name=self.collection_name)
 
         self.dynamodb_client = DynamoDB()
 
