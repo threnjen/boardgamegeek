@@ -23,10 +23,9 @@ class TextEmbedderToFile(BaseModel):
     path: str = ""
     df: PandasDataFrame = pd.DataFrame()
     embed_column: str = "name"
-    model: SentenceTransformer = SentenceTransformer("embedding_model_huggingface/")
-    # model: SentenceTransformer = SentenceTransformer(
-    #     "sentence-transformers/all-MiniLM-L6-v2"
-    # )
+    model: SentenceTransformer = SentenceTransformer(
+        "sentence-transformers/all-MiniLM-L6-v2"
+    )
     # tokenizer: BertTokenizerFast = AutoTokenizer.from_pretrained(
     #     "sentence-transformers/all-MiniLM-L6-v2"
     # )
