@@ -149,7 +149,9 @@ class RagDescription(BaseModel):
                 game_mean=game_mean,
             )
             summary = weaviate_client.generate_aggregated_review(
-                game_id, current_prompt
+                game_id=game_id,
+                collection_name=self.collection_name,
+                generate_prompt=current_prompt,
             )
             self.dynamodb_client.divide_and_process_generated_summary(
                 game_id, summary=summary.generated
