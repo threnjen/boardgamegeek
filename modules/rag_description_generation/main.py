@@ -164,9 +164,10 @@ class RagDescription(BaseModel):
 
         weaviate_client = WeaviateClient(
             # ip_address=self.ip_address,
-            collection_name=f"reviews_{self.start_block}_{self.end_block}",
         )
-        weaviate_client.create_reviews_collection()
+        weaviate_client.create_reviews_collection(
+            collection_name=f"reviews_{self.start_block}_{self.end_block}"
+        )
 
         self.dynamodb_client = DynamoDB()
 
