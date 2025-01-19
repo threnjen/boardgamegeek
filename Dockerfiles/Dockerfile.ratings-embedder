@@ -29,7 +29,7 @@ COPY data data
 # COPY data/prod/ratings/ratings_dfs_clean/quality_ratings.pkl data/prod/ratings/ratings_dfs_clean/quality_ratings.pkl
 # COPY data/test/ratings/ratings_dfs_clean/quality_ratings.pkl data/test/ratings/ratings_dfs_clean/quality_ratings.pkl
 COPY config* .
-COPY embedding_model_huggingface embedding_model_huggingface
+# COPY embedding_model_huggingface embedding_model_huggingface
 
 # Install dependencies with pipenv
 RUN pipenv sync
