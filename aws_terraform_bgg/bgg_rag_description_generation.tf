@@ -353,10 +353,10 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
           name  = "IS_LOCAL",
           value = "false"
         },
-        # {
-        #   name  = "TRANSFORMERS_INFERENCE_API"
-        #   value = "http://127.0.0.1:8080"
-        # }
+    {
+      name  = "TRANSFORMERS_INFERENCE_API"
+      value = "http://127.0.0.1:8080"
+    }
       ],
       environmentFiles = [
         {
@@ -387,53 +387,53 @@ resource "aws_ecs_task_definition" "dev_weaviate_rag_generation" {
         secretOptions = []
       },
       systemControls = [],
-      # dependsOn = [
-      #   {
-      #     containerName = var.t2v-transformers,
-      #     condition     = "START"
-      #   }
-      # ]
+  dependsOn = [
+    {
+      containerName = var.t2v-transformers,
+      condition     = "START"
+    }
+  ]
     },
-    # {
-    #   name      = var.t2v-transformers,
-    #   image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.t2v-transformers}:latest"
-    #   cpu       = 0,
-    #   essential = true,
-    #   environment = [
-    #     {
-    #       name  = "ENVIRONMENT",
-    #       value = "prod"
-    #     },
-    #     {
-    #       name  = "IS_LOCAL",
-    #       value = "false"
-    #     },
-    #     {
-    #       name  = "ENABLE_CUDA",
-    #       value = "0"
-    #   }],
-    #   mountPoints = [],
-    #   volumesFrom = [],
-    #   ulimits     = [],
-    #   logConfiguration = {
-    #     logDriver = "awslogs",
-    #     options = {
-    #       "awslogs-group"         = "/ecs/${var.t2v-transformers}",
-    #       "awslogs-create-group"  = "true",
-    #       "awslogs-region"        = var.REGION,
-    #       "awslogs-stream-prefix" = "ecs"
-    #     },
-    #     secretOptions = []
-    #   },
-    #   systemControls = [],
-    #   healthCheck = {
-    #     command     = ["CMD-SHELL", "curl -f http://127.0.0.1:8080/health || exit 1"],
-    #     interval    = 30,
-    #     retries     = 3,
-    #     startPeriod = 60,
-    #     timeout     = 5
-    #   }
-    # },
+{
+  name      = var.t2v-transformers,
+  image     = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.t2v-transformers}:latest"
+  cpu       = 0,
+  essential = true,
+  environment = [
+    {
+      name  = "ENVIRONMENT",
+      value = "prod"
+    },
+    {
+      name  = "IS_LOCAL",
+      value = "false"
+    },
+    {
+      name  = "ENABLE_CUDA",
+      value = "0"
+  }],
+  mountPoints = [],
+  volumesFrom = [],
+  ulimits     = [],
+  logConfiguration = {
+    logDriver = "awslogs",
+    options = {
+      "awslogs-group"         = "/ecs/${var.t2v-transformers}",
+      "awslogs-create-group"  = "true",
+      "awslogs-region"        = var.REGION,
+      "awslogs-stream-prefix" = "ecs"
+    },
+    secretOptions = []
+  },
+  systemControls = [],
+  healthCheck = {
+    command     = ["CMD-SHELL", "curl -f http://127.0.0.1:8080/health || exit 1"],
+    interval    = 30,
+    retries     = 3,
+    startPeriod = 60,
+    timeout     = 5
+  }
+},
 
     ],
 
