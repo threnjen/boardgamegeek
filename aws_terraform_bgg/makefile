@@ -83,7 +83,7 @@ install_state_file_bucket:
 	cd ..
 
 # setup main project
-setup_boardgamegeek: 
+setup_boardgamegeek: install_state_file_bucket
 	pipenv run terraform init -backend-config backend.conf && \
 	pipenv run terraform apply
 
