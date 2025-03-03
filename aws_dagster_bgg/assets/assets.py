@@ -7,6 +7,7 @@ logger = get_dagster_logger()
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 WORKING_ENV_DIR = "data/prod/" if ENVIRONMENT == "prod" else "data/test/"
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 
 
 @asset
@@ -23,7 +24,7 @@ def boardgame_ranks_csv(
 
     configs = config_resource.get_config_file()
 
-    s3_scraper_bucket = configs["s3_scraper_bucket"]
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
 
     original_timestamps = {
         f'{WORKING_ENV_DIR}{configs["boardgamegeek_csv_filename"]}': s3_resource.get_last_modified(
@@ -71,7 +72,7 @@ def games_scraper_urls_raw(
 
     configs = config_resource.get_config_file()
 
-    s3_scraper_bucket = configs["s3_scraper_bucket"]
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
     raw_urls_directory = configs["games"]["raw_urls_directory"]
     output_urls_json_suffix = configs["games"]["output_urls_json_suffix"]
 
@@ -124,8 +125,8 @@ def game_dfs_clean(
 
     configs = config_resource.get_config_file()
 
-    bucket = configs["s3_scraper_bucket"]
-    key = f'{WORKING_ENV_DIR}{configs["games"]["output_xml_directory"]}'
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
+
     data_sets = configs["games"]["data_sets"]
 
     task_definition = (
@@ -146,7 +147,7 @@ def game_dfs_clean(
 
     original_timestamps = {
         key: s3_resource.get_last_modified(
-            bucket=bucket,
+            bucket=s3_scraper_bucket,
             key=key,
         )
         for key in data_set_file_names
@@ -155,7 +156,7 @@ def game_dfs_clean(
     compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
         file_list_to_check=data_set_file_names,
-        location_bucket=bucket,
+        location_bucket=s3_scraper_bucket,
         sleep_timer=300,
         s3_resource=s3_resource,
     )
@@ -183,7 +184,7 @@ def ratings_scraper_urls_raw(
 
     configs = config_resource.get_config_file()
 
-    s3_scraper_bucket = configs["s3_scraper_bucket"]
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
     raw_urls_directory = configs["ratings"]["raw_urls_directory"]
     output_urls_json_suffix = configs["ratings"]["output_urls_json_suffix"]
 
@@ -236,10 +237,10 @@ def ratings_dfs_dirty(
 
     configs = config_resource.get_config_file()
 
-    bucket = configs["s3_scraper_bucket"]
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
     key = f'{WORKING_ENV_DIR}{configs["ratings"]["output_xml_directory"]}'
 
-    raw_ratings_files = s3_resource.list_file_keys(bucket=bucket, key=key)
+    raw_ratings_files = s3_resource.list_file_keys(bucket=s3_scraper_bucket, key=key)
 
     assert len(raw_ratings_files) == 29 if ENVIRONMENT == "prod" else 1
 
@@ -258,7 +259,7 @@ def ratings_dfs_dirty(
 
     original_timestamps = {
         key: s3_resource.get_last_modified(
-            bucket=bucket,
+            bucket=s3_scraper_bucket,
             key=key,
         )
         for key in check_filenames
@@ -267,7 +268,7 @@ def ratings_dfs_dirty(
     compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
         file_list_to_check=check_filenames,
-        location_bucket=bucket,
+        location_bucket=s3_scraper_bucket,
         sleep_timer=300,
         s3_resource=s3_resource,
     )
@@ -297,7 +298,7 @@ def users_scraper_urls_raw(
 
     configs = config_resource.get_config_file()
 
-    s3_scraper_bucket = configs["s3_scraper_bucket"]
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
     raw_urls_directory = configs["users"]["raw_urls_directory"]
     output_urls_json_suffix = configs["users"]["output_urls_json_suffix"]
 
@@ -350,7 +351,7 @@ def user_dfs_dirty(
 
     configs = config_resource.get_config_file()
 
-    bucket = configs["s3_scraper_bucket"]
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
 
     task_definition = (
         "bgg_users_data_cleaner"
@@ -367,7 +368,7 @@ def user_dfs_dirty(
 
     original_timestamps = {
         key: s3_resource.get_last_modified(
-            bucket=bucket,
+            bucket=s3_scraper_bucket,
             key=key,
         )
         for key in check_filenames
@@ -376,7 +377,7 @@ def user_dfs_dirty(
     compare_timestamps_for_refresh(
         original_timestamps=original_timestamps,
         file_list_to_check=check_filenames,
-        location_bucket=bucket,
+        location_bucket=s3_scraper_bucket,
         sleep_timer=300,
         s3_resource=s3_resource,
     )
@@ -468,13 +469,13 @@ def scrape_data(
     scraper_type: str,
 ) -> bool:
 
-    bucket = configs["s3_scraper_bucket"]
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
     input_urls_key = configs[scraper_type]["raw_urls_directory"]
 
     input_urls_key = f"{WORKING_ENV_DIR}{input_urls_key}"
 
     game_scraper_url_filenames = s3_resource.list_file_keys(
-        bucket=bucket, key=input_urls_key
+        bucket=s3_scraper_bucket, key=input_urls_key
     )
 
     task_definition = configs["scraper_task_definition"]
