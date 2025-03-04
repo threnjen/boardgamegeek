@@ -30,26 +30,40 @@ class DirtyDataExtractor:
         pass
 
     def data_extraction_chain(self):
-        file_list_to_process = self._get_file_list()
-        raw_storage = self._process_file_list(file_list_to_process)
-        dirty_storage = self._organize_raw_storage(raw_storage)
-        self._save_dfs_to_disk_or_s3(dirty_storage)
+        xml_files_to_process = self._get_raw_xml_file_keys()
+        raw_storage = self._process_raw_xml_files(xml_files_to_process)
+        dirty_game_data_frames = self._create_dirty_data_frames(raw_storage)
+        self._save_dirty_dfs(dirty_game_data_frames)
 
-    def _get_file_list(self) -> list[str]:
+    def _get_raw_xml_file_keys(self) -> list[str]:
+        """Get the list of S3 file keys of raw xml to process.
+        The function will return a list of keys from the prod S3 bucket if the ENVIRONMENT is set to prod.
+        The function will return a list of keys from the dev S3 bucket if the ENVIRONMENT is set to dev.
+        If there are no keys in the S3 bucket, the function will return a list of local files in the dev directory.
+        """
         # list files in data dirty prefix in s3 using awswrangler
         xml_directory = GAME_CONFIGS["output_xml_directory"]
-        file_list_to_process = get_s3_keys_based_on_env(xml_directory)
-        if not file_list_to_process:
+        xml_files_to_process = get_s3_keys_based_on_env(xml_directory)
+        if not xml_files_to_process:
             local_files = get_local_keys_based_on_env(xml_directory)
-            file_list_to_process = [x for x in local_files if x.endswith(".xml")]
-        print(file_list_to_process)
-        return file_list_to_process
+            xml_files_to_process = [x for x in local_files if x.endswith(".xml")]
+        return xml_files_to_process
 
-    def _process_file_list(self, file_list_to_process: list) -> dict[list]:
+    def _process_raw_xml_files(self, xml_files_to_process: list) -> dict[list]:
         """Process the list of files in the S3 bucket
         This function will process the list of files in the S3 bucket
-        and extract the necessary information from the XML files. The
-        function will return None."""
+        and extract the necessary information from the XML files.
+        The function will return a dictionary with the following keys:
+        - games: list of game entries
+        - designers: list of designer entries
+        - categories: list of category entries
+        - mechanics: list of mechanic entries
+        - artists: list of artist entries
+        - publishers: list of publisher entries
+        - subcategories: list of subcategory entries
+        - expansions: list of expansion entries
+        """
+        print("\nProcessing raw XML files")
 
         raw_storage = {
             "games": [],
@@ -63,7 +77,7 @@ class DirtyDataExtractor:
             "expansions": [],
         }
 
-        for file in file_list_to_process:
+        for file in xml_files_to_process:
             local_open = load_file_local_first(
                 path=GAME_CONFIGS["output_xml_directory"],
                 file_name=file.split("/")[-1],
@@ -73,12 +87,12 @@ class DirtyDataExtractor:
 
             game_entries = game_page.find_all("item")
 
-            print(f"Number of game entries in file: {len(game_entries)}")
+            print(
+                f"Number of game entries in file {file.split("/")[-1]}: {len(game_entries)}"
+            )
 
             if len(game_entries) == 0:
-                print(
-                    f"\n\nNo game entries found in file: {file}. Exiting application."
-                )
+                print(f"\n\nNo game entries found in file {file}. Exiting application.")
                 exit()
 
             for game_entry in game_entries:
@@ -113,12 +127,25 @@ class DirtyDataExtractor:
         if not raw_storage["games"]:
             return
 
+        print(raw_storage.keys())
         return raw_storage
 
-    def _organize_raw_storage(self, raw_storage: dict[list]) -> dict[pd.DataFrame]:
-        print("Crafting data frames")
+    def _create_dirty_data_frames(self, raw_storage: dict[list]) -> dict[pd.DataFrame]:
+        """Create data frames from the raw storage dictionary
+        This function will create data frames from the raw storage dictionary
+        and return a dictionary with the following keys:
+        - games: data frame of game entries
+        - designers: data frame of designer entries
+        - categories: data frame of category entries
+        - mechanics: data frame of mechanic entries
+        - artists: data frame of artist entries
+        - publishers: data frame of publisher entries
+        - subcategories: data frame of subcategory entries
+        - expansions: data frame of expansion entries
+        """
+        print("\nCrafting data frames")
 
-        dirty_storage = {}
+        dirty_game_data_frames = {}
 
         for table_name, list_of_entries in raw_storage.items():
             print(f"Len of {table_name}: {len(list_of_entries)}")
@@ -149,22 +176,26 @@ class DirtyDataExtractor:
 
             table = table.sort_values(by="BGGId").reset_index(drop=True)
 
-            dirty_storage[table_name] = table
+            dirty_game_data_frames[table_name] = table
 
         del raw_storage
-        return dirty_storage
 
-    def _save_dfs_to_disk_or_s3(self, dirty_storage: dict[pd.DataFrame]):
-        """Save all files as pkl files. Save to local drive in ENVIRONMENT==env, or
+        print(dirty_game_data_frames.keys())
+        return dirty_game_data_frames
+
+    def _save_dirty_dfs(self, dirty_game_data_frames: dict[pd.DataFrame]):
+        """Save all files as pkl files. Save to local drive in ENVIRONMENT==dev, or
         copy pkl to s3 if ENVIRONMENT==prod"""
 
-        for table_name, table in dirty_storage.items():
+        print("\nSaving data frames to disk or S3")
+
+        for table_name, table in dirty_game_data_frames.items():
 
             print(f"Saving {table_name} to disk and uploading to S3")
 
             save_dfs_to_disk_or_s3(
                 df=table,
-                table_name=table_name,
+                table_name=f"{table_name}_dirty",
                 path=GAME_CONFIGS["dirty_dfs_directory"],
             )
 
@@ -172,6 +203,7 @@ class DirtyDataExtractor:
             gc.collect()
 
     def _make_json_game_lookup_file(self, games_df: pd.DataFrame):
+        """Make a json file with game ids and game names for lookup"""
 
         games_df = games_df.copy()
 

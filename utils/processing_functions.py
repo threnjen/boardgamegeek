@@ -43,10 +43,6 @@ def get_local_keys_based_on_env(directory: str):
 def save_dfs_to_disk_or_s3(df: dict[pd.DataFrame], table_name: str, path: str):
     """Save all files as pkl files and csv files"""
 
-    print(f"\nSaving ratings data to disk and uploading to S3")
-
-    table_name = "ratings_data"
-
     # save and load as csv to properly infer data types
     save_file_local_first(
         path=path,
