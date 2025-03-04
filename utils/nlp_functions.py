@@ -3,9 +3,9 @@ from nltk.tokenize import word_tokenize
 import re
 
 
-def evaluate_quality_words_over_thresh(text: str) -> str:
+def evaluate_quality_words_over_thresh(text: str, threshold: int = 5) -> str:
     word_tokens = word_tokenize(text)
-    return len(word_tokens) > 5
+    return len(word_tokens) > threshold
 
 
 def filter_stopwords(text: str) -> str:

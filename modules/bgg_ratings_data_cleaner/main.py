@@ -27,10 +27,10 @@ class DirtyDataExtractor:
 
     def data_extraction_chain(self):
         """Main function to extract data from the XML files"""
-        file_list_to_process = get_xml_file_keys_based_on_env(
+        xml_files_to_process = get_xml_file_keys_based_on_env(
             xml_directory=RATING_CONFIGS["output_xml_directory"]
         )
-        all_entries = self._process_file_list(file_list_to_process)
+        all_entries = self._process_file_list(xml_files_to_process)
         ratings_df = self._create_table_from_data(all_entries)
         save_dfs_to_disk_or_s3(
             df=ratings_df,
@@ -45,7 +45,7 @@ class DirtyDataExtractor:
         )
         self._create_file_of_unique_user_ids(ratings_df)
 
-    def _process_file_list(self, file_list_to_process: list) -> list[dict]:
+    def _process_file_list(self, xml_files_to_process: list) -> list[dict]:
         """Process the list of files in the S3 bucket
         This function will process the list of files in the S3 bucket
         and extract the necessary information from the XML files. The
@@ -53,7 +53,7 @@ class DirtyDataExtractor:
 
         all_entries = []
 
-        for file in file_list_to_process:
+        for file in xml_files_to_process:
 
             game_entries = self._get_beautiful_soup(file_name=file)
 
@@ -111,11 +111,13 @@ class DirtyDataExtractor:
         """Create a cleaned and refined table of data"""
         df = df[df["value"].notna()]
 
-        df["value"] = df["value"].replace(r"[^A-Za-z0-9 ]+", "", regex=True)
+        # df["value"] = df["value"].replace(r"[^A-Za-z0-9 ]+", "", regex=True)
         df["value"] = df["value"].str.lower().apply(lambda x: filter_stopwords(x))
         df["value"] = df["value"].str.replace("  ", " ")
 
-        df["quality_review"] = df["value"].apply(evaluate_quality_words_over_thresh)
+        df["quality_review"] = df["value"].apply(
+            lambda x: evaluate_quality_words_over_thresh(threshold=10, text=x)
+        )
         df = df[df["quality_review"] == True]
 
         df = df.drop(columns=["quality_review"])
