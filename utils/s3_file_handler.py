@@ -12,6 +12,7 @@ from utils.file_handler import FileHandler
 
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 REGION_NAME = os.environ.get("TF_VAR_REGION", "us-west-2")
+TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 
 
 class S3FileHandler(FileHandler):
@@ -102,6 +103,16 @@ class S3FileHandler(FileHandler):
             Key=file_path,
             Body=in_memory_object,
         )
+
+    def load_tfstate(self, file_path: str) -> dict:
+        terraform_state_file = (
+            self.s3_client.get_object(Bucket=TERRAFORM_STATE_BUCKET, Key=file_path)[
+                "Body"
+            ]
+            .read()
+            .decode("utf-8")
+        )
+        return json.loads(terraform_state_file)
 
     def delete_file(self, file_path: str):
         self.s3_client.delete_object(Bucket=S3_SCRAPER_BUCKET, Key=file_path)
