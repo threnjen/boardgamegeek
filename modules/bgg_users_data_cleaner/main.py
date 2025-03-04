@@ -27,11 +27,11 @@ class DirtyDataExtractor:
 
     def data_extraction_chain(self):
         """Main function to extract data from the XML files"""
-        file_list_to_process = get_xml_file_keys_based_on_env(
+        xml_files_to_process = get_xml_file_keys_based_on_env(
             xml_directory=USER_CONFIGS["output_xml_directory"]
         )
         all_ratings_with_dates = self._process_file_list_for_rating_dates(
-            file_list_to_process
+            xml_files_to_process
         )
         users_df = self._create_table_from_data(all_ratings_with_dates)
         save_dfs_to_disk_or_s3(
@@ -47,7 +47,7 @@ class DirtyDataExtractor:
         )
 
     def _process_file_list_for_rating_dates(
-        self, file_list_to_process: list
+        self, xml_files_to_process: list
     ) -> list[dict]:
         """Process the list of files in the S3 bucket
         This function will process the list of files in the S3 bucket
@@ -57,7 +57,7 @@ class DirtyDataExtractor:
         all_ratings_with_dates = []
         users_parsed = 0
 
-        for file_name in file_list_to_process[:1]:
+        for file_name in xml_files_to_process[:1]:
 
             local_open = load_file_local_first(
                 path=USER_CONFIGS["output_xml_directory"],
