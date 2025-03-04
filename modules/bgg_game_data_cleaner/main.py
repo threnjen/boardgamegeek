@@ -10,11 +10,9 @@ from config import CONFIGS
 from modules.bgg_game_data_cleaner.games_data_cleaner import GameDataCleaner
 from modules.bgg_game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
 from utils.processing_functions import (
-    get_local_keys_based_on_env,
-    get_s3_keys_based_on_env,
+    get_xml_file_keys_based_on_env,
     load_file_local_first,
     save_file_local_first,
-    save_to_aws_glue,
     save_dfs_to_disk_or_s3,
 )
 
@@ -30,24 +28,12 @@ class DirtyDataExtractor:
         pass
 
     def data_extraction_chain(self):
-        xml_files_to_process = self._get_raw_xml_file_keys()
+        xml_files_to_process = get_xml_file_keys_based_on_env(
+            xml_directory=GAME_CONFIGS["output_xml_directory"]
+        )
         raw_storage = self._process_raw_xml_files(xml_files_to_process)
         dirty_game_data_frames = self._create_dirty_data_frames(raw_storage)
         self._save_dirty_dfs(dirty_game_data_frames)
-
-    def _get_raw_xml_file_keys(self) -> list[str]:
-        """Get the list of S3 file keys of raw xml to process.
-        The function will return a list of keys from the prod S3 bucket if the ENVIRONMENT is set to prod.
-        The function will return a list of keys from the dev S3 bucket if the ENVIRONMENT is set to dev.
-        If there are no keys in the S3 bucket, the function will return a list of local files in the dev directory.
-        """
-        # list files in data dirty prefix in s3 using awswrangler
-        xml_directory = GAME_CONFIGS["output_xml_directory"]
-        xml_files_to_process = get_s3_keys_based_on_env(xml_directory)
-        if not xml_files_to_process:
-            local_files = get_local_keys_based_on_env(xml_directory)
-            xml_files_to_process = [x for x in local_files if x.endswith(".xml")]
-        return xml_files_to_process
 
     def _process_raw_xml_files(self, xml_files_to_process: list) -> dict[list]:
         """Process the list of files in the S3 bucket

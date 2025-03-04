@@ -7,8 +7,7 @@ from bs4 import BeautifulSoup
 
 from config import CONFIGS
 from utils.processing_functions import (
-    get_local_keys_based_on_env,
-    get_s3_keys_based_on_env,
+    get_xml_file_keys_based_on_env,
     load_file_local_first,
     save_file_local_first,
     save_dfs_to_disk_or_s3,
@@ -28,7 +27,9 @@ class DirtyDataExtractor:
 
     def data_extraction_chain(self):
         """Main function to extract data from the XML files"""
-        file_list_to_process = self._get_file_list()
+        file_list_to_process = get_xml_file_keys_based_on_env(
+            xml_directory=RATING_CONFIGS["output_xml_directory"]
+        )
         all_entries = self._process_file_list(file_list_to_process)
         ratings_df = self._create_table_from_data(all_entries)
         save_dfs_to_disk_or_s3(
@@ -43,16 +44,6 @@ class DirtyDataExtractor:
             path=RATING_CONFIGS["clean_dfs_directory"],
         )
         self._create_file_of_unique_user_ids(ratings_df)
-
-    def _get_file_list(self) -> list[str]:
-        """Get the list of files to process"""
-
-        xml_directory = RATING_CONFIGS["output_xml_directory"]
-        file_list_to_process = get_s3_keys_based_on_env(xml_directory)
-        if not file_list_to_process:
-            local_files = get_local_keys_based_on_env(xml_directory)
-            file_list_to_process = [x for x in local_files if x.endswith(".xml")]
-        return file_list_to_process
 
     def _process_file_list(self, file_list_to_process: list) -> list[dict]:
         """Process the list of files in the S3 bucket
