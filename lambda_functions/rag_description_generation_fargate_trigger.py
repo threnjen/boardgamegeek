@@ -27,7 +27,7 @@ def lambda_handler(event, context):
     - start_block: int"""
 
     terraform_state_file = S3FileHandler().load_tfstate(
-        file_path="boardgamegeek.tfstate"
+        file_path=CONFIGS["terraform_state_file"]
     )
 
     task_definition = (

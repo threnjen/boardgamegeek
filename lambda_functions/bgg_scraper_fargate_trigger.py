@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     print(f"Running scraper for {scraper_type}")
 
     terraform_state_file = S3FileHandler().load_tfstate(
-        file_path="boardgamegeek.tfstate"
+        file_path=CONFIGS["terraform_state_file"]
     )
 
     print(terraform_state_file["outputs"])
