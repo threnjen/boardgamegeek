@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import time
+import boto3
 
 import pandas as pd
 from config import CONFIGS
@@ -57,18 +58,36 @@ class RagDescription(BaseModel):
     #     self.ip_address = ec2_instance.get_ip_address()
     #     ec2_instance.stop_instance()
 
-    def compute_game_overall_stats(self, game_df):
-        overall_mean = round(game_df["AvgRating"].describe()["mean"], 2)
-        game_std = round(game_df["AvgRating"].describe()["std"], 2)
+    # def compute_game_overall_stats(self, game_df):
+    #     overall_mean = round(game_df["AvgRating"].describe()["mean"], 2)
+    #     game_std = round(game_df["AvgRating"].describe()["std"], 2)
 
-        self.overall_stats["overall_mean"] = overall_mean
-        self.overall_stats["overall_std"] = game_std
-        self.overall_stats["two_under"] = round(overall_mean - 2 * game_std, 2)
-        self.overall_stats["one_under"] = round(overall_mean - game_std, 2)
-        self.overall_stats["half_over"] = round(overall_mean + 0.5 * game_std, 2)
-        self.overall_stats["one_over"] = round(overall_mean + game_std, 2)
+    #     self.overall_stats["overall_mean"] = overall_mean
+    #     self.overall_stats["overall_std"] = game_std
+    #     self.overall_stats["two_under"] = round(overall_mean - 2 * game_std, 2)
+    #     self.overall_stats["one_under"] = round(overall_mean - game_std, 2)
+    #     self.overall_stats["half_over"] = round(overall_mean + 0.5 * game_std, 2)
+    #     self.overall_stats["one_over"] = round(overall_mean + game_std, 2)
 
-        print(f"Overall mean: {overall_mean}")
+    #     print(f"Overall mean: {overall_mean}")
+
+    def get_overall_stats(self):
+        dynamodb_client = boto3.client("dynamodb")
+        response = dynamodb_client.get_item(
+            TableName="game_stats",
+            Key={
+                "stats_type": {
+                    "S": "overall_stats",
+                },
+            },
+        )
+
+        self.overall_stats["overall_mean"] = response["Item"]["overall_mean"]["N"]
+        self.overall_stats["overall_std"] = response["Item"]["overall_std"]["N"]
+        self.overall_stats["two_under"] = response["Item"]["two_under"]["N"]
+        self.overall_stats["one_under"] = response["Item"]["one_under"]["N"]
+        self.overall_stats["half_over"] = response["Item"]["half_over"]["N"]
+        self.overall_stats["one_over"] = response["Item"]["one_over"]["N"]
 
     def load_reduced_game_df(self):
         print(f"\nLoading game data from {GAME_CONFIGS['clean_dfs_directory']}")
