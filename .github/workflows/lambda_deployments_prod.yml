@@ -18,15 +18,15 @@ jobs:
       - name: Zip functions
         run: |
           cd lambda_functions
-          zip -r bgg_scraper_fargate_trigger.zip bgg_scraper_fargate_trigger.py ../../config.py ../../utils
-          zip -r bgg_data_cleaner_game_fargate_trigger.zip bgg_data_cleaner_game_fargate_trigger.py ../../config.py ../../utils
-          zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../../config.py ../../utils
-          zip -r generate_user_urls_lambda.zip generate_user_urls_lambda.py ../../config.py ../../utils
-          zip -r generate_ratings_urls_lambda.zip generate_ratings_urls_lambda.py ../../config.py ../../utils
-          zip -r bgg_orchestrator_fargate_trigger.zip bgg_orchestrator_fargate_trigger.py ../../config.py ../../utils
-          zip -r bgg_data_cleaner_ratings_fargate_trigger.zip bgg_data_cleaner_ratings_fargate_trigger.py ../../config.py ../../utils
-          zip -r rag_description_generation_fargate_trigger.zip rag_description_generation_fargate_trigger.py ../../config.py ../../utils
-          zip -r bgg_ratings_embedder_fargate_trigger.zip bgg_ratings_embedder_fargate_trigger.py ../../config.py ../../utils
+          zip -r bgg_scraper_fargate_trigger.zip bgg_scraper_fargate_trigger.py ../config.py ../utils
+          zip -r bgg_data_cleaner_game_fargate_trigger.zip bgg_data_cleaner_game_fargate_trigger.py ../config.py ../utils
+          zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../config.py ../utils
+          zip -r generate_user_urls_lambda.zip generate_user_urls_lambda.py ../config.py ../utils
+          zip -r generate_ratings_urls_lambda.zip generate_ratings_urls_lambda.py ../config.py ../utils
+          zip -r bgg_orchestrator_fargate_trigger.zip bgg_orchestrator_fargate_trigger.py ../config.py ../utils
+          zip -r bgg_data_cleaner_ratings_fargate_trigger.zip bgg_data_cleaner_ratings_fargate_trigger.py ../config.py ../utils
+          zip -r rag_description_generation_fargate_trigger.zip rag_description_generation_fargate_trigger.py ../config.py ../utils
+          zip -r bgg_ratings_embedder_fargate_trigger.zip bgg_ratings_embedder_fargate_trigger.py ../config.py ../utils
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
