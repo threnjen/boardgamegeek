@@ -354,9 +354,9 @@ def user_dfs_dirty(
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
     task_definition = (
-        "bgg_users_data_cleaner"
+        "bgg_data_cleaner_users"
         if ENVIRONMENT == "prod"
-        else "dev_bgg_users_data_cleaner"
+        else "dev_bgg_data_cleaner_users"
     )
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)

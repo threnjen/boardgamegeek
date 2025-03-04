@@ -4,7 +4,7 @@
     "desc_task_definition": "rag_description_generation",
     "game_cleaner_task_definition": "bgg_data_cleaner_game",
     "ratings_cleaner_task_definition": "bgg_ratings_data_cleaner",
-    "user_cleaner_task_definition": "bgg_users_data_cleaner",
+    "user_cleaner_task_definition": "bgg_data_cleaner_users",
     "ecs_cluster": "boardgamegeek",
     "orchestrator_task_definition": "bgg_orchestrator",
     "boardgamegeek_csv_filename": "boardgames_ranks.csv",
