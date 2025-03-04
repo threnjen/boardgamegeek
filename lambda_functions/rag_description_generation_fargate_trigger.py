@@ -6,7 +6,7 @@ import time
 import boto3
 
 from config import CONFIGS
-from utils.processing_functions import get_s3_keys_based_on_env
+from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
@@ -20,30 +20,15 @@ WORKING_DIR = (
 print(TASK_DEFINITION)
 
 
-def get_terraform_state_file():
-    """Get the terraform state file for the VPC"""
-
-    s3_client = boto3.client("s3")
-    terraform_state_file = (
-        s3_client.get_object(
-            Bucket=TERRAFORM_STATE_BUCKET, Key="boardgamegeek.tfstate"
-        )["Body"]
-        .read()
-        .decode("utf-8")
-    )
-
-    terraform_state_file = json.loads(terraform_state_file)
-
-    return terraform_state_file
-
-
 def lambda_handler(event, context):
     """Trigger the Fargate task to process the blocks
 
     Optional args:
     - start_block: int"""
 
-    terraform_state_file = get_terraform_state_file()
+    terraform_state_file = S3FileHandler().load_tfstate(
+        file_path="boardgamegeek.tfstate"
+    )
 
     task_definition = (
         f"dev_{TASK_DEFINITION}" if ENVIRONMENT != "prod" else TASK_DEFINITION

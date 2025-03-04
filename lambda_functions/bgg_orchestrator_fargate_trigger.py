@@ -4,30 +4,12 @@ import os
 import boto3
 
 from config import CONFIGS
+from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 TASK_DEFINITION = CONFIGS["orchestrator_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
-
-
-def get_terraform_state_file():
-    """Get the terraform state file for the VPC"""
-
-    s3_client = boto3.client("s3")
-    terraform_state_file = (
-        s3_client.get_object(
-            Bucket=TERRAFORM_STATE_BUCKET, Key="boardgamegeek.tfstate"
-        )["Body"]
-        .read()
-        .decode("utf-8")
-    )
-
-    terraform_state_file = json.loads(terraform_state_file)
-
-    print(terraform_state_file.keys())
-
-    return terraform_state_file
 
 
 def lambda_handler(event, context):
@@ -38,7 +20,9 @@ def lambda_handler(event, context):
 
     print(f"Running BGGeek Orchestrator task")
 
-    terraform_state_file = get_terraform_state_file()
+    terraform_state_file = S3FileHandler().load_tfstate(
+        file_path="boardgamegeek.tfstate"
+    )
 
     task_definition = (
         TASK_DEFINITION if ENVIRONMENT == "prod" else f"dev_{TASK_DEFINITION}"
