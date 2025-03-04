@@ -28,6 +28,19 @@ def explode_columnar_df(df: pd.DataFrame):
     return df
 
 
+def get_xml_file_keys_based_on_env(xml_directory):
+    """Get the list of S3 file keys of raw xml to process.
+    The function will return a list of keys from the prod S3 bucket if the ENVIRONMENT is set to prod.
+    The function will return a list of keys from the dev S3 bucket if the ENVIRONMENT is set to dev.
+    If there are no keys in the S3 bucket, the function will return a list of local files in the dev directory.
+    """
+    xml_files_to_process = get_s3_keys_based_on_env(xml_directory)
+    if not xml_files_to_process:
+        local_files = get_local_keys_based_on_env(xml_directory)
+        xml_files_to_process = [x for x in local_files if x.endswith(".xml")]
+    return xml_files_to_process
+
+
 def get_s3_keys_based_on_env(directory: str):
     directory = f"s3://{S3_SCRAPER_BUCKET}/{WORKING_DIR}{directory}"
     return S3FileHandler().list_files(directory)

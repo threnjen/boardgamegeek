@@ -8,11 +8,8 @@ from bs4 import BeautifulSoup
 
 from config import CONFIGS
 from utils.processing_functions import (
-    get_local_keys_based_on_env,
-    get_s3_keys_based_on_env,
+    get_xml_file_keys_based_on_env,
     load_file_local_first,
-    save_file_local_first,
-    save_to_aws_glue,
     save_dfs_to_disk_or_s3,
 )
 
@@ -30,7 +27,9 @@ class DirtyDataExtractor:
 
     def data_extraction_chain(self):
         """Main function to extract data from the XML files"""
-        file_list_to_process = self._get_file_list()
+        file_list_to_process = get_xml_file_keys_based_on_env(
+            xml_directory=USER_CONFIGS["output_xml_directory"]
+        )
         all_ratings_with_dates = self._process_file_list_for_rating_dates(
             file_list_to_process
         )
@@ -46,19 +45,6 @@ class DirtyDataExtractor:
             table_name="complete_user_ratings",
             path=USER_CONFIGS["clean_dfs_directory"],
         )
-
-    def _get_file_list(self) -> list[str]:
-        """Get the list of files to process"""
-
-        xml_directory = USER_CONFIGS["output_xml_directory"]
-        # file_list_to_process = []
-        file_list_to_process = get_s3_keys_based_on_env(xml_directory)
-        if not file_list_to_process:
-            local_files = get_local_keys_based_on_env(xml_directory)
-            file_list_to_process = [x for x in local_files if x.endswith(".xml")]
-        print(f"\nUser files to process: {len(file_list_to_process)}")
-        print(file_list_to_process[-5:])
-        return file_list_to_process
 
     def _process_file_list_for_rating_dates(
         self, file_list_to_process: list
