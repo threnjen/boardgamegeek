@@ -76,7 +76,7 @@ resource "aws_iam_role_policy_attachment" "trigger_bgg_lambda_run_attach_to_orch
 
 resource "aws_iam_role_policy_attachment" "ecs_run_attach_game_cleaner_to_orchestrator" {
   role       = module.bgg_orchestrator_FargateTaskRole_role.name
-  policy_arn = module.ecs_run_permissions_bgg_game_data_cleaner.arn
+  policy_arn = module.ecs_run_permissions_bgg_data_cleaner_game.arn
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_run_attach_scraper_to_orchestrator" {
@@ -86,12 +86,12 @@ resource "aws_iam_role_policy_attachment" "ecs_run_attach_scraper_to_orchestrato
 
 resource "aws_iam_role_policy_attachment" "ecs_run_attach_ratings_cleaner_to_orchestrator" {
   role       = module.bgg_orchestrator_FargateTaskRole_role.name
-  policy_arn = module.ecs_run_permissions_bgg_ratings_data_cleaner.arn
+  policy_arn = module.ecs_run_permissions_bgg_data_cleaner_ratings.arn
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_run_attach_user_cleaner_to_orchestrator" {
   role       = module.bgg_orchestrator_FargateTaskRole_role.name
-  policy_arn = module.ecs_run_permissions_bgg_users_data_cleaner.arn
+  policy_arn = module.ecs_run_permissions_bgg_data_cleaner_users.arn
 }
 
 

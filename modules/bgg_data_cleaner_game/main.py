@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup
 from single_game_parser import GameEntryParser
 
 from config import CONFIGS
-from modules.bgg_game_data_cleaner.games_data_cleaner import GameDataCleaner
-from modules.bgg_game_data_cleaner.secondary_data_cleaner import SecondaryDataCleaner
+from modules.bgg_data_cleaner_game.games_data_cleaner import GameDataCleaner
+from modules.bgg_data_cleaner_game.secondary_data_cleaner import SecondaryDataCleaner
 from utils.processing_functions import (
     get_xml_file_keys_based_on_env,
     load_file_local_first,

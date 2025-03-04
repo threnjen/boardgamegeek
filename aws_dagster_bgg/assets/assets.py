@@ -130,9 +130,9 @@ def game_dfs_clean(
     data_sets = configs["games"]["data_sets"]
 
     task_definition = (
-        "bgg_game_data_cleaner"
+        "bgg_data_cleaner_game"
         if ENVIRONMENT == "prod"
-        else "dev_bgg_game_data_cleaner"
+        else "dev_bgg_data_cleaner_game"
     )
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)
@@ -245,9 +245,9 @@ def ratings_dfs_dirty(
     assert len(raw_ratings_files) == 29 if ENVIRONMENT == "prod" else 1
 
     task_definition = (
-        "bgg_ratings_data_cleaner"
+        "bgg_data_cleaner_ratings"
         if ENVIRONMENT == "prod"
-        else "dev_bgg_ratings_data_cleaner"
+        else "dev_bgg_data_cleaner_ratings"
     )
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)
@@ -354,9 +354,9 @@ def user_dfs_dirty(
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
     task_definition = (
-        "bgg_users_data_cleaner"
+        "bgg_data_cleaner_users"
         if ENVIRONMENT == "prod"
-        else "dev_bgg_users_data_cleaner"
+        else "dev_bgg_data_cleaner_users"
     )
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)
