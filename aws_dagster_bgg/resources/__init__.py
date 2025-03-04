@@ -107,7 +107,10 @@ class ECSResource(ConfigurableResource):
         """Get the terraform state file for the VPC"""
 
         return S3Resource(region_name=REGION).load_json(
-            bucket=TERRAFORM_STATE_BUCKET, key="boardgamegeek.tfstate"
+            bucket=TERRAFORM_STATE_BUCKET,
+            key=ConfigResource(
+                region_name=REGION, bucket=S3_SCRAPER_BUCKET
+            ).get_config_file()["terraform_state_file"],
         )
 
     def get_ecs_client(self):
