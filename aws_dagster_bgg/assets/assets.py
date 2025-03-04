@@ -130,9 +130,9 @@ def game_dfs_clean(
     data_sets = configs["games"]["data_sets"]
 
     task_definition = (
-        "bgg_game_data_cleaner"
+        "bgg_data_cleaner_game"
         if ENVIRONMENT == "prod"
-        else "dev_bgg_game_data_cleaner"
+        else "dev_bgg_data_cleaner_game"
     )
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)

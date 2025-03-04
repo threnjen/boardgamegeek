@@ -23,10 +23,10 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-      - name: Build, tag, push image to AWS ECR bgg_game_data_cleaner
+      - name: Build, tag, push image to AWS ECR bgg_data_cleaner_game
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: bgg_game_data_cleaner
+          ECR_REPOSITORY: bgg_data_cleaner_game
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY

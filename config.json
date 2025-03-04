@@ -2,7 +2,7 @@
     "game_dfs_dirty": "game_dfs_dirty",
     "scraper_task_definition": "bgg_scraper",
     "desc_task_definition": "rag_description_generation",
-    "game_cleaner_task_definition": "bgg_game_data_cleaner",
+    "game_cleaner_task_definition": "bgg_data_cleaner_game",
     "ratings_cleaner_task_definition": "bgg_ratings_data_cleaner",
     "user_cleaner_task_definition": "bgg_users_data_cleaner",
     "ecs_cluster": "boardgamegeek",

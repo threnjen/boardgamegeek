@@ -10,13 +10,13 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install pipenv
 
 # Copy the source code into the container
-COPY modules/bgg_game_data_cleaner modules/bgg_game_data_cleaner
+COPY modules/bgg_data_cleaner_game modules/bgg_data_cleaner_game
 COPY data data
 COPY utils utils
-COPY modules/bgg_game_data_cleaner/Pipfile* .
+COPY modules/bgg_data_cleaner_game/Pipfile* .
 COPY config.py .
 
 # Install dependencies with pipenv
 RUN pipenv sync
 
-ENTRYPOINT ["pipenv", "run", "python", "modules/bgg_game_data_cleaner/main.py"]
+ENTRYPOINT ["pipenv", "run", "python", "modules/bgg_data_cleaner_game/main.py"]
