@@ -21,6 +21,8 @@ class FileHandler(ABC):
             return self.load_csv(file_path)
         elif file_type == "pkl":
             return self.load_pkl(file_path)
+        elif file_type == "tfstate":
+            return self.load_tfstate(file_path)
         else:
             raise ValueError("Unsupported file type")
 
@@ -98,6 +100,20 @@ class FileHandler(ABC):
         pass
 
     @abstractmethod
+    def load_pkl(self, file_path: str) -> Union[dict, list]:
+        """
+        Load a pickle file.
+        """
+        pass
+
+    @abstractmethod
+    def load_tfstate(self, file_path: str) -> Union[dict, list]:
+        """
+        Load a TFState file.
+        """
+        pass
+
+    @abstractmethod
     def save_json(self, file_path: str, data: Union[dict, list]):
         """
         Save a JSON file.
@@ -122,6 +138,13 @@ class FileHandler(ABC):
     def save_csv(self, file_path: str, data: Union[dict, list]):
         """
         Save a CSV file.
+        """
+        pass
+
+    @abstractmethod
+    def save_pkl(self, file_path: str, data: Union[dict, list]):
+        """
+        Save a pickle file.
         """
         pass
 

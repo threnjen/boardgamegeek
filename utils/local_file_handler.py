@@ -66,12 +66,16 @@ class LocalFileHandler(FileHandler):
     def load_csv(self, file_path: str) -> pd.DataFrame:
         return pd.read_csv(file_path, low_memory=False, on_bad_lines="skip", sep="\t")
 
+    def load_pkl(self, file_path: str) -> pd.DataFrame:
+        return pd.read_pickle(file_path)
+
+    def load_tfstate(self, file_path: str) -> dict:
+        with open(file_path, "r") as f:
+            return json.load(f)
+
     def save_csv(self, file_path: str, data: pd.DataFrame):
         self.make_directory(Path(file_path).parent)
         data.to_csv(file_path, index=False, sep="\t")
-
-    def load_pkl(self, file_path: str) -> pd.DataFrame:
-        return pd.read_pickle(file_path)
 
     def save_pkl(self, file_path: str, data: pd.DataFrame):
         self.make_directory(Path(file_path).parent)
