@@ -22,7 +22,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Zip functions
         run: |
-          cd modules/lambda_functions
+          cd lambda_functions
           zip -r bgg_scraper_fargate_trigger.zip bgg_scraper_fargate_trigger.py ../../config.py ../../utils
           zip -r bgg_data_cleaner_game_fargate_trigger.zip bgg_data_cleaner_game_fargate_trigger.py ../../config.py ../../utils
           zip -r generate_game_urls_lambda.zip generate_game_urls_lambda.py ../../config.py ../../utils
@@ -39,7 +39,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Post Lambda Functions
         run: |
-          cd modules/lambda_functions
+          cd lambda_functions
           aws lambda update-function-code --function-name=dev_bgg_scraper_fargate_trigger  --zip-file=fileb://bgg_scraper_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_bgg_data_cleaner_game_fargate_trigger  --zip-file=fileb://bgg_data_cleaner_game_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_bgg_generate_game_urls  --zip-file=fileb://generate_game_urls_lambda.zip > /dev/null 2>&1
