@@ -16,14 +16,14 @@ RUN mkdir -p modules
 ENV PYTHONPATH=.
 
 # Copy the source code into the container
-COPY modules/bgg_ratings_data_cleaner modules/bgg_ratings_data_cleaner
+COPY modules/bgg_data_cleaner_ratings modules/bgg_data_cleaner_ratings
 COPY utils utils
 COPY data data
-COPY modules/bgg_ratings_data_cleaner/Pipfile* .
+COPY modules/bgg_data_cleaner_ratings/Pipfile* .
 COPY config* .
 COPY nltk_data root/nltk_data
 
 # Install dependencies with pipenv
 RUN pipenv sync
 
-ENTRYPOINT ["pipenv", "run", "python", "modules/bgg_ratings_data_cleaner/main.py"]
+ENTRYPOINT ["pipenv", "run", "python", "modules/bgg_data_cleaner_ratings/main.py"]

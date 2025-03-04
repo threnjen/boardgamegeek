@@ -168,7 +168,7 @@ Scrapes ratings info from the game data. Code-wise this calls the same API and g
 
 ### 07 Clean raw scraped RATINGS data
 
-- `modules.bgg_ratings_data_cleaner.main.py`
+- `modules.bgg_data_cleaner_ratings.main.py`
     - Takes the scraped files and composes into various dirty data frames of full data. Writes these locally. Will only write to S3 if run on AWS.
     - Step 06 needs to have run at least once for this to work, although two sample files from local will also suffice for testing.
 

@@ -245,9 +245,9 @@ def ratings_dfs_dirty(
     assert len(raw_ratings_files) == 29 if ENVIRONMENT == "prod" else 1
 
     task_definition = (
-        "bgg_ratings_data_cleaner"
+        "bgg_data_cleaner_ratings"
         if ENVIRONMENT == "prod"
-        else "dev_bgg_ratings_data_cleaner"
+        else "dev_bgg_data_cleaner_ratings"
     )
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)
