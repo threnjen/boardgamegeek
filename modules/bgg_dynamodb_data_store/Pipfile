@@ -8,6 +8,7 @@ pandas = "*"
 regex = "*"
 boto3 = "*"
 awswrangler = "*"
+pydantic = "*"
 
 [dev-packages]
 pytest = "*"
