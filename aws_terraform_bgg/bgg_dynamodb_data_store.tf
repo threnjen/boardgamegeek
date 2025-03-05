@@ -51,7 +51,8 @@ resource "aws_iam_policy" "game_stats_dynamodb_access" {
         Effect = "Allow",
         Action = [
           "dynamodb:PutItem",
-          "dynamodb:GetItem"
+          "dynamodb:GetItem",
+          "dynamodb:BatchWriteItem"
         ],
         Resource = [
           aws_dynamodb_table.game_stats-dynamodb-table.arn,
@@ -95,8 +96,8 @@ module "bgg_dynamodb_data_store_ecs" {
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_dynamodb_data_store}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_dynamodb_data_store}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_dynamodb_data_store}:latest"
-  cpu                    = "512"
-  memory                 = "4096"
+  cpu                    = "1024"
+  memory                 = "8192"
   region                 = var.REGION
 }
 
