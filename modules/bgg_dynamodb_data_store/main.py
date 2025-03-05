@@ -130,7 +130,8 @@ class DynamoDBDataWriter(BaseModel):
                 dynamodb_item.update({item: str(value) for item, value in item.items()})
                 dynamodb_item["updated_at"] = datetime.utcnow().strftime("%Y%m%d")
                 writer.put_item(Item=dynamodb_item)
-            logger.info("Loaded data into table %s.", table.name)
+
+        logger.info(f"Loaded {len(self.overall_stats)} games into table {table_name}")
 
 
 if __name__ == "__main__":
