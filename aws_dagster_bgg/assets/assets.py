@@ -282,11 +282,13 @@ def dynamodb_store(
     # config_resource: ConfigurableResource,
 ) -> bool:
 
-    if ENVIRONMENT != "prod":
-        logger.info("Skipping dynamodb store in dev environment")
-        return True
+    task_definition = (
+        "bgg_dynamodb_data_store"
+        if ENVIRONMENT == "prod"
+        else "dev_bgg_dynamodb_data_store"
+    )
 
-    ecs_resource.launch_ecs_task(task_definition="bgg_dynamodb_data_store")
+    ecs_resource.launch_ecs_task(task_definition=task_definition)
     return True
 
 

@@ -4,6 +4,7 @@ from datetime import datetime
 
 import boto3
 import pandas as pd
+import numpy as np
 from pydantic import BaseModel, ConfigDict
 
 from config import CONFIGS
@@ -44,12 +45,6 @@ class DynamoDBDataWriter(BaseModel):
         Calculate the overall and individual game stats and write them to DynamoDB.
         """
 
-        if not self.validate_environment():
-            print(
-                "This script should not be run in a local or dev environment. Exiting script."
-            )
-            return True
-
         self.game_df = load_file_local_first(
             path=GAME_CONFIGS["clean_dfs_directory"], file_name="games_clean.pkl"
         )
@@ -67,16 +62,6 @@ class DynamoDBDataWriter(BaseModel):
 
         self.fill_table()
 
-        return True
-
-    def validate_environment(self):
-        """
-        Validate the environment. We want this script to run only in a Prod and non-local environment.
-        """
-        if IS_LOCAL:
-            return False
-        if ENVIRONMENT == "dev":
-            return False
         return True
 
     def calculate_overall_stats(self):
@@ -108,6 +93,11 @@ class DynamoDBDataWriter(BaseModel):
             ].copy()
 
             overall_mean = round(single_game_entry["rating"].describe()["mean"], 2)
+
+            if np.isnan(overall_mean):
+                print(f"Game {game_id} has no ratings. Skipping.")
+                continue
+
             game_std = round(single_game_entry["rating"].describe()["std"], 2)
 
             self.overall_stats[game_id] = {
@@ -121,8 +111,14 @@ class DynamoDBDataWriter(BaseModel):
 
     def fill_table(self):
         """Fill the DynamoDB table with the calculated stats."""
-        print("Writing to DynamoDB")
-        table_name = CONFIGS["dynamodb_game_stats_table_name"]
+
+        table_name = (
+            CONFIGS["dynamodb_game_stats_table_name"]
+            if ENVIRONMENT == "prod"
+            else f'dev_{CONFIGS["dynamodb_game_stats_table_name"]}'
+        )
+
+        print(f"Writing to DynamoDB table {table_name}")
 
         dynamodb = boto3.resource("dynamodb")
         table = dynamodb.Table(table_name)
@@ -134,7 +130,8 @@ class DynamoDBDataWriter(BaseModel):
                 dynamodb_item.update({item: str(value) for item, value in item.items()})
                 dynamodb_item["updated_at"] = datetime.utcnow().strftime("%Y%m%d")
                 writer.put_item(Item=dynamodb_item)
-            logger.info("Loaded data into table %s.", table.name)
+
+        logger.info(f"Loaded {len(self.overall_stats)} games into table {table_name}")
 
 
 if __name__ == "__main__":
