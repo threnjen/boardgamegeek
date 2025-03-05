@@ -104,15 +104,11 @@ class RagDescription(BaseModel):
 
         filtering_exp = Key("game_id").eq(str(game_id))
         resp = table.query(KeyConditionExpression=filtering_exp)
-        print(resp)
         return resp.get("Items")
 
     def create_single_game_data(self, game_id):
         game_overall_rating = self.get_game_mean_rating(game_id)
         game_ratings = self.get_game_ratings(game_id)
-
-        print(game_overall_rating)
-        print(game_ratings)
 
     def load_prompt(self):
         return json.loads(
@@ -159,29 +155,29 @@ class RagDescription(BaseModel):
 
     def rag_description_generation_chain(self):
 
-        self.get_overall_stats()
-        game_ids = self.get_game_ids()
-        generate_prompt = self.load_prompt()
+        # self.get_overall_stats()
+        # game_ids = self.get_game_ids()
+        # generate_prompt = self.load_prompt()
 
         weaviate_client = WeaviateClient(ec2=True)
-        weaviate_client.create_reviews_collection(collection_name=self.collection_name)
+        # weaviate_client.create_reviews_collection(collection_name=self.collection_name)
 
-        self.dynamodb_rag_client = RagDynamoDB()
+        # self.dynamodb_rag_client = RagDynamoDB()
 
-        for game_id in game_ids:
-            print(
-                f"\nProcessing game {game_id}\n{self.num_completed_games} of {self.end_block}"
-            )
+        # for game_id in game_ids:
+        #     print(
+        #         f"\nProcessing game {game_id}\n{self.num_completed_games} of {self.end_block}"
+        #     )
 
-            self.create_single_game_data(game_id)
+        #     self.create_single_game_data(game_id)
 
-            if ENVIRONMENT != "prod":
-                break
+        #     if ENVIRONMENT != "prod":
+        #         break
 
-            self.process_single_game(
-                weaviate_client, game_id, all_games_df, generate_prompt
-            )
-            self.num_completed_games += 1
+        #     self.process_single_game(
+        #         weaviate_client, game_id, all_games_df, generate_prompt
+        #     )
+        #     self.num_completed_games += 1
 
         weaviate_client.close_client()
 

@@ -26,6 +26,7 @@ class WeaviateClient(BaseModel):
             self.weaviate_client = self.connect_weaviate_client_docker()
         else:
             self.weaviate_client = self.connect_weaviate_client_ec2()
+            print("\nConnected to Weaviate instance on AWS EC2")
 
     def connect_weaviate_client_docker(self) -> weaviate.client:
         if not IS_LOCAL:
@@ -37,10 +38,10 @@ class WeaviateClient(BaseModel):
                     "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
                 },
             )
-            print("Connected to Weaviate instance on Fargate ECS")
+            print("\nConnected to Weaviate instance on Fargate ECS")
             return client
 
-        print("Connected to Weaviate instance on local machine")
+        print("\nConnected to Weaviate instance on local machine")
         return weaviate.connect_to_local(
             port=8081,
             headers={
@@ -51,12 +52,10 @@ class WeaviateClient(BaseModel):
     def connect_weaviate_client_ec2(self) -> weaviate.client:
 
         weaviate_ec2 = WeaviateEc2()
-        ip_address = weaviate_ec2.confirm_running_ec2_host()
-        print(ip_address)
-        weaviate_ec2.copy_docker_compose_to_instance()
-        weaviate_ec2.start_docker()
+        weaviate_ec2.validate_ready_weaviate_instance()
+        ip_address = weaviate_ec2.get_ip_address()
+        weaviate_ec2.start_weaviate_docker_containers()
 
-        print("Connected to Weaviate instance on AWS EC2")
         return weaviate.connect_to_custom(
             http_host=ip_address,
             http_port=8080,
