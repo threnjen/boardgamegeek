@@ -38,17 +38,10 @@ class DynamoDBDataWriter(BaseModel):
         """
         pass
 
-    def validate_environment(self):
-        """
-        Validate the environment.
-        """
-        if IS_LOCAL:
-            return False
-        if ENVIRONMENT == "dev":
-            return False
-        return True
-
     def calculate_all_game_stats(self):
+        """
+        Calculate the overall and individual game stats and write them to DynamoDB.
+        """
 
         if not self.validate_environment():
             print(
@@ -75,7 +68,18 @@ class DynamoDBDataWriter(BaseModel):
 
         return True
 
+    def validate_environment(self):
+        """
+        Validate the environment. We want this script to run only in a Prod and non-local environment.
+        """
+        if IS_LOCAL:
+            return False
+        if ENVIRONMENT == "dev":
+            return False
+        return True
+
     def calculate_overall_stats(self):
+        """Calculate the overall game stats."""
         print("Calculating overall game stats")
 
         overall_mean = round(self.game_df["AvgRating"].describe()["mean"], 2)
@@ -93,6 +97,7 @@ class DynamoDBDataWriter(BaseModel):
         }
 
     def calculate_individual_stats(self):
+        """Calculate the individual game stats."""
         print("Calculating individual game stats")
         game_ids = self.game_df["BGGId"].tolist()
 
@@ -114,6 +119,7 @@ class DynamoDBDataWriter(BaseModel):
             }
 
     def fill_table(self):
+        """Fill the DynamoDB table with the calculated stats."""
         print("Writing to DynamoDB")
         table_name = CONFIGS["dynamodb_game_stats_table_name"]
 
