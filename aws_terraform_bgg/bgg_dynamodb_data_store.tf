@@ -18,6 +18,7 @@ resource "aws_dynamodb_table" "game_stats-dynamodb-table" {
 resource "aws_dynamodb_table" "dev_game_stats-dynamodb-table" {
   name                        = "dev_game_stats"
   hash_key                    = "game_id"
+
   billing_mode                = "PAY_PER_REQUEST"
   deletion_protection_enabled = true
 
@@ -26,8 +27,52 @@ resource "aws_dynamodb_table" "dev_game_stats-dynamodb-table" {
     type = "S"
   }
 
+
   tags = {
     Name        = "dev_game_stats"
+    Environment = "dev"
+  }
+}
+
+resource "aws_dynamodb_table" "game_ratings-dynamodb-table" {
+  name                        = "game_ratings"
+  hash_key                    = "game_id"
+  range_key                   = "username"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = true
+
+  attribute {
+    name = "game_id"
+    type = "S"
+  }
+  attribute {
+    name = "username"
+    type = "S"
+  }
+  tags = {
+    Name        = "game_ratings"
+    Environment = "prod"
+  }
+}
+
+resource "aws_dynamodb_table" "dev_game_ratings-dynamodb-table" {
+  name                        = "dev_game_ratings"
+  hash_key                    = "game_id"
+  range_key                   = "username"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = true
+
+  attribute {
+    name = "game_id"
+    type = "S"
+  }
+      attribute {
+    name = "username"
+    type = "S"
+  }
+
+  tags = {
+    Name        = "dev_game_ratings"
     Environment = "dev"
   }
 }
@@ -56,7 +101,38 @@ resource "aws_iam_policy" "game_stats_dynamodb_access" {
         ],
         Resource = [
           aws_dynamodb_table.game_stats-dynamodb-table.arn,
-          aws_dynamodb_table.dev_game_stats-dynamodb-table.arn
+          aws_dynamodb_table.dev_game_stats-dynamodb-table.arn,
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "game_ratings_dynamodb_access" {
+  name = "game_ratings_dynamodb_access"
+  path = "/"
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid    = "ListAllTables",
+        Effect = "Allow",
+        Action = [
+          "dynamodb:ListTables",
+        ],
+        Resource = "*"
+      },
+      {
+        Sid    = "PutGetItems",
+        Effect = "Allow",
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:BatchWriteItem"
+        ],
+        Resource = [
+          aws_dynamodb_table.game_ratings-dynamodb-table.arn,
+          aws_dynamodb_table.dev_game_ratings-dynamodb-table.arn
         ]
       }
     ]
@@ -141,9 +217,14 @@ resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metricsbgg_dynamodb_da
   policy_arn = aws_iam_policy.Cloudwatch_Put_Metrics_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "glue_boardgamegeekbgg_dynamodb_data_store_FargateTaskRoleattach" {
+resource "aws_iam_role_policy_attachment" "game_stats_dynamodb_access_FargateTaskRoleattach" {
   role       = module.bgg_dynamodb_data_store_FargateTaskRole_role.name
   policy_arn = aws_iam_policy.game_stats_dynamodb_access.arn
+}
+
+resource "aws_iam_role_policy_attachment" "bgg_game_ratings_dynamodb_access_FargateTaskRoleattach" {
+  role       = module.bgg_dynamodb_data_store_FargateTaskRole_role.name
+  policy_arn = aws_iam_policy.game_ratings_dynamodb_access.arn
 }
 
 

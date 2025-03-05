@@ -52,6 +52,6 @@
     "dynamodb": {
         "game_stats_table": "game_stats",
         "game_basic_data_table": "game_basic_data",
-        "game_individual_ratings_table": "game_individual_ratings"
+        "game_individual_ratings_table": "game_ratings"
     }
 }
