@@ -11,7 +11,24 @@ resource "aws_dynamodb_table" "game_stats-dynamodb-table" {
 
   tags = {
     Name        = "game_stats"
-    Environment = "production"
+    Environment = "prod"
+  }
+}
+
+resource "aws_dynamodb_table" "dev_game_stats-dynamodb-table" {
+  name                        = "dev_game_stats"
+  hash_key                    = "game_id"
+  billing_mode                = "PAY_PER_REQUEST"
+  deletion_protection_enabled = true
+
+  attribute {
+    name = "game_id"
+    type = "S"
+  }
+
+  tags = {
+    Name        = "dev_game_stats"
+    Environment = "dev"
   }
 }
 
@@ -37,7 +54,8 @@ resource "aws_iam_policy" "game_stats_dynamodb_access" {
           "dynamodb:GetItem"
         ],
         Resource = [
-          aws_dynamodb_table.game_stats-dynamodb-table.arn
+          aws_dynamodb_table.game_stats-dynamodb-table.arn,
+          aws_dynamodb_table.dev_game_stats-dynamodb-table.arn
         ]
       }
     ]
@@ -124,8 +142,10 @@ resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metricsbgg_dynamodb_da
 
 resource "aws_iam_role_policy_attachment" "glue_boardgamegeekbgg_dynamodb_data_store_FargateTaskRoleattach" {
   role       = module.bgg_dynamodb_data_store_FargateTaskRole_role.name
-  policy_arn = aws_iam_policy.glue_table_access.arn
+  policy_arn = aws_iam_policy.game_stats_dynamodb_access.arn
 }
+
+
 
 # module "bgg_dynamodb_data_store_fargate_trigger" {
 #   source        = "./modules/lambda_function_direct"
