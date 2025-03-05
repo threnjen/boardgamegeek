@@ -286,9 +286,7 @@ def dynamodb_store(
         logger.info("Skipping dynamodb store in dev environment")
         return True
 
-    task_definition = "bgg_dynamodb_data_store"
-
-    ecs_resource.launch_ecs_task(task_definition=task_definition)
+    ecs_resource.launch_ecs_task(task_definition="bgg_dynamodb_data_store")
     return True
 
 
