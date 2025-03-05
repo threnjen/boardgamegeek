@@ -82,7 +82,7 @@ def save_file_local_first(path: str, file_name: str, data: Union[pd.DataFrame, d
     file_path = f"{path}/{file_name}"
 
     save_path = f"{WORKING_DIR}{file_path}"
-    print(save_path)
+    print(f"\n{save_path}")
 
     if IS_LOCAL:
         print(f"Saving {file_name} to local")

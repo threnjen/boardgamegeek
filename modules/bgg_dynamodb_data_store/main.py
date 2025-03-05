@@ -113,9 +113,9 @@ class DynamoDBDataWriter(BaseModel):
         """Fill the DynamoDB table with the calculated stats."""
 
         table_name = (
-            CONFIGS["dynamodb_game_stats_table_name"]
+            CONFIGS["dynamodb"]["game_stats_table"]
             if ENVIRONMENT == "prod"
-            else f'dev_{CONFIGS["dynamodb_game_stats_table_name"]}'
+            else f'dev_{CONFIGS["dynamodb"]["game_stats_table"]}'
         )
 
         print(f"Writing to DynamoDB table {table_name}")

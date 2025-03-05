@@ -154,7 +154,7 @@ class GameDataCleaner:
         games_df = games_df.copy()
 
         # lists of game ids and game names
-        game_ids = list(games_df["BGGId"])
+        game_ids = list(games_df["BGGId"].astype(int))
         game_names = list(games_df["Name"])
 
         game_id_lookup = dict(zip(game_ids, game_names))
@@ -166,15 +166,19 @@ class GameDataCleaner:
     def _make_game_avg_ratings_lookup_file(self, games_df: pd.DataFrame):
         """Make a json file with game ids and game names for lookup"""
 
-        games_df = games_df.copy()
+        ratings_df = games_df.copy()
 
-        games_df = games_df.sort(values="AvgRating", ascending=False)
+        ratings_df = ratings_df.sort_values("AvgRating", ascending=False)
 
-        # lists of game ids and game names
-        game_ids = list(games_df["BGGId"])
-        game_avg_ratings = list(games_df["AvgRating"])
-
-        game_avg_ratings = dict(zip(game_ids, game_avg_ratings))
+        game_avg_ratings = list(
+            {
+                x: y
+                for x, y in zip(
+                    ratings_df["BGGId"].astype(int), ratings_df["AvgRating"]
+                )
+            }.items()
+        )
+        print(game_avg_ratings)
 
         save_file_local_first(
             path="games",
