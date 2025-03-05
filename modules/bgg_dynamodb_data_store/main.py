@@ -16,8 +16,6 @@ GAME_CONFIGS = CONFIGS["games"]
 RATINGS_CONFIGS = CONFIGS["ratings"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
-logger = logging.getLogger(__name__)
-
 
 class DynamoDBDataWriter(BaseModel):
     """
@@ -133,7 +131,7 @@ class DynamoDBDataWriter(BaseModel):
                 dynamodb_item["updated_at"] = datetime.utcnow().strftime("%Y%m%d")
                 writer.put_item(Item=dynamodb_item)
 
-        logger.info(f"Loaded {len(self.overall_stats)} games into table {table_name}")
+        print(f"Loaded {len(self.overall_stats)} games into table {table_name}")
 
     def create_ratings_dictionary(self):
 
@@ -141,11 +139,13 @@ class DynamoDBDataWriter(BaseModel):
 
         self.ratings_df = self.ratings_df.drop_duplicates(subset=["BGGId", "username"])
 
-        return (
+        self.ratings_df = (
             self.ratings_df.rename(columns={"BGGId": "game_id"})
             .astype(str)
             .to_dict(orient="records")
         )
+
+        return self.ratings_df
 
     def fill_ratings_table(self):
 
@@ -167,7 +167,7 @@ class DynamoDBDataWriter(BaseModel):
                 entry["updated_at"] = datetime.utcnow().strftime("%Y%m%d")
                 writer.put_item(Item=entry)
 
-        logger.info(f"Loaded {len(self.overall_stats)} games into table {table_name}")
+        print(f"Loaded {len(self.overall_stats)} games into table {table_name}")
 
 
 if __name__ == "__main__":
