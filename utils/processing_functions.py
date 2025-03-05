@@ -9,9 +9,9 @@ from config import CONFIGS
 from utils.local_file_handler import LocalFileHandler
 from utils.s3_file_handler import S3FileHandler
 
-ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
-S3_SCRAPER_BUCKET = os.getenv("S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 WORKING_DIR = (
     CONFIGS["prod_directory"] if ENVIRONMENT == "prod" else CONFIGS["dev_directory"]
 )
@@ -97,9 +97,10 @@ def load_file_local_first(path: str = None, file_name: str = ""):
 
     load_path = f"{WORKING_DIR}{file_path}"
 
-    # print(f"Loading: {load_path}")
+    print(f"Loading {file_path} from {load_path}")
 
     try:
+        print("Trying to open from local")
         # open from local_pile_path
         file = LocalFileHandler().load_file(file_path=load_path)
     except FileNotFoundError as e:

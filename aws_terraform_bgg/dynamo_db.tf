@@ -22,15 +22,25 @@ resource "aws_iam_policy" "game_generated_descriptions_dynamodb_access" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid    = "VisualEditor0",
+        Sid    = "ListAllTables",
+        Effect = "Allow",
+        Action = [
+          "dynamodb:ListTables",
+        ],
+        Resource = "*"
+      },
+      {
+        Sid    = "PutGetItems",
         Effect = "Allow",
         Action = [
           "dynamodb:PutItem",
-          "dynamodb:ListTables",
           "dynamodb:GetItem"
         ],
-        Resource = "*"
+        Resource = [
+          aws_dynamodb_table.game_generated_descriptions-dynamodb-table.arn
+        ]
       }
     ]
   })
 }
+

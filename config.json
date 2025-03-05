@@ -12,6 +12,7 @@
     "file_retrieval_lambda": "bgg_boardgame_file_retrieval",
     "dev_directory": "data/test/",
     "prod_directory": "data/prod/",
+    "dynamodb_game_stats_table_name": "game_stats",
     "users": {
         "scrapy_bot_name": "bggscraper_users",
         "raw_urls_directory": "users/scraper_urls_raw",

@@ -17,6 +17,8 @@ locals {
     module.t2v-transformers_ecr.ecr_repository_name,
     module.bgg_ratings_embedder.ecr_repository_name,
     module.dev_bgg_ratings_embedder.ecr_repository_name,
+    module.bgg_dynamodb_data_store_ecr.ecr_repository_name,
+    module.dev_bgg_dynamodb_data_store_ecr.ecr_repository_name,
   ]
 }
 
