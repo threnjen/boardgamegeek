@@ -40,7 +40,7 @@ class DynamoDBDataWriter(BaseModel):
         """
         pass
 
-    def calculate_all_game_stats(self):
+    def perform_dynamodb_table_writes(self):
         """
         Calculate the overall and individual game stats and write them to DynamoDB.
         """
@@ -56,11 +56,9 @@ class DynamoDBDataWriter(BaseModel):
 
         print(len(self.game_df))
 
-        self.calculate_overall_stats()
+        self.fill_stats_table()
 
-        self.calculate_individual_stats()
-
-        self.fill_table()
+        self.fill_ratings_table()
 
         return True
 
@@ -109,8 +107,12 @@ class DynamoDBDataWriter(BaseModel):
                 "one_over": round(overall_mean + game_std, 2),
             }
 
-    def fill_table(self):
+    def fill_stats_table(self):
         """Fill the DynamoDB table with the calculated stats."""
+
+        self.calculate_overall_stats()
+
+        self.calculate_individual_stats()
 
         table_name = (
             CONFIGS["dynamodb"]["game_stats_table"]
@@ -133,8 +135,42 @@ class DynamoDBDataWriter(BaseModel):
 
         logger.info(f"Loaded {len(self.overall_stats)} games into table {table_name}")
 
+    def create_ratings_dictionary(self):
+
+        self.ratings_df = self.ratings_df.dropna(subset=["rating"])
+
+        self.ratings_df = self.ratings_df.drop_duplicates(subset=["BGGId", "username"])
+
+        return (
+            self.ratings_df.rename(columns={"BGGId": "game_id"})
+            .astype(str)
+            .to_dict(orient="records")
+        )
+
+    def fill_ratings_table(self):
+
+        table_name = (
+            CONFIGS["dynamodb"]["game_individual_ratings_table"]
+            if ENVIRONMENT == "prod"
+            else f'dev_{CONFIGS["dynamodb"]["game_individual_ratings_table"]}'
+        )
+
+        print(f"Writing to DynamoDB table {table_name}")
+
+        dynamodb = boto3.resource("dynamodb")
+        table = dynamodb.Table(table_name)
+
+        ratings_data = self.create_ratings_dictionary()
+
+        with table.batch_writer() as writer:
+            for entry in ratings_data:
+                entry["updated_at"] = datetime.utcnow().strftime("%Y%m%d")
+                writer.put_item(Item=entry)
+
+        logger.info(f"Loaded {len(self.overall_stats)} games into table {table_name}")
+
 
 if __name__ == "__main__":
     dynamodb_writer = DynamoDBDataWriter()
 
-    dynamodb_writer.calculate_all_game_stats()
+    dynamodb_writer.perform_dynamodb_table_writes()
