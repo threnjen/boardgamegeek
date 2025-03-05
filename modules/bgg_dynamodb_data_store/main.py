@@ -1,6 +1,6 @@
-import logging
 import os
 from datetime import datetime
+import gc
 
 import boto3
 import pandas as pd
@@ -123,29 +123,45 @@ class DynamoDBDataWriter(BaseModel):
         dynamodb = boto3.resource("dynamodb")
         table = dynamodb.Table(table_name)
 
-        with table.batch_writer() as writer:
-            for key, item in self.overall_stats.items():
-                dynamodb_item = {}
-                dynamodb_item["game_id"] = str(key)
-                dynamodb_item.update({item: str(value) for item, value in item.items()})
-                dynamodb_item["updated_at"] = datetime.utcnow().strftime("%Y%m%d")
-                writer.put_item(Item=dynamodb_item)
+        updated_at = datetime.utcnow().strftime("%Y%m%d")
+
+        batch_size = 1000
+        start_index = 0
+        end_index = batch_size
+
+        while start_index < len(self.overall_stats):
+            with table.batch_writer() as writer:
+                for key, item in self.overall_stats.items():
+                    dynamodb_item = {}
+                    dynamodb_item["game_id"] = str(key)
+                    dynamodb_item.update(
+                        {item: str(value) for item, value in item.items()}
+                    )
+                    dynamodb_item["updated_at"] = updated_at
+                    writer.put_item(Item=dynamodb_item)
+            start_index += batch_size
+            end_index += batch_size
+            print(
+                f"Loaded batch {start_index} to {end_index} games into table {table_name}"
+            )
 
         print(f"Loaded {len(self.overall_stats)} games into table {table_name}")
 
     def create_ratings_dictionary(self):
-
-        self.ratings_df = self.ratings_df.dropna(subset=["rating"])
+        print("Creating ratings dictionary")
 
         self.ratings_df = self.ratings_df.drop_duplicates(subset=["BGGId", "username"])
 
-        self.ratings_df = (
+        ratings_dict = (
             self.ratings_df.rename(columns={"BGGId": "game_id"})
             .astype(str)
             .to_dict(orient="records")
         )
+        del self.ratings_df
+        gc.collect()
+        print("Converted to dictionary and deleted DataFrame")
 
-        return self.ratings_df
+        return ratings_dict
 
     def fill_ratings_table(self):
 
@@ -155,19 +171,30 @@ class DynamoDBDataWriter(BaseModel):
             else f'dev_{CONFIGS["dynamodb"]["game_individual_ratings_table"]}'
         )
 
-        print(f"Writing to DynamoDB table {table_name}")
-
         dynamodb = boto3.resource("dynamodb")
         table = dynamodb.Table(table_name)
 
+        updated_at = datetime.utcnow().strftime("%Y%m%d")
+
         ratings_data = self.create_ratings_dictionary()
 
-        with table.batch_writer() as writer:
-            for entry in ratings_data:
-                entry["updated_at"] = datetime.utcnow().strftime("%Y%m%d")
-                writer.put_item(Item=entry)
+        print(f"Writing to DynamoDB table {table_name}")
 
-        print(f"Loaded {len(self.overall_stats)} games into table {table_name}")
+        batch_size = 1000
+        start_index = 0
+        end_index = batch_size
+
+        while start_index < len(ratings_data):
+            with table.batch_writer() as writer:
+                for entry in ratings_data[start_index:end_index]:
+                    entry["updated_at"] = updated_at
+                    writer.put_item(Item=entry)
+
+            start_index += batch_size
+            end_index += batch_size
+            print(
+                f"Loaded batch {start_index} to {end_index} games into table {table_name}"
+            )
 
 
 if __name__ == "__main__":
