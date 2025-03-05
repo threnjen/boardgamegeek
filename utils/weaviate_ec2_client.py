@@ -7,10 +7,22 @@ from pydantic import BaseModel
 IS_LOCAL = True if os.environ.get("IS_LOCAL", False).lower() == "true" else False
 
 
-class Ec2(BaseModel):
+class WeaviateEc2(BaseModel):
     instance_id: str = None
     ec2_client: boto3.client = boto3.client("ec2")
     ip_address: str = None
+
+    def confirm_running_ec2_host(self):
+        self.validate_ready_weaviate_instance()
+        self.ip_address = self.get_ip_address()
+
+        print(f"\nWeaviate instance running on EC2 at {self.ip_address}")
+
+        return self.ip_address
+
+    def stop_self(self):
+        self.ip_address = self.get_ip_address()
+        self.stop_instance()
 
     def copy_docker_compose_to_instance(self):
         """Run a local command to copy the file to the instance"""

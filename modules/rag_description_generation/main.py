@@ -5,12 +5,12 @@ import sys
 import time
 
 import boto3
+from boto3.dynamodb.conditions import Key
 import pandas as pd
 from pydantic import BaseModel, ConfigDict
 
 from config import CONFIGS
 
-from modules.rag_description_generation.ec2_weaviate import Ec2
 from modules.rag_description_generation.rag_dynamodb import RagDynamoDB
 from modules.rag_description_generation.rag_functions import (
     get_single_game_entries,
@@ -47,23 +47,9 @@ class RagDescription(BaseModel):
         self.num_completed_games = self.start_block
         self.dynamodb_client = boto3.client("dynamodb")
 
-    def confirm_running_ec2_host(self):
-        ec2_instance = Ec2()
-        ec2_instance.validate_ready_weaviate_instance()
-        self.ip_address = ec2_instance.get_ip_address()
-        ec2_instance.copy_docker_compose_to_instance()
-        ec2_instance.start_docker()
-
-        print(f"\nWeaviate instance running at {self.ip_address}")
-
-    def stop_ec2_instance(self):
-        ec2_instance = Ec2()
-        self.ip_address = ec2_instance.get_ip_address()
-        ec2_instance.stop_instance()
-
     def get_overall_stats(self):
 
-        response = self.dynamodb_rag_client.get_item(
+        response = self.dynamodb_client.get_item(
             TableName=CONFIGS["dynamodb"]["game_stats_table"],
             Key={
                 "game_id": {
@@ -95,8 +81,11 @@ class RagDescription(BaseModel):
         return game_ids
 
     def get_game_mean_rating(self, game_id):
-        response = self.dynamodb_rag_client.get_item(
-            TableName=CONFIGS["dynamodb"]["game_stats_table"],
+
+        table_name = CONFIGS["dynamodb"]["game_stats_table"]
+
+        response = self.dynamodb_client.get_item(
+            TableName=table_name,
             Key={
                 "game_id": {
                     "S": str(game_id),
@@ -107,76 +96,77 @@ class RagDescription(BaseModel):
         return float(response["overall_mean"]["S"])
 
     def get_game_ratings(self, game_id):
-        response = self.dynamodb_rag_client.get_item(
-            TableName=CONFIGS["dynamodb"]["game_individual_ratings_table"],
-            Key={
-                "game_id": {
-                    "S": str(game_id),
-                },
-            },
-        )["Item"]
+
+        table_name = CONFIGS["dynamodb"]["game_individual_ratings_table"]
+
+        dynamodb_resource = boto3.resource("dynamodb")
+        table = dynamodb_resource.Table(table_name)
+
+        filtering_exp = Key("game_id").eq(str(game_id))
+        resp = table.query(KeyConditionExpression=filtering_exp)
+        print(resp)
+        return resp.get("Items")
 
     def create_single_game_data(self, game_id):
         game_overall_rating = self.get_game_mean_rating(game_id)
-        game_ratings = pd.DataFrame(self.get_game_ratings(game_id))
+        game_ratings = self.get_game_ratings(game_id)
+
+        print(game_overall_rating)
+        print(game_ratings)
 
     def load_prompt(self):
         return json.loads(
             open("modules/rag_description_generation/prompt.json").read()
         )["gpt4o_mini_generate_prompt_structured"]
 
-    def process_single_game(
-        self,
-        weaviate_client: WeaviateClient,
-        game_id: str,
-        all_games_df: pd.DataFrame,
-        generate_prompt: str,
-    ):
-        if not self.dynamodb_rag_client.check_dynamo_db_key(game_id=game_id):
-            df, game_name, game_mean = get_single_game_entries(
-                df=all_games_df, game_id=game_id, sample_pct=0.1
-            )
-            reviews = df["combined_review"].to_list()
-            # vectors = df["embedding"].to_list()
-            weaviate_client.add_reviews_collection_batch(
-                collection_name=self.collection_name,
-                game_id=game_id,
-                reviews=reviews,  # , vectors=vectors
-            )
-            current_prompt = prompt_replacement(
-                current_prompt=generate_prompt,
-                overall_stats=self.overall_stats,
-                game_name=game_name,
-                game_mean=game_mean,
-            )
-            summary = weaviate_client.generate_aggregated_review(
-                game_id=game_id,
-                collection_name=self.collection_name,
-                generate_prompt=current_prompt,
-            )
-            self.dynamodb_rag_client.divide_and_process_generated_summary(
-                game_id, summary=summary.generated
-            )
-            # print(f"\n{summary.generated}")
-            # weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
-            return
+    # def process_single_game(
+    #     self,
+    #     weaviate_client: WeaviateClient,
+    #     game_id: str,
+    #     all_games_df: pd.DataFrame,
+    #     generate_prompt: str,
+    # ):
+    #     if not self.dynamodb_rag_client.check_dynamo_db_key(game_id=game_id):
+    #         df, game_name, game_mean = get_single_game_entries(
+    #             df=all_games_df, game_id=game_id, sample_pct=0.1
+    #         )
+    #         reviews = df["combined_review"].to_list()
+    #         # vectors = df["embedding"].to_list()
+    #         weaviate_client.add_reviews_collection_batch(
+    #             collection_name=self.collection_name,
+    #             game_id=game_id,
+    #             reviews=reviews,  # , vectors=vectors
+    #         )
+    #         current_prompt = prompt_replacement(
+    #             current_prompt=generate_prompt,
+    #             overall_stats=self.overall_stats,
+    #             game_name=game_name,
+    #             game_mean=game_mean,
+    #         )
+    #         summary = weaviate_client.generate_aggregated_review(
+    #             game_id=game_id,
+    #             collection_name=self.collection_name,
+    #             generate_prompt=current_prompt,
+    #         )
+    #         self.dynamodb_rag_client.divide_and_process_generated_summary(
+    #             game_id, summary=summary.generated
+    #         )
+    #         # print(f"\n{summary.generated}")
+    #         # weaviate_client.remove_collection_items(game_id=game_id, reviews=reviews)
+    #         return
 
-        print(f"Game {game_id} already processed")
+    #     print(f"Game {game_id} already processed")
 
     def rag_description_generation_chain(self):
 
-        # self.confirm_running_ec2_host()
-        # self.get_overall_stats()
+        self.get_overall_stats()
         game_ids = self.get_game_ids()
+        generate_prompt = self.load_prompt()
 
-        # generate_prompt = self.load_prompt()
+        weaviate_client = WeaviateClient(ec2=True)
+        weaviate_client.create_reviews_collection(collection_name=self.collection_name)
 
-        # weaviate_client = WeaviateClient(
-        #     # ip_address=self.ip_address,
-        # )
-        # weaviate_client.create_reviews_collection(collection_name=self.collection_name)
-
-        # self.dynamodb_rag_client = RagDynamoDB()
+        self.dynamodb_rag_client = RagDynamoDB()
 
         for game_id in game_ids:
             print(
@@ -185,13 +175,15 @@ class RagDescription(BaseModel):
 
             self.create_single_game_data(game_id)
 
-            continue
+            if ENVIRONMENT != "prod":
+                break
+
             self.process_single_game(
                 weaviate_client, game_id, all_games_df, generate_prompt
             )
             self.num_completed_games += 1
 
-        # weaviate_client.close_client()
+        weaviate_client.close_client()
 
 
 if __name__ == "__main__":

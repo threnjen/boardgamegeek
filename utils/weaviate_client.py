@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter, MetadataQuery
 from weaviate.util import generate_uuid5
+from utils.weaviate_ec2_client import WeaviateEc2
 
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "True").lower() == "true" else False
 
@@ -15,9 +16,16 @@ IS_LOCAL = True if os.environ.get("IS_LOCAL", "True").lower() == "true" else Fal
 class WeaviateClient(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     weaviate_client: weaviate.client = None
+    ec2: bool = False
 
     def model_post_init(self, __context):
-        self.weaviate_client = self.connect_weaviate_client_docker()
+        self.weaviate_client = self.connect_to_weaviate_client()
+
+    def connect_to_weaviate_client(self):
+        if not self.ec2:
+            self.weaviate_client = self.connect_weaviate_client_docker()
+        else:
+            self.weaviate_client = self.connect_weaviate_client_ec2()
 
     def connect_weaviate_client_docker(self) -> weaviate.client:
         if not IS_LOCAL:
@@ -29,8 +37,10 @@ class WeaviateClient(BaseModel):
                     "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
                 },
             )
+            print("Connected to Weaviate instance on Fargate ECS")
             return client
 
+        print("Connected to Weaviate instance on local machine")
         return weaviate.connect_to_local(
             port=8081,
             headers={
@@ -38,19 +48,27 @@ class WeaviateClient(BaseModel):
             },
         )
 
-    # def connect_weaviate_client_ec2(self) -> weaviate.client:
-    #     return weaviate.connect_to_custom(
-    #         http_host=self.ip_address,
-    #         http_port=8080,
-    #         http_secure=False,
-    #         grpc_host=self.ip_address,
-    #         grpc_port=50051,
-    #         grpc_secure=False,
-    #         skip_init_checks=False,
-    #         headers={
-    #             "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
-    #         },
-    #     )
+    def connect_weaviate_client_ec2(self) -> weaviate.client:
+
+        weaviate_ec2 = WeaviateEc2()
+        ip_address = weaviate_ec2.confirm_running_ec2_host()
+        print(ip_address)
+        weaviate_ec2.copy_docker_compose_to_instance()
+        weaviate_ec2.start_docker()
+
+        print("Connected to Weaviate instance on AWS EC2")
+        return weaviate.connect_to_custom(
+            http_host=ip_address,
+            http_port=8080,
+            http_secure=False,
+            grpc_host=ip_address,
+            grpc_port=50051,
+            grpc_secure=False,
+            skip_init_checks=False,
+            headers={
+                "X-OpenAI-Api-Key": os.environ["OPENAI_API_KEY"],
+            },
+        )
 
     def fetch_single_object(self, collection_name: str, uuid: str):
         collection = self.weaviate_client.collections.get(collection_name)
