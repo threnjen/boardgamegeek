@@ -4,7 +4,7 @@ import boto3
 from pydantic import BaseModel
 
 
-class DynamoDB(BaseModel):
+class RagDynamoDB(BaseModel):
     dynamodb_client: boto3.client = boto3.client("dynamodb")
     today_timestring: str = datetime.now().strftime("%Y%m%d")
 

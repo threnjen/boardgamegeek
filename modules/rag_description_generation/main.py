@@ -10,8 +10,8 @@ from pydantic import BaseModel, ConfigDict
 
 from config import CONFIGS
 
-# from modules.rag_description_generation.ec2_weaviate import Ec2
-from modules.rag_description_generation.rag_dynamodb import DynamoDB
+from modules.rag_description_generation.ec2_weaviate import Ec2
+from modules.rag_description_generation.rag_dynamodb import RagDynamoDB
 from modules.rag_description_generation.rag_functions import (
     get_single_game_entries,
     prompt_replacement,
@@ -37,107 +37,88 @@ class RagDescription(BaseModel):
     game_ids: list = []
     generate_prompt: str = None
     weaviate: WeaviateClient = None
-    dynamodb_client: DynamoDB = None
+    dynamodb_rag_client: RagDynamoDB = None
+    dynamodb_client: boto3.client = None
 
     def model_post_init(self, __context):
         self.collection_name = f"reviews_{self.start_block}_{self.end_block}"
         self.start_block = int(self.start_block)
         self.end_block = int(self.end_block)
         self.num_completed_games = self.start_block
+        self.dynamodb_client = boto3.client("dynamodb")
 
-    # def confirm_running_ec2_host(self):
-    #     ec2_instance = Ec2()
-    #     ec2_instance.validate_ready_weaviate_instance()
-    #     self.ip_address = ec2_instance.get_ip_address()
-    #     ec2_instance.copy_docker_compose_to_instance()
-    #     ec2_instance.start_docker()
+    def confirm_running_ec2_host(self):
+        ec2_instance = Ec2()
+        ec2_instance.validate_ready_weaviate_instance()
+        self.ip_address = ec2_instance.get_ip_address()
+        ec2_instance.copy_docker_compose_to_instance()
+        ec2_instance.start_docker()
 
-    #     print(f"\nWeaviate instance running at {self.ip_address}")
+        print(f"\nWeaviate instance running at {self.ip_address}")
 
-    # def stop_ec2_instance(self):
-    #     ec2_instance = Ec2()
-    #     self.ip_address = ec2_instance.get_ip_address()
-    #     ec2_instance.stop_instance()
-
-    # def compute_game_overall_stats(self, game_df):
-    #     overall_mean = round(game_df["AvgRating"].describe()["mean"], 2)
-    #     game_std = round(game_df["AvgRating"].describe()["std"], 2)
-
-    #     self.overall_stats["overall_mean"] = overall_mean
-    #     self.overall_stats["overall_std"] = game_std
-    #     self.overall_stats["two_under"] = round(overall_mean - 2 * game_std, 2)
-    #     self.overall_stats["one_under"] = round(overall_mean - game_std, 2)
-    #     self.overall_stats["half_over"] = round(overall_mean + 0.5 * game_std, 2)
-    #     self.overall_stats["one_over"] = round(overall_mean + game_std, 2)
-
-    #     print(f"Overall mean: {overall_mean}")
+    def stop_ec2_instance(self):
+        ec2_instance = Ec2()
+        self.ip_address = ec2_instance.get_ip_address()
+        ec2_instance.stop_instance()
 
     def get_overall_stats(self):
-        dynamodb_client = boto3.client("dynamodb")
-        response = dynamodb_client.get_item(
-            TableName=CONFIGS["dynamodb_game_stats_table_name"],
+
+        response = self.dynamodb_rag_client.get_item(
+            TableName=CONFIGS["dynamodb"]["game_stats_table"],
             Key={
                 "game_id": {
                     "S": "all_stats",
                 },
             },
-        )
+        )["Item"]
 
-        self.overall_stats["overall_mean"] = response["Item"]["overall_mean"]["N"]
-        self.overall_stats["overall_std"] = response["Item"]["overall_std"]["N"]
-        self.overall_stats["two_under"] = response["Item"]["two_under"]["N"]
-        self.overall_stats["one_under"] = response["Item"]["one_under"]["N"]
-        self.overall_stats["half_over"] = response["Item"]["half_over"]["N"]
-        self.overall_stats["one_over"] = response["Item"]["one_over"]["N"]
+        self.overall_stats["overall_mean"] = float(response["overall_mean"]["S"])
+        self.overall_stats["overall_std"] = float(response["overall_std"]["S"])
+        self.overall_stats["two_under"] = float(response["two_under"]["S"])
+        self.overall_stats["one_under"] = float(response["one_under"]["S"])
+        self.overall_stats["half_over"] = float(response["half_over"]["S"])
+        self.overall_stats["one_over"] = float(response["one_over"]["S"])
 
-    def load_reduced_game_df(self):
+        print(self.overall_stats)
+
+    def get_game_ids(self):
         print(f"\nLoading game data from {GAME_CONFIGS['clean_dfs_directory']}")
-        game_df = load_file_local_first(
-            path=GAME_CONFIGS["clean_dfs_directory"], file_name="games_clean.pkl"
-        )
 
-        self.get_overall_stats()
+        file_name = "game_avg_ratings.json"
 
-        game_df_reduced = game_df.sort_values("BayesAvgRating", ascending=False)[
+        game_avg_ratings = load_file_local_first(path="games", file_name=file_name)[
             self.start_block : self.end_block
         ]
+        game_ids = [x[0] for x in game_avg_ratings]
+        print(game_ids)
 
-        self.game_ids = game_df_reduced["BGGId"].astype(str).tolist()
+        return game_ids
 
-        game_df_reduced = game_df_reduced[["BGGId", "Name", "Description", "AvgRating"]]
+    def get_game_mean_rating(self, game_id):
+        response = self.dynamodb_rag_client.get_item(
+            TableName=CONFIGS["dynamodb"]["game_stats_table"],
+            Key={
+                "game_id": {
+                    "S": str(game_id),
+                },
+            },
+        )["Item"]
 
-        del game_df
-        gc.collect()
-        print("Loaded and refined games data")
+        return float(response["overall_mean"]["S"])
 
-        return game_df_reduced
+    def get_game_ratings(self, game_id):
+        response = self.dynamodb_rag_client.get_item(
+            TableName=CONFIGS["dynamodb"]["game_individual_ratings_table"],
+            Key={
+                "game_id": {
+                    "S": str(game_id),
+                },
+            },
+        )["Item"]
 
-    def merge_game_df_with_ratings_df(self, game_df_reduced):
-        print(f"\nLoading user ratings from {RATINGS_CONFIGS['dirty_dfs_directory']}")
-        ratings_df = load_file_local_first(
-            path=RATINGS_CONFIGS["dirty_dfs_directory"],
-            file_name="ratings_data.pkl",
-        )
-        ratings_df = ratings_df[["username", "BGGId", "rating", "value"]]
-
-        print("Loaded user ratings data")
-
-        print(
-            f"Reducing user ratings to only include games in the reduced game dataframe\n"
-        )
-        all_games_df = ratings_df.merge(
-            game_df_reduced,
-            on="BGGId",
-            how="inner",
-        )
-
-        all_games_df["BGGId"] = all_games_df["BGGId"].astype(str)
-
-        del game_df_reduced
-        del ratings_df
-        gc.collect()
-
-        return all_games_df
+    def create_single_game_data(self, game_id):
+        game_overall_rating = self.get_game_mean_rating(game_id)
+        game_ratings = pd.DataFrame(self.get_game_ratings(game_id))
 
     def load_prompt(self):
         return json.loads(
@@ -151,7 +132,7 @@ class RagDescription(BaseModel):
         all_games_df: pd.DataFrame,
         generate_prompt: str,
     ):
-        if not self.dynamodb_client.check_dynamo_db_key(game_id=game_id):
+        if not self.dynamodb_rag_client.check_dynamo_db_key(game_id=game_id):
             df, game_name, game_mean = get_single_game_entries(
                 df=all_games_df, game_id=game_id, sample_pct=0.1
             )
@@ -173,7 +154,7 @@ class RagDescription(BaseModel):
                 collection_name=self.collection_name,
                 generate_prompt=current_prompt,
             )
-            self.dynamodb_client.divide_and_process_generated_summary(
+            self.dynamodb_rag_client.divide_and_process_generated_summary(
                 game_id, summary=summary.generated
             )
             # print(f"\n{summary.generated}")
@@ -183,28 +164,34 @@ class RagDescription(BaseModel):
         print(f"Game {game_id} already processed")
 
     def rag_description_generation_chain(self):
+
         # self.confirm_running_ec2_host()
-        game_df_reduced = self.load_reduced_game_df()
-        all_games_df = self.merge_game_df_with_ratings_df(game_df_reduced)
-        generate_prompt = self.load_prompt()
+        # self.get_overall_stats()
+        game_ids = self.get_game_ids()
 
-        weaviate_client = WeaviateClient(
-            # ip_address=self.ip_address,
-        )
-        weaviate_client.create_reviews_collection(collection_name=self.collection_name)
+        # generate_prompt = self.load_prompt()
 
-        self.dynamodb_client = DynamoDB()
+        # weaviate_client = WeaviateClient(
+        #     # ip_address=self.ip_address,
+        # )
+        # weaviate_client.create_reviews_collection(collection_name=self.collection_name)
 
-        for game_id in self.game_ids:
+        # self.dynamodb_rag_client = RagDynamoDB()
+
+        for game_id in game_ids:
             print(
                 f"\nProcessing game {game_id}\n{self.num_completed_games} of {self.end_block}"
             )
+
+            self.create_single_game_data(game_id)
+
+            continue
             self.process_single_game(
                 weaviate_client, game_id, all_games_df, generate_prompt
             )
             self.num_completed_games += 1
 
-        weaviate_client.close_client()
+        # weaviate_client.close_client()
 
 
 if __name__ == "__main__":
