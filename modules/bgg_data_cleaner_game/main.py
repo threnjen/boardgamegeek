@@ -150,7 +150,6 @@ class DirtyDataExtractor:
 
             else:
                 table = pd.DataFrame(list_of_entries)
-                self._make_json_game_lookup_file(table)
 
             print(f"Deleting {table_name} from memory")
             del list_of_entries
@@ -187,21 +186,6 @@ class DirtyDataExtractor:
 
             del table
             gc.collect()
-
-    def _make_json_game_lookup_file(self, games_df: pd.DataFrame):
-        """Make a json file with game ids and game names for lookup"""
-
-        games_df = games_df.copy()
-
-        # lists of game ids and game names
-        game_ids = list(games_df["BGGId"])
-        game_names = list(games_df["Name"])
-
-        game_id_lookup = dict(zip(game_ids, game_names))
-
-        save_file_local_first(
-            path="games", file_name="game_id_lookup.json", data=game_id_lookup
-        )
 
 
 if __name__ == "__main__":

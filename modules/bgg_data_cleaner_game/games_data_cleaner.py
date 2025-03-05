@@ -53,6 +53,10 @@ class GameDataCleaner:
         games_df = self._set_missing_min_players(games_df)
         themes_df = self._breakout_themes_df(games_df)
         games_df = self._drop_themes(games_df)
+
+        self._make_json_game_lookup_file(games_df)
+        self._make_game_avg_ratings_lookup_file(games_df)
+
         save_file_local_first(
             path=GAME_CONFIGS["clean_dfs_directory"],
             file_name="games_clean.pkl",
@@ -143,6 +147,40 @@ class GameDataCleaner:
 
     def _drop_themes(self, df: pd.DataFrame):
         return df.drop("Theme", axis=1)
+
+    def _make_json_game_lookup_file(self, games_df: pd.DataFrame):
+        """Make a json file with game ids and game names for lookup"""
+
+        games_df = games_df.copy()
+
+        # lists of game ids and game names
+        game_ids = list(games_df["BGGId"])
+        game_names = list(games_df["Name"])
+
+        game_id_lookup = dict(zip(game_ids, game_names))
+
+        save_file_local_first(
+            path="games", file_name="game_id_lookup.json", data=game_id_lookup
+        )
+
+    def _make_game_avg_ratings_lookup_file(self, games_df: pd.DataFrame):
+        """Make a json file with game ids and game names for lookup"""
+
+        games_df = games_df.copy()
+
+        games_df = games_df.sort(values="AvgRating", ascending=False)
+
+        # lists of game ids and game names
+        game_ids = list(games_df["BGGId"])
+        game_avg_ratings = list(games_df["AvgRating"])
+
+        game_avg_ratings = dict(zip(game_ids, game_avg_ratings))
+
+        save_file_local_first(
+            path="games",
+            file_name="game_avg_ratings.json",
+            data=game_avg_ratings,
+        )
 
 
 if __name__ == "__main__":

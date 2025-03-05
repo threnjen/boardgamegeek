@@ -74,10 +74,10 @@ class RagDescription(BaseModel):
     def get_overall_stats(self):
         dynamodb_client = boto3.client("dynamodb")
         response = dynamodb_client.get_item(
-            TableName="game_stats",
+            TableName=CONFIGS["dynamodb_game_stats_table_name"],
             Key={
-                "stats_type": {
-                    "S": "overall_stats",
+                "game_id": {
+                    "S": "all_stats",
                 },
             },
         )
@@ -95,7 +95,7 @@ class RagDescription(BaseModel):
             path=GAME_CONFIGS["clean_dfs_directory"], file_name="games_clean.pkl"
         )
 
-        self.compute_game_overall_stats(game_df)
+        self.get_overall_stats()
 
         game_df_reduced = game_df.sort_values("BayesAvgRating", ascending=False)[
             self.start_block : self.end_block

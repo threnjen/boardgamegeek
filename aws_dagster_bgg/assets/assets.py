@@ -276,6 +276,22 @@ def ratings_dfs_dirty(
     return True
 
 
+@asset(deps=["ratings_dfs_dirty"])
+def dynamodb_store(
+    ecs_resource: ConfigurableResource,
+    # config_resource: ConfigurableResource,
+) -> bool:
+
+    if ENVIRONMENT != "prod":
+        logger.info("Skipping dynamodb store in dev environment")
+        return True
+
+    task_definition = "bgg_dynamodb_data_store"
+
+    ecs_resource.launch_ecs_task(task_definition=task_definition)
+    return True
+
+
 @asset
 def users_scraper_urls_raw(
     lambda_resource: ConfigurableResource,
