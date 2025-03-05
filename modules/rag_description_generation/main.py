@@ -3,9 +3,11 @@ import json
 import os
 import sys
 import time
-import boto3
 
+import boto3
 import pandas as pd
+from pydantic import BaseModel, ConfigDict
+
 from config import CONFIGS
 
 # from modules.rag_description_generation.ec2_weaviate import Ec2
@@ -14,9 +16,8 @@ from modules.rag_description_generation.rag_functions import (
     get_single_game_entries,
     prompt_replacement,
 )
-from utils.weaviate_client import WeaviateClient
-from pydantic import BaseModel, ConfigDict
 from utils.processing_functions import load_file_local_first
+from utils.weaviate_client import WeaviateClient
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]

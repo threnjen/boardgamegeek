@@ -1,16 +1,18 @@
-import pandas as pd
 import os
+from typing import TypeVar
+
+import pandas as pd
+from pydantic import BaseModel, ConfigDict
+from sentence_transformers import SentenceTransformer
+
+from config import CONFIGS
+from utils.processing_functions import load_file_local_first, save_file_local_first
 
 # from sentence_transformers import SentenceTransformer
 # from transformers import AutoTokenizer, AutoModel, BertTokenizerFast, BertModel
 # import torch
 # import torch.nn.functional as F
 
-from sentence_transformers import SentenceTransformer
-from pydantic import BaseModel, ConfigDict
-from config import CONFIGS
-from utils.processing_functions import load_file_local_first, save_file_local_first
-from typing import TypeVar
 
 PandasDataFrame = TypeVar("pandas.core.frame.DataFrame")
 

@@ -4,8 +4,9 @@ from datetime import datetime
 
 import boto3
 import pandas as pd
-from config import CONFIGS
 from pydantic import BaseModel, ConfigDict
+
+from config import CONFIGS
 from utils.processing_functions import load_file_local_first
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")

@@ -1,6 +1,7 @@
+from datetime import datetime
+
 import boto3
 from pydantic import BaseModel
-from datetime import datetime
 
 
 class DynamoDB(BaseModel):

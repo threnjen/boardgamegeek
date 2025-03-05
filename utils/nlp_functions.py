@@ -1,6 +1,7 @@
+import re
+
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-import re
 
 
 def evaluate_quality_words_over_thresh(text: str, threshold: int = 5) -> str:

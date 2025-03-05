@@ -5,8 +5,8 @@ import sys
 import boto3
 
 from config import CONFIGS
-from utils.s3_file_handler import S3FileHandler
 from utils.processing_functions import get_s3_keys_based_on_env
+from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")

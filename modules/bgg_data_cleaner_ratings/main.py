@@ -1,18 +1,17 @@
 import os
-
 from datetime import datetime
 
 import pandas as pd
 from bs4 import BeautifulSoup
 
 from config import CONFIGS
+from utils.nlp_functions import evaluate_quality_words_over_thresh, filter_stopwords
 from utils.processing_functions import (
     get_xml_file_keys_based_on_env,
     load_file_local_first,
-    save_file_local_first,
     save_dfs_to_disk_or_s3,
+    save_file_local_first,
 )
-from utils.nlp_functions import filter_stopwords, evaluate_quality_words_over_thresh
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]

@@ -1,7 +1,8 @@
 from typing import Tuple
 
 import pandas as pd
-from utils.nlp_functions import filter_stopwords, evaluate_quality_words_over_thresh
+
+from utils.nlp_functions import evaluate_quality_words_over_thresh, filter_stopwords
 
 
 def prompt_replacement(

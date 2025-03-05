@@ -1,8 +1,9 @@
 import os
+
+import numpy as np
 import pandas as pd
 import weaviate
 import weaviate.classes as wvc
-import numpy as np
 from pydantic import BaseModel, ConfigDict
 from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter, MetadataQuery

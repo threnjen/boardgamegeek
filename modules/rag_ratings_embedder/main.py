@@ -1,5 +1,5 @@
-from utils.text_embedder import TextEmbedderToFile
 from utils.local_file_handler import LocalFileHandler
+from utils.text_embedder import TextEmbedderToFile
 
 if __name__ == "__main__":
     configs = LocalFileHandler().load_file(

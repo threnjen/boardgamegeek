@@ -1,10 +1,10 @@
 import json
 import os
 import pickle
-import awswrangler as wr
 from datetime import datetime
 from typing import Any, Union
 
+import awswrangler as wr
 import boto3
 import pandas as pd
 
