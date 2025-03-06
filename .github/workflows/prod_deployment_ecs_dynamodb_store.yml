@@ -1,4 +1,4 @@
-name: DEV deployment to bgg_dynamodb_data_store
+name: PROD deployment to bgg_dynamodb_data_store
 
 on:
   push:

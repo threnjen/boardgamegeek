@@ -172,8 +172,8 @@ module "bgg_dynamodb_data_store_ecs" {
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_dynamodb_data_store}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_dynamodb_data_store}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_dynamodb_data_store}:latest"
-  cpu                    = "1024"
-  memory                 = "8192"
+  cpu                    = "2048"
+  memory                 = "16384"
   region                 = var.REGION
 }
 
