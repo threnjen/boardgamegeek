@@ -13,7 +13,7 @@ RUN pip3 install pipenv
 COPY dagster_orchestration dagster_orchestration
 COPY dagster_orchestration/Pipfile* .
 COPY utils utils
-COPY config.py .
+COPY config* .
 COPY pyproject.toml .
 
 # Install dependencies with pipenv

@@ -10,6 +10,7 @@ bgg_job = define_asset_job(
         "ratings_scraper_urls_raw",
         "ratings_scraped_xml_raw",
         "ratings_dfs_dirty",
+        "dynamodb_store",
     ],
 )
 

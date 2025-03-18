@@ -14,7 +14,7 @@ COPY modules/bgg_data_cleaner_game modules/bgg_data_cleaner_game
 COPY data data
 COPY utils utils
 COPY modules/bgg_data_cleaner_game/Pipfile* .
-COPY config.py .
+COPY config* .
 
 # Install dependencies with pipenv
 RUN pipenv sync

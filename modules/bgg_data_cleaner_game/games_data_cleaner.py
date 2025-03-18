@@ -21,7 +21,7 @@ class GameDataCleaner:
     def __init__(self) -> None:
         self.local_handler = LocalFileHandler()
         self.game_mappings = LocalFileHandler().load_file(
-            file_path="modules/bgg_data_cleaner_game/game_mappings.json"
+            file_path=GAME_CONFIGS["game_mappings_file"]
         )
 
     def save_file_set(self, data, table):
@@ -41,7 +41,8 @@ class GameDataCleaner:
 
         print("\nCleaning Games Data")
         games_df = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="games_dirty.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=GAME_CONFIGS["dirty_games_file"],
         )
         games_df = self._drop_duplicates(games_df)
         games_df = self._drop_unneeded_columns(games_df)
@@ -58,7 +59,7 @@ class GameDataCleaner:
 
         save_file_local_first(
             path=GAME_CONFIGS["clean_dfs_directory"],
-            file_name="games_clean.pkl",
+            file_name=GAME_CONFIGS["clean_games_file"],
             data=games_df,
         )
 
@@ -159,7 +160,9 @@ class GameDataCleaner:
         game_id_lookup = dict(zip(game_ids, game_names))
 
         save_file_local_first(
-            path="games", file_name="game_id_lookup.json", data=game_id_lookup
+            path="games",
+            file_name=CONFIGS["game_id_lookup_filename"],
+            data=game_id_lookup,
         )
 
     def _make_game_avg_ratings_lookup_file(self, games_df: pd.DataFrame):
@@ -181,7 +184,7 @@ class GameDataCleaner:
 
         save_file_local_first(
             path="games",
-            file_name="game_avg_ratings.json",
+            file_name=CONFIGS["game_avg_ratings_filename"],
             data=game_avg_ratings,
         )
 

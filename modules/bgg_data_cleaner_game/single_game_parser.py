@@ -4,8 +4,10 @@ import re
 
 from bs4 import BeautifulSoup
 
+from config import CONFIGS
+
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
-GAME_ATTRIBUTES = json.load(open(f"./modules/bgg_data_cleaner_game/find_config.json"))[
+GAME_ATTRIBUTES = json.load(open(CONFIGS["games"]["game_attributes_file"]))[
     "GAME_ATTRIBUTES"
 ]
 MIN_USER_RATINGS = 30

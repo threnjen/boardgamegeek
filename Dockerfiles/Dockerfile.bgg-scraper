@@ -21,7 +21,7 @@ COPY modules/bgg_scraper modules/bgg_scraper
 COPY utils utils
 COPY data data
 COPY modules/bgg_scraper/Pipfile* .
-COPY config.py .
+COPY config* .
 
 # Install dependencies with pipenv
 RUN pipenv sync

@@ -9,6 +9,8 @@
     "ecs_cluster": "boardgamegeek",
     "orchestrator_task_definition": "bgg_orchestrator",
     "boardgamegeek_csv_filename": "boardgames_ranks.csv",
+    "game_id_lookup_filename": "game_id_lookup.json",
+    "game_avg_ratings_filename": "game_avg_ratings.json",
     "file_retrieval_lambda": "bgg_boardgame_file_retrieval",
     "dev_directory": "data/test/",
     "prod_directory": "data/prod/",
@@ -19,7 +21,8 @@
         "output_urls_json_suffix": "_user_scraper_urls_raw.json",
         "output_raw_xml_suffix": "combined_{}_user_raw.xml",
         "dirty_dfs_directory": "users/user_dfs_dirty",
-        "clean_dfs_directory": "users/user_dfs_clean"
+        "clean_dfs_directory": "users/user_dfs_clean",
+        "user_data_file": "user_data.pkl"
     },
     "ratings": {
         "scrapy_bot_name": "bggscraper_ratings",
@@ -28,7 +31,8 @@
         "output_urls_json_suffix": "_ratings_scraper_urls_raw.json",
         "output_raw_xml_suffix": "combined_{}_ratings_raw.xml",
         "dirty_dfs_directory": "ratings/ratings_dfs_dirty",
-        "clean_dfs_directory": "ratings/ratings_dfs_clean"
+        "clean_dfs_directory": "ratings/ratings_dfs_clean",
+        "ratings_save_file": "ratings_data.pkl"
     },
     "games": {
         "scrapy_bot_name": "bggscraper_games",
@@ -36,9 +40,19 @@
         "output_xml_directory": "games/scraped_xml_raw",
         "dirty_dfs_directory": "games/game_dfs_dirty",
         "clean_dfs_directory": "games/game_dfs_clean",
+        "game_mappings_file": "modules/bgg_data_cleaner_game/game_mappings.json",
+        "game_attributes_file": "modules/bgg_data_cleaner_game/game_attributes.json",
         "output_urls_json_suffix": "_game_scraper_urls_raw.json",
         "output_raw_xml_suffix": "combined_{}_game_raw.xml",
         "kaggle_games_file": "games/kaggle_data/prod/games.csv",
+        "dirty_games_file": "games_dirty.pkl",
+        "clean_games_file": "games_clean.pkl",
+        "publishers_file": "publishers_dirty.pkl",
+        "artists_file": "artists_dirty.pkl",
+        "designers_file": "designers_dirty.pkl",
+        "mechanics_file": "mechanics_dirty.pkl",
+        "themes_file": "themes_dirty.pkl",
+        "subcategories_file": "subcategories_dirty.pkl",
         "data_sets": [
             "artists",
             "designers",
@@ -48,6 +62,9 @@
             "subcategories",
             "themes"
         ]
+    },
+    "rag": {
+        "prompt_template": "prompt.json"
     },
     "dynamodb": {
         "game_stats_table": "game_stats",

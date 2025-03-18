@@ -253,7 +253,7 @@ def ratings_dfs_dirty(
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 
     check_filenames = [
-        f"{WORKING_ENV_DIR}{configs['ratings']['dirty_dfs_directory']}/ratings_data.pkl"
+        f"{WORKING_ENV_DIR}{configs['ratings']['dirty_dfs_directory']}/{configs['ratings']['ratings_save_file']}"
     ]
     logger.info(check_filenames)
 

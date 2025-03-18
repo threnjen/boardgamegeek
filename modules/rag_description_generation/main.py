@@ -19,6 +19,7 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["games"]
 RATINGS_CONFIGS = CONFIGS["ratings"]
+RAG_CONFIG = CONFIGS["rag"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
@@ -66,7 +67,7 @@ class RagDescription(BaseModel):
         print(f"\nLoading game data from {GAME_CONFIGS['clean_dfs_directory']}")
 
         game_avg_ratings = load_file_local_first(
-            path="games", file_name="game_avg_ratings.json"
+            path="games", file_name=CONFIGS["game_avg_ratings_filename"]
         )[self.start_block : self.end_block]
         game_ids = [str(x[0]) for x in game_avg_ratings]
 
@@ -105,9 +106,9 @@ class RagDescription(BaseModel):
         return game_mean_rating, game_ratings
 
     def load_prompt(self):
-        return json.loads(
-            open("modules/rag_description_generation/prompt.json").read()
-        )["gpt4o_mini_generate_prompt_structured"]
+        return json.loads(open(RAG_CONFIG["prompt_template"]).read())[
+            "gpt4o_mini_generate_prompt_structured"
+        ]
 
     def process_single_game(
         self,
@@ -120,7 +121,7 @@ class RagDescription(BaseModel):
         if not self.dynamodb_rag_client.check_dynamo_db_key(game_id=game_id):
 
             game_id_lookup = load_file_local_first(
-                path="games", file_name="game_id_lookup.json"
+                path="games", file_name=CONFIGS["game_id_lookup_filename"]
             )
             game_name = game_id_lookup[game_id]
             print(game_name)
