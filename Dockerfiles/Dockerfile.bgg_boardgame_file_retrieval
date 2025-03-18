@@ -16,6 +16,6 @@ RUN pip install selenium
 RUN pip install awswrangler
 
 COPY modules/bgg_boardgame_file_retrieval/get_bgg_games_file.py .
-COPY config.py .
+COPY config* .
 
 CMD [ "get_bgg_games_file.lambda_handler" ]
