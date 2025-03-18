@@ -62,7 +62,7 @@ Instructions for non-prefilled .env vars:
 
 EXPORT YOUR AWS KEYS. How you do this is outside of the scope of the repo.
 
-CD to the `aws_terraform_bgg` directory
+CD to the `terraform` directory
 `make terraform`
 Follow all prompts exactly as written.
 When prompted to type yes, type yes :)
@@ -83,7 +83,7 @@ AWS_GITHUB_ROLE: Enter the ARN of the GitHubActions_Push_Role which is this, rep
 
 Push up the new changes to your repo (terraform files) to trigger the write to AWS.
 
-Return to the `aws_terraform_bgg` directory and run `make setup_boardgamegeek`
+Return to the `terraform` directory and run `make setup_boardgamegeek`
 
 ## Running the Code Modules
 
