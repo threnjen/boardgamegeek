@@ -1,9 +1,6 @@
-from typing import Tuple
-
 import pandas as pd
 
 from utils.nlp_functions import evaluate_quality_words_over_thresh, filter_stopwords
-from utils.processing_functions import load_file_local_first
 
 
 def prompt_replacement(
@@ -35,7 +32,7 @@ def get_single_game_reviews(
     sample_pct: float = 0.1,
 ) -> list:
 
-    print(f"\n\nBuilding review data frame for game {game_name}: {game_id}")
+    print(f"Building review data frame for game {game_name}: {game_id}")
 
     df = pd.DataFrame(game_ratings)[["rating", "value"]]
 
@@ -61,8 +58,6 @@ def get_single_game_reviews(
     print(
         f"Total quality reviews: {len(df)}. {removed_reviews} reviews removed due to quality threshold"
     )
-
-    print(f"Total quality reviews: {len(df)}")
 
     sample_size = sample_size if sample_size >= 250 else len(df)
 

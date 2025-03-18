@@ -1,14 +1,14 @@
 import os
 
-import numpy as np
 import pandas as pd
 import weaviate
 import weaviate.classes as wvc
 from pydantic import BaseModel, ConfigDict
-from weaviate.classes.config import Configure
+
+# from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter, MetadataQuery
 from weaviate.util import generate_uuid5
-from utils.weaviate_ec2_client import WeaviateEc2
+from modules.rag_description_generation.weaviate_ec2_client import WeaviateEc2
 
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "True").lower() == "true" else False
 
@@ -131,7 +131,7 @@ class WeaviateClient(BaseModel):
             for review in reviews:
                 review_item = {
                     "review_text": review,
-                    "product_id": str(game_id),
+                    "product_id": game_id,
                 }
                 uuid = generate_uuid5(review_item)
 

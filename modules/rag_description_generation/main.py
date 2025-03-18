@@ -1,12 +1,9 @@
-import gc
 import json
 import os
 import sys
-import time
 
 import boto3
 from boto3.dynamodb.conditions import Key
-import pandas as pd
 from pydantic import BaseModel, ConfigDict
 
 from config import CONFIGS
@@ -17,7 +14,7 @@ from modules.rag_description_generation.rag_functions import (
     prompt_replacement,
 )
 from utils.processing_functions import load_file_local_first
-from utils.weaviate_client import WeaviateClient
+from modules.rag_description_generation.weaviate_client import WeaviateClient
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
@@ -65,16 +62,13 @@ class RagDescription(BaseModel):
         self.overall_stats["half_over"] = float(response["half_over"]["S"])
         self.overall_stats["one_over"] = float(response["one_over"]["S"])
 
-        print(self.overall_stats)
-
     def get_game_ids(self):
         print(f"\nLoading game data from {GAME_CONFIGS['clean_dfs_directory']}")
 
         game_avg_ratings = load_file_local_first(
             path="games", file_name="game_avg_ratings.json"
         )[self.start_block : self.end_block]
-        game_ids = [x[0] for x in game_avg_ratings]
-        print(game_ids)
+        game_ids = [str(x[0]) for x in game_avg_ratings]
 
         return game_ids
 
@@ -86,7 +80,7 @@ class RagDescription(BaseModel):
             TableName=table_name,
             Key={
                 "game_id": {
-                    "S": str(game_id),
+                    "S": game_id,
                 },
             },
         )["Item"]
@@ -100,7 +94,7 @@ class RagDescription(BaseModel):
         dynamodb_resource = boto3.resource("dynamodb")
         table = dynamodb_resource.Table(table_name)
 
-        filtering_exp = Key("game_id").eq(str(game_id))
+        filtering_exp = Key("game_id").eq(game_id)
         resp = table.query(KeyConditionExpression=filtering_exp)
         return resp.get("Items")
 
@@ -128,7 +122,7 @@ class RagDescription(BaseModel):
             game_id_lookup = load_file_local_first(
                 path="games", file_name="game_id_lookup.json"
             )
-            game_name = game_id_lookup[str(game_id)]
+            game_name = game_id_lookup[game_id]
             print(game_name)
 
             reviews = get_single_game_reviews(
@@ -138,12 +132,10 @@ class RagDescription(BaseModel):
                 sample_pct=0.1,
             )
 
-            # # vectors = df["embedding"].to_list()
-
             weaviate_client.add_reviews_collection_batch(
                 collection_name=self.collection_name,
                 game_id=game_id,
-                reviews=reviews,  # , vectors=vectors
+                reviews=reviews,
             )
             current_prompt = prompt_replacement(
                 current_prompt=generate_prompt,
@@ -151,6 +143,7 @@ class RagDescription(BaseModel):
                 game_name=game_name,
                 game_mean=str(game_mean_rating),
             )
+
             summary = weaviate_client.generate_aggregated_review(
                 game_id=game_id,
                 collection_name=self.collection_name,
@@ -159,7 +152,7 @@ class RagDescription(BaseModel):
             self.dynamodb_rag_client.divide_and_process_generated_summary(
                 game_id, summary=summary.generated
             )
-            print(f"\n{summary.generated}")
+
             # weaviate_client.remove_collection_items(
             #     game_id=game_id, collection_name=self.collection_name, reviews=reviews
             # )
