@@ -44,7 +44,8 @@ class DynamoDBDataWriter(BaseModel):
         """
 
         self.game_df = load_file_local_first(
-            path=GAME_CONFIGS["clean_dfs_directory"], file_name="games_clean.pkl"
+            path=GAME_CONFIGS["clean_dfs_directory"],
+            file_name=GAME_CONFIGS["clean_games_file"],
         )
 
         self.ratings_df = load_file_local_first(

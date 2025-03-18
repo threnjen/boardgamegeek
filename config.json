@@ -45,6 +45,7 @@
         "output_raw_xml_suffix": "combined_{}_game_raw.xml",
         "kaggle_games_file": "games/kaggle_data/prod/games.csv",
         "dirty_games_file": "games_dirty.pkl",
+        "clean_games_file": "games_clean.pkl",
         "data_sets": [
             "artists",
             "designers",

@@ -137,7 +137,8 @@ class SecondaryDataCleaner:
     def add_subcat_categories_to_games(self, big_cats_in_subcats_df):
         print("\nAdding Subcategories to Games data")
         games = load_file_local_first(
-            path=GAME_CONFIGS["clean_dfs_directory"], file_name="games_clean.pkl"
+            path=GAME_CONFIGS["clean_dfs_directory"],
+            file_name=GAME_CONFIGS["clean_games_file"],
         )
 
         for key, value in self.game_mappings["big_category_mapper"].items():
