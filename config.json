@@ -52,6 +52,9 @@
             "themes"
         ]
     },
+    "rag": {
+        "prompt_template": "prompt.json"
+    },
     "dynamodb": {
         "game_stats_table": "game_stats",
         "game_basic_data_table": "game_basic_data",

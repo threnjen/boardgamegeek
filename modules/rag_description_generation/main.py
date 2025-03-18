@@ -19,6 +19,7 @@ ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["games"]
 RATINGS_CONFIGS = CONFIGS["ratings"]
+RAG_CONFIG = CONFIGS["rag"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
@@ -105,9 +106,9 @@ class RagDescription(BaseModel):
         return game_mean_rating, game_ratings
 
     def load_prompt(self):
-        return json.loads(
-            open("modules/rag_description_generation/prompt.json").read()
-        )["gpt4o_mini_generate_prompt_structured"]
+        return json.loads(open(RAG_CONFIG["prompt_template"]).read())[
+            "gpt4o_mini_generate_prompt_structured"
+        ]
 
     def process_single_game(
         self,
