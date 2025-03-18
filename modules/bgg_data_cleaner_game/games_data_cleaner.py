@@ -41,7 +41,8 @@ class GameDataCleaner:
 
         print("\nCleaning Games Data")
         games_df = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="games_dirty.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=GAME_CONFIGS["dirty_games_file"],
         )
         games_df = self._drop_duplicates(games_df)
         games_df = self._drop_unneeded_columns(games_df)

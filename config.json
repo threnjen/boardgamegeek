@@ -44,6 +44,7 @@
         "output_urls_json_suffix": "_game_scraper_urls_raw.json",
         "output_raw_xml_suffix": "combined_{}_game_raw.xml",
         "kaggle_games_file": "games/kaggle_data/prod/games.csv",
+        "dirty_games_file": "games_dirty.pkl",
         "data_sets": [
             "artists",
             "designers",

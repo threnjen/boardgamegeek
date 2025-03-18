@@ -8,6 +8,7 @@ from utils.processing_functions import load_file_local_first, save_file_local_fi
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+GAME_CONFIGS = CONFIGS["games"]
 RATING_CONFIGS = CONFIGS["ratings"]
 url_block_size = 20
 number_url_files = 29
@@ -41,7 +42,7 @@ def lambda_handler(event, context):
 
     games = load_file_local_first(
         path=f'{CONFIGS["games"]["dirty_dfs_directory"]}',
-        file_name="games_dirty.pkl",
+        file_name=GAME_CONFIGS["dirty_games_file"],
     )
 
     ratings_totals = pd.DataFrame(games["BGGId"])
