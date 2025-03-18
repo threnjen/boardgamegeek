@@ -122,7 +122,6 @@ class WeaviateClient(BaseModel):
         game_id: str,
         collection_name: str,
         reviews: list[str],
-        # vectors: list[np.array],
     ) -> None:
 
         print(f"Adding reviews for game {game_id}")
@@ -140,20 +139,6 @@ class WeaviateClient(BaseModel):
                     continue
                 else:
                     batch.add_object(properties=review_item, uuid=uuid)
-
-        # collection_objs = list()
-        # for review, vector in zip(reviews, vectors):
-        #     collection_objs.append(
-        #         wvc.data.DataObject(
-        #             properties={
-        #                 "review_text": review,
-        #                 "product_id": game_id,
-        #             },
-        #             vector=vector,
-        #         )
-        #     )
-
-        # collection.data.insert_many(collection_objs)
 
         print(f"Reviews added for game {game_id}")
 
