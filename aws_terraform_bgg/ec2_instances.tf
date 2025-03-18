@@ -1,6 +1,6 @@
 resource "aws_instance" "weaviate_ec2_instance" {
 
-  instance_type               = "t3.medium"
+  instance_type               = "t3.small"
   ami                         = "ami-055e3d4f0bbeb5878"
   key_name                    = "weaviate-ec2"
   monitoring                  = true
