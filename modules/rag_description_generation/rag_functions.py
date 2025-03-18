@@ -3,6 +3,7 @@ from typing import Tuple
 import pandas as pd
 
 from utils.nlp_functions import evaluate_quality_words_over_thresh, filter_stopwords
+from utils.processing_functions import load_file_local_first
 
 
 def prompt_replacement(
@@ -27,19 +28,19 @@ def prompt_replacement(
     return current_prompt
 
 
-def get_single_game_entries(
-    df: pd.DataFrame, game_id: str, sample_pct: float = 0.1
-) -> Tuple[pd.DataFrame, str, str]:
-
-    # immediately filter to only the game_id we're interested in
-    df = df[df["BGGId"] == game_id]
-    df = df.reset_index(drop=True)
-    game_name = df["Name"].iloc[0]
+def get_single_game_reviews(
+    game_ratings: list,
+    game_id: str,
+    game_name: str,
+    sample_pct: float = 0.1,
+) -> list:
 
     print(f"\n\nBuilding review data frame for game {game_name}: {game_id}")
 
+    df = pd.DataFrame(game_ratings)[["rating", "value"]]
+
     # get the ratings sample distribution by taking 10% of the total ratings
-    df["rounded_rating"] = df["rating"].round(0).astype(int)
+    df["rounded_rating"] = df["rating"].astype(float).round(0).astype(int)
     sample_size = int(len(df) * sample_pct)  # Desired total sample size
 
     group_sizes = round(
@@ -80,9 +81,5 @@ def get_single_game_entries(
 
     # remove all special characters from combined_review
     df["combined_review"] = df["rating"].astype("string") + " " + df["value"]
-    df["combined_review"] = df["combined_review"].astype("string")
 
-    avg_rating = str(round(df["AvgRating"].iloc[0], 1))
-    df = df[["BGGId", "Description", "combined_review"]]
-
-    return df, game_name, avg_rating
+    return df["combined_review"].to_list()
