@@ -98,6 +98,7 @@ class WeaviateEc2(BaseModel):
             print("Weaviate is already running")
             return True
         else:
+            print("Weaviate is not running")
             return False
 
     def start_weaviate_docker_containers(self):

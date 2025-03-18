@@ -23,10 +23,9 @@ class WeaviateClient(BaseModel):
 
     def connect_to_weaviate_client(self):
         if not self.ec2:
-            self.weaviate_client = self.connect_weaviate_client_docker()
+            return self.connect_weaviate_client_docker()
         else:
-            self.weaviate_client = self.connect_weaviate_client_ec2()
-            print("\nConnected to Weaviate instance on AWS EC2")
+            return self.connect_weaviate_client_ec2()
 
     def connect_weaviate_client_docker(self) -> weaviate.client:
         if not IS_LOCAL:
@@ -55,6 +54,8 @@ class WeaviateClient(BaseModel):
         weaviate_ec2.validate_ready_weaviate_instance()
         ip_address = weaviate_ec2.get_ip_address()
         weaviate_ec2.start_weaviate_docker_containers()
+
+        print("\nConnected to Weaviate instance on AWS EC2")
 
         return weaviate.connect_to_custom(
             http_host=ip_address,
@@ -121,7 +122,7 @@ class WeaviateClient(BaseModel):
         game_id: str,
         collection_name: str,
         reviews: list[str],
-        vectors: list[np.array] = [],
+        # vectors: list[np.array],
     ) -> None:
 
         print(f"Adding reviews for game {game_id}")
@@ -131,7 +132,7 @@ class WeaviateClient(BaseModel):
             for review in reviews:
                 review_item = {
                     "review_text": review,
-                    "product_id": game_id,
+                    "product_id": str(game_id),
                 }
                 uuid = generate_uuid5(review_item)
 
