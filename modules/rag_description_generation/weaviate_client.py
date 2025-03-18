@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 # from weaviate.classes.config import Configure
 from weaviate.classes.query import Filter, MetadataQuery
 from weaviate.util import generate_uuid5
+
 from modules.rag_description_generation.weaviate_ec2_client import WeaviateEc2
 
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "True").lower() == "true" else False

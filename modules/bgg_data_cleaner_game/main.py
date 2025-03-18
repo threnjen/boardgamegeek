@@ -13,7 +13,6 @@ from utils.processing_functions import (
     get_xml_file_keys_based_on_env,
     load_file_local_first,
     save_dfs_to_disk_or_s3,
-    save_file_local_first,
 )
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")

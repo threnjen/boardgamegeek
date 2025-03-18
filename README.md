@@ -62,7 +62,7 @@ Instructions for non-prefilled .env vars:
 
 EXPORT YOUR AWS KEYS. How you do this is outside of the scope of the repo.
 
-CD to the `aws_terraform_bgg` directory
+CD to the `terraform` directory
 `make terraform`
 Follow all prompts exactly as written.
 When prompted to type yes, type yes :)
@@ -83,12 +83,12 @@ AWS_GITHUB_ROLE: Enter the ARN of the GitHubActions_Push_Role which is this, rep
 
 Push up the new changes to your repo (terraform files) to trigger the write to AWS.
 
-Return to the `aws_terraform_bgg` directory and run `make setup_boardgamegeek`
+Return to the `terraform` directory and run `make setup_boardgamegeek`
 
 ## Running the Code Modules
 
 ### Module Order
-The module orders are also set out in the Orchestration, under `aws_dagster_bgg.assets.assets.py`.
+The module orders are also set out in the Orchestration, under `dagster_orchestration.assets.assets.py`.
 
 Primary chain chain; Dagster job `bgg_job`
 - `modules/bgg_boardgame_file_retrieval` - Gets the `boardgames_ranks.csv` file from BGG and saves it to S3.

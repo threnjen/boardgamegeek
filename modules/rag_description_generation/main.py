@@ -7,14 +7,13 @@ from boto3.dynamodb.conditions import Key
 from pydantic import BaseModel, ConfigDict
 
 from config import CONFIGS
-
 from modules.rag_description_generation.rag_dynamodb import RagDynamoDB
 from modules.rag_description_generation.rag_functions import (
     get_single_game_reviews,
     prompt_replacement,
 )
-from utils.processing_functions import load_file_local_first
 from modules.rag_description_generation.weaviate_client import WeaviateClient
+from utils.processing_functions import load_file_local_first
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
