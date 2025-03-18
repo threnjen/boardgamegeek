@@ -49,7 +49,7 @@ class DynamoDBDataWriter(BaseModel):
 
         self.ratings_df = load_file_local_first(
             path=RATINGS_CONFIGS["dirty_dfs_directory"],
-            file_name="ratings_data.pkl",
+            file_name=RATINGS_CONFIGS["ratings_save_file"],
         )
 
         print(len(self.game_df))

@@ -120,7 +120,8 @@ class DirtyDataExtractor:
             path=USER_CONFIGS["dirty_dfs_directory"], file_name=f"user_data.pkl"
         )
         ratings_df = load_file_local_first(
-            path=RATINGS_CONFIGS["dirty_dfs_directory"], file_name=f"ratings_data.pkl"
+            path=RATINGS_CONFIGS["dirty_dfs_directory"],
+            file_name=RATINGS_CONFIGS["ratings_save_file"],
         )
         print(ratings_df.info())
         print(users_df.info())
