@@ -9,6 +9,7 @@
     "ecs_cluster": "boardgamegeek",
     "orchestrator_task_definition": "bgg_orchestrator",
     "boardgamegeek_csv_filename": "boardgames_ranks.csv",
+    "game_id_lookup_filename": "game_id_lookup.json",
     "file_retrieval_lambda": "bgg_boardgame_file_retrieval",
     "dev_directory": "data/test/",
     "prod_directory": "data/prod/",

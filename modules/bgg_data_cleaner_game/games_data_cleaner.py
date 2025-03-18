@@ -159,7 +159,9 @@ class GameDataCleaner:
         game_id_lookup = dict(zip(game_ids, game_names))
 
         save_file_local_first(
-            path="games", file_name="game_id_lookup.json", data=game_id_lookup
+            path="games",
+            file_name=CONFIGS["game_id_lookup_filename"],
+            data=game_id_lookup,
         )
 
     def _make_game_avg_ratings_lookup_file(self, games_df: pd.DataFrame):

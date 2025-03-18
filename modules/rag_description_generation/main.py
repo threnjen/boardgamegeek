@@ -120,7 +120,7 @@ class RagDescription(BaseModel):
         if not self.dynamodb_rag_client.check_dynamo_db_key(game_id=game_id):
 
             game_id_lookup = load_file_local_first(
-                path="games", file_name="game_id_lookup.json"
+                path="games", file_name=CONFIGS["game_id_lookup_filename"]
             )
             game_name = game_id_lookup[game_id]
             print(game_name)
