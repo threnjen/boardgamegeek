@@ -34,7 +34,7 @@ def lambda_handler(event, context):
     to pick up.
     """
 
-    df = load_file_local_first(file_name="boardgames_ranks.csv")
+    df = load_file_local_first(file_name=CONFIGS["boardgamegeek_csv_filename"])
 
     game_ids = df["id"].astype(str).to_list()
     print(f"Number of game ids: {len(game_ids)}")

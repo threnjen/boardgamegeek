@@ -10,6 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from config import CONFIGS
 
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
@@ -107,7 +108,7 @@ def lambda_handler(event: dict = None, context: dict = None) -> None:
     with zipfile.ZipFile(f"{default_directory}/Downloads/{filename}", "r") as zip_ref:
         zip_ref.extractall(extract_directory)
 
-    local_file = f"{extract_directory}/boardgames_ranks.csv"
+    local_file = f"{extract_directory}/{CONFIGS['boardgamegeek_csv_filename']}"
     output_file = f"{extract_directory}/boardgames_ranks.tsv"
 
     # Input and output file paths
@@ -128,12 +129,12 @@ def lambda_handler(event: dict = None, context: dict = None) -> None:
 
     wr.s3.upload(
         local_file=output_file,
-        path=f"s3://{S3_SCRAPER_BUCKET}/data/prod/boardgames_ranks.csv",
+        path=f"s3://{S3_SCRAPER_BUCKET}/data/prod/{CONFIGS['boardgamegeek_csv_filename']}",
     )
 
     wr.s3.upload(
         local_file=output_file,
-        path=f"s3://{S3_SCRAPER_BUCKET}/data/test/boardgames_ranks.csv",
+        path=f"s3://{S3_SCRAPER_BUCKET}/data/test/{CONFIGS['boardgamegeek_csv_filename']}",
     )
 
 
