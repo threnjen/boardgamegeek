@@ -88,7 +88,7 @@ Return to the `terraform` directory and run `make setup_boardgamegeek`
 ## Running the Code Modules
 
 ### Module Order
-The module orders are also set out in the Orchestration, under `aws_dagster_bgg.assets.assets.py`.
+The module orders are also set out in the Orchestration, under `dagster_orchestration.assets.assets.py`.
 
 Primary chain chain; Dagster job `bgg_job`
 - `modules/bgg_boardgame_file_retrieval` - Gets the `boardgames_ranks.csv` file from BGG and saves it to S3.

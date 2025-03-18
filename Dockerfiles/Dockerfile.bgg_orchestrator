@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
 RUN pip3 install pipenv
 
 # Copy the source code into the container
-COPY aws_dagster_bgg aws_dagster_bgg
-COPY aws_dagster_bgg/Pipfile* .
+COPY dagster_orchestration dagster_orchestration
+COPY dagster_orchestration/Pipfile* .
 COPY utils utils
 COPY config.py .
 COPY pyproject.toml .
@@ -31,5 +31,5 @@ ENV JOB=$JOB
 EXPOSE 3000
 
 # Set the entry point and command
-ENTRYPOINT ["pipenv", "run", "python", "aws_dagster_bgg/bgg_orchestrate.py"]
+ENTRYPOINT ["pipenv", "run", "python", "dagster_orchestration/bgg_orchestrate.py"]
 CMD ["$ASSET", "$JOB"]

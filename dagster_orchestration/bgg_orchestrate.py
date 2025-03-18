@@ -16,12 +16,14 @@ if __name__ == "__main__":
     if asset == "all":
         print(f"Executing all assets... for job {job}")
         subprocess.run(
-            f"dagster job execute --package-name aws_dagster_bgg -j {job}".split(" ")
+            f"dagster job execute --package-name dagster_orchestration -j {job}".split(
+                " "
+            )
         )
     else:
         print(f"Executing asset: {asset}...")
         subprocess.run(
-            f"dagster asset materialize --select {asset} --package-name aws_dagster_bgg".split(
+            f"dagster asset materialize --select {asset} --package-name dagster_orchestration".split(
                 " "
             )
         )
