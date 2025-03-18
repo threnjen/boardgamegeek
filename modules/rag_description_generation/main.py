@@ -36,7 +36,7 @@ class RagDescription(BaseModel):
     weaviate: WeaviateClient = None
     dynamodb_rag_client: RagDynamoDB = None
     dynamodb_client: boto3.client = None
-    ec2_server: bool = False
+    use_ec2_server: bool = False
 
     def model_post_init(self, __context):
         self.collection_name = f"reviews_{self.start_block}_{self.end_block}"
@@ -167,7 +167,7 @@ class RagDescription(BaseModel):
         game_ids = self.get_game_ids()
         generate_prompt = self.load_prompt()
 
-        weaviate_client = WeaviateClient(ec2=self.ec2_server)
+        weaviate_client = WeaviateClient(ec2=self.use_ec2_server)
         weaviate_client.create_reviews_collection(collection_name=self.collection_name)
 
         self.dynamodb_rag_client = RagDynamoDB()
@@ -202,6 +202,10 @@ if __name__ == "__main__":
     ec2_server = sys.argv[3] if len(sys.argv) > 3 else "False"
 
     ec2_server = True if ec2_server.lower() == "true" else False
+
+    print(f"Running RAG description generation from {start_block} to {end_block}")
+    if ec2_server:
+        print("Running Weaviate on EC2 server")
 
     rag_description = RagDescription(
         start_block=start_block, end_block=end_block, use_ec2_server=ec2_server
