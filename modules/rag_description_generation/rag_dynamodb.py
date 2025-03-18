@@ -7,6 +7,7 @@ from pydantic import BaseModel
 class RagDynamoDB(BaseModel):
     dynamodb_client: boto3.client = boto3.client("dynamodb")
     today_timestring: str = datetime.now().strftime("%Y%m%d")
+    days_since_last_process: int = 30
 
     def divide_and_process_generated_summary(self, game_id: str, summary: str) -> None:
         summary = summary.replace("**", "")
@@ -42,9 +43,7 @@ class RagDynamoDB(BaseModel):
 
     def check_dynamo_db_key(self, game_id: str) -> bool:
 
-        # make a default timestamp that is the standard 1970 01 01 default
         default_timestamp = "19700101"
-        days_since_last_process = 30
 
         try:
             item = self.dynamodb_client.get_item(
@@ -53,14 +52,14 @@ class RagDynamoDB(BaseModel):
             db_timestamp_str = item.get("date_updated", {"S": default_timestamp})["S"]
             db_timestamp = datetime.strptime(db_timestamp_str, "%Y%m%d")
 
-            # determine if datetime.now() is more than three days after the db_timestamp
-            if (datetime.now() - db_timestamp).days < days_since_last_process:
+            # determine if datetime.now() is more than days_since_last_process days after the db_timestamp
+            if (datetime.now() - db_timestamp).days < self.days_since_last_process:
                 print(
-                    f"Game {game_id} already processed within last {days_since_last_process} days"
+                    f"Game {game_id} already processed within last {self.days_since_last_process} days"
                 )
                 return True
             print(
-                f"Game {game_id} found but not processed within last {days_since_last_process} days"
+                f"Game {game_id} found but not processed within last {self.days_since_last_process} days"
             )
             return False
         except:
