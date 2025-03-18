@@ -1,7 +1,4 @@
-import gc
 import os
-from collections import defaultdict
-from typing import Tuple
 
 import pandas as pd
 from bs4 import BeautifulSoup

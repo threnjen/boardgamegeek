@@ -1,9 +1,6 @@
 import os
 from datetime import datetime
 
-import numpy as np
-import pandas as pd
-
 from config import CONFIGS
 from utils.processing_functions import (load_file_local_first,
                                         save_file_local_first)

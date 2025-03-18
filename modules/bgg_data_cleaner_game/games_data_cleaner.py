@@ -11,7 +11,6 @@ from utils.processing_functions import (
     save_file_local_first,
     save_to_aws_glue,
 )
-from utils.s3_file_handler import S3FileHandler
 
 GAME_CONFIGS = CONFIGS["games"]
 ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
