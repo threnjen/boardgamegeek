@@ -81,7 +81,8 @@ class SecondaryDataCleaner:
     def clean_publishers(self):
         print("\nCleaning Publishers")
         publishers = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="publishers_dirty.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=GAME_CONFIGS["publishers_file"],
         )
         publishers = publishers.loc[publishers["boardgamepublisher"] != "(Uncredited)"]
         publishers = publishers.reset_index(drop=True)
@@ -100,7 +101,8 @@ class SecondaryDataCleaner:
     def clean_artists(self):
         print("\nCleaning Artists")
         artists = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="artists_dirty.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=GAME_CONFIGS["artists_file"],
         )
         artists = artists.loc[artists["boardgameartist"] != "(Uncredited)"]
         artists = artists.reset_index(drop=True)
@@ -119,7 +121,8 @@ class SecondaryDataCleaner:
     def clean_designers(self):
         print("\nCleaning Designers")
         designers = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="designers_dirty.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=GAME_CONFIGS["designers_file"],
         )
         designers = designers.loc[designers["boardgamedesigner"] != "(Uncredited)"]
         designers = designers.reset_index(drop=True)
@@ -159,7 +162,8 @@ class SecondaryDataCleaner:
     def clean_mechanics(self, mechanics_in_subcats_df):
         print("\nCleaning Mechanics")
         mechanics = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="mechanics_dirty.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=GAME_CONFIGS["mechanics_file"],
         )
 
         mechanics = mechanics.drop_duplicates(keep="first")
@@ -247,7 +251,8 @@ class SecondaryDataCleaner:
     def clean_themes(self, themes_in_subcats_df):
         print("\nCleaning Themes")
         themes = load_file_local_first(
-            path=GAME_CONFIGS["dirty_dfs_directory"], file_name="themes_dirty.pkl"
+            path=GAME_CONFIGS["dirty_dfs_directory"],
+            file_name=GAME_CONFIGS["themes_file"],
         )
 
         themes = themes.dropna(subset=["Theme"]).sort_values("BGGId")
@@ -269,7 +274,7 @@ class SecondaryDataCleaner:
 
         subcategories = load_file_local_first(
             path=GAME_CONFIGS["dirty_dfs_directory"],
-            file_name="subcategories_dirty.pkl",
+            file_name=GAME_CONFIGS["subcategories_file"],
         )
 
         # drop rows from subcategories where boardgamecategory is in list drop

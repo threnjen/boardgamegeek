@@ -47,6 +47,12 @@
         "kaggle_games_file": "games/kaggle_data/prod/games.csv",
         "dirty_games_file": "games_dirty.pkl",
         "clean_games_file": "games_clean.pkl",
+        "publishers_file": "publishers_dirty.pkl",
+        "artists_file": "artists_dirty.pkl",
+        "designers_file": "designers_dirty.pkl",
+        "mechanics_file": "mechanics_dirty.pkl",
+        "themes_file": "themes_dirty.pkl",
+        "subcategories_file": "subcategories_dirty.pkl",
         "data_sets": [
             "artists",
             "designers",
