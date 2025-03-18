@@ -183,7 +183,7 @@ class GameDataCleaner:
 
         save_file_local_first(
             path="games",
-            file_name="game_avg_ratings.json",
+            file_name=CONFIGS["game_avg_ratings_filename"],
             data=game_avg_ratings,
         )
 

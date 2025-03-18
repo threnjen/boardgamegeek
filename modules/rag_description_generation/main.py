@@ -66,7 +66,7 @@ class RagDescription(BaseModel):
         print(f"\nLoading game data from {GAME_CONFIGS['clean_dfs_directory']}")
 
         game_avg_ratings = load_file_local_first(
-            path="games", file_name="game_avg_ratings.json"
+            path="games", file_name=CONFIGS["game_avg_ratings_filename"]
         )[self.start_block : self.end_block]
         game_ids = [str(x[0]) for x in game_avg_ratings]
 
