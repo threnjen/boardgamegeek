@@ -38,6 +38,7 @@
         "output_xml_directory": "games/scraped_xml_raw",
         "dirty_dfs_directory": "games/game_dfs_dirty",
         "clean_dfs_directory": "games/game_dfs_clean",
+        "game_mappings_file": "modules/bgg_data_cleaner_game/game_mappings.json",
         "output_urls_json_suffix": "_game_scraper_urls_raw.json",
         "output_raw_xml_suffix": "combined_{}_game_raw.xml",
         "kaggle_games_file": "games/kaggle_data/prod/games.csv",

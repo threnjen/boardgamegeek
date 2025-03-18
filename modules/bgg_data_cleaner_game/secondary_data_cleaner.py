@@ -18,7 +18,7 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 class SecondaryDataCleaner:
     def __init__(self):
         self.game_mappings = LocalFileHandler().load_file(
-            file_path="./modules/bgg_data_cleaner_game/game_mappings.json"
+            file_path=GAME_CONFIGS["game_mappings_file"]
         )
 
     def save_file_set(self, data, table):
