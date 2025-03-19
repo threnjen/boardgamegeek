@@ -77,8 +77,7 @@ class DirtyDataExtractor:
             )
 
             if len(game_entries) == 0:
-                print(f"\n\nNo game entries found in file {file}. Exiting application.")
-                exit()
+                print(f"\n\nNo game entries found in file {file}.")
 
             for game_entry in game_entries:
 

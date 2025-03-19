@@ -180,7 +180,6 @@ class GameDataCleaner:
                 )
             }.items()
         )
-        print(game_avg_ratings)
 
         save_file_local_first(
             path="games",
