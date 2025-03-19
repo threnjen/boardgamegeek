@@ -72,10 +72,6 @@ class DirtyDataExtractor:
 
             game_entries = game_page.find_all("item")
 
-            print(
-                f"Number of game entries in file {file.split("/")[-1]}: {len(game_entries)}"
-            )
-
             if len(game_entries) == 0:
                 print(f"\n\nNo game entries found in file {file}.")
 
@@ -85,7 +81,6 @@ class DirtyDataExtractor:
 
                 if not game_parser.check_rating_count_threshold():
                     continue
-                # print(f"Processing game with ID: {game_entry['id']}")
 
                 game_parser.parse_individual_game()
                 (
@@ -163,14 +158,11 @@ class DirtyDataExtractor:
 
         del raw_storage
 
-        print(dirty_game_data_frames.keys())
         return dirty_game_data_frames
 
     def _save_dirty_dfs(self, dirty_game_data_frames: dict[pd.DataFrame]):
         """Save all files as pkl files. Save to local drive in ENVIRONMENT==dev, or
         copy pkl to s3 if ENVIRONMENT==prod"""
-
-        print("\nSaving data frames to disk or S3")
 
         for table_name, table in dirty_game_data_frames.items():
 

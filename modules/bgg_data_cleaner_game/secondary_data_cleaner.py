@@ -91,7 +91,7 @@ class SecondaryDataCleaner:
             df=publishers, column_name="boardgamepublisher", threshold=3
         )
 
-        print(publishers.head())
+        print(f"{len(publishers)} publishers")
 
         self.save_file_set(
             data=publishers,
@@ -111,7 +111,7 @@ class SecondaryDataCleaner:
             df=artists, column_name="boardgameartist", threshold=3
         )
 
-        print(artists.head())
+        print(f"{len(artists)} artists")
 
         self.save_file_set(
             data=artists,
@@ -130,7 +130,7 @@ class SecondaryDataCleaner:
         designers = self.strip_low_entries_and_pivot(
             df=designers, column_name="boardgamedesigner", threshold=2
         )
-        print(designers.head())
+        print(f"{len(designers)} designers")
 
         self.save_file_set(
             data=designers,
@@ -246,6 +246,8 @@ class SecondaryDataCleaner:
 
         mechanics = mechanics.drop_duplicates(keep="first")
 
+        print(f"{len(mechanics)} mechanics")
+
         self.save_file_set(data=mechanics, table="mechanics")
 
     def clean_themes(self, themes_in_subcats_df):
@@ -266,6 +268,7 @@ class SecondaryDataCleaner:
             .sort_values(by="BGGId")
             .reset_index(drop=True)
         )
+        print(f"{len(themes)} themes")
 
         self.save_file_set(data=themes, table="themes")
 
