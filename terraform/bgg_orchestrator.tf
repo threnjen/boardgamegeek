@@ -94,6 +94,11 @@ resource "aws_iam_role_policy_attachment" "ecs_run_attach_user_cleaner_to_orches
   policy_arn = module.ecs_run_permissions_bgg_data_cleaner_users.arn
 }
 
+resource "aws_iam_role_policy_attachment" "ecs_run_attach_xml_cleaner_to_orchestrator_dev" {
+  role       = module.bgg_orchestrator_FargateTaskRole_role.name
+  policy_arn = module.ecs_run_permissions_bgg_xml_cleanup.arn
+}
+
 
 
 module "bgg_orchestrator_fargate_trigger" {

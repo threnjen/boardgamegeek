@@ -126,7 +126,7 @@ def games_combined_xml(
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
     task_definition = (
-        "bgg_xml_cleaner" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleaner"
+        "bgg_xml_cleanup" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleanup"
     )
 
     overrides = {
@@ -299,7 +299,7 @@ def ratings_combined_xml(
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
     task_definition = (
-        "bgg_xml_cleaner" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleaner"
+        "bgg_xml_cleanup" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleanup"
     )
 
     overrides = {
