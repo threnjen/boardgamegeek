@@ -8,6 +8,7 @@ logger = get_dagster_logger()
 ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 WORKING_ENV_DIR = "data/prod/" if ENVIRONMENT == "prod" else "data/test/"
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+REFRESH = 300 if ENVIRONMENT == "prod" else 30
 
 
 @asset
@@ -70,11 +71,11 @@ def games_scraper_urls_raw(
 
     logger.info("Generating game scraper urls")
 
-    configs = config_resource.get_config_file()
+    games_configs = config_resource.get_config_file()["games"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
-    raw_urls_directory = configs["games"]["raw_urls_directory"]
-    output_urls_json_suffix = configs["games"]["output_urls_json_suffix"]
+    raw_urls_directory = games_configs["raw_urls_directory"]
+    output_urls_json_suffix = games_configs["output_urls_json_suffix"]
 
     game_scraper_url_filenames = (
         [
@@ -114,6 +115,67 @@ def games_scraped_xml_raw(
 
 
 @asset(deps=["games_scraped_xml_raw"])
+def games_combined_xml(
+    ecs_resource: ConfigurableResource,
+    s3_resource: ConfigurableResource,
+    config_resource: ConfigurableResource,
+) -> bool:
+    """Combines the smaller xml files into large xml files"""
+
+    games_configs = config_resource.get_config_file()["games"]
+
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
+
+    task_definition = (
+        "bgg_xml_cleanup" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleanup"
+    )
+
+    overrides = {
+        "containerOverrides": [
+            {
+                "name": task_definition,
+                "environment": [
+                    {"name": "SCRAPER_TYPE", "value": "games"},
+                ],
+            }
+        ]
+    }
+
+    ecs_resource.launch_ecs_task(task_definition=task_definition, overrides=overrides)
+
+    data_set_file_names = (
+        [
+            f"{WORKING_ENV_DIR}{games_configs['output_xml_directory']}/{games_configs['output_raw_xml_suffix'].replace("{}", f'group{x}')}"
+            for x in range(30)
+        ]
+        if ENVIRONMENT == "prod"
+        else [
+            f"{WORKING_ENV_DIR}{games_configs['output_xml_directory']}/{games_configs['output_raw_xml_suffix'].replace('{}', 'group1')}"
+        ]
+    )
+
+    logger.info(data_set_file_names)
+
+    original_timestamps = {
+        key: s3_resource.get_last_modified(
+            bucket=s3_scraper_bucket,
+            key=key,
+        )
+        for key in data_set_file_names
+    }
+
+    compare_timestamps_for_refresh(
+        original_timestamps=original_timestamps,
+        file_list_to_check=data_set_file_names,
+        location_bucket=s3_scraper_bucket,
+        sleep_timer=REFRESH,
+        s3_resource=s3_resource,
+    )
+
+    return True
+
+
+@asset(deps=["games_combined_xml"])
 def game_dfs_clean(
     s3_resource: ConfigurableResource,
     ecs_resource: ConfigurableResource,
@@ -123,11 +185,11 @@ def game_dfs_clean(
     Creates dirty dataframes for the game data from the scraped XML
     """
 
-    configs = config_resource.get_config_file()
+    games_configs = config_resource.get_config_file()["games"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
-    data_sets = configs["games"]["data_sets"]
+    data_sets = games_configs["data_sets"]
 
     task_definition = (
         "bgg_data_cleaner_game"
@@ -140,7 +202,7 @@ def game_dfs_clean(
     logger.info(data_sets)
 
     data_set_file_names = [
-        f"{WORKING_ENV_DIR}{configs['games']['clean_dfs_directory']}/{x}_clean.pkl"
+        f"{WORKING_ENV_DIR}{games_configs['clean_dfs_directory']}/{x}_clean.pkl"
         for x in data_sets
     ]
     logger.info(data_set_file_names)
@@ -157,7 +219,7 @@ def game_dfs_clean(
         original_timestamps=original_timestamps,
         file_list_to_check=data_set_file_names,
         location_bucket=s3_scraper_bucket,
-        sleep_timer=300,
+        sleep_timer=REFRESH,
         s3_resource=s3_resource,
     )
 
@@ -182,11 +244,11 @@ def ratings_scraper_urls_raw(
     Update the last modified timestamp of the keys in s3.
     """
 
-    configs = config_resource.get_config_file()
+    rating_configs = config_resource.get_config_file()["ratings"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
-    raw_urls_directory = configs["ratings"]["raw_urls_directory"]
-    output_urls_json_suffix = configs["ratings"]["output_urls_json_suffix"]
+    raw_urls_directory = rating_configs["raw_urls_directory"]
+    output_urls_json_suffix = rating_configs["output_urls_json_suffix"]
 
     ratings_scraper_url_filenames = (
         [
@@ -226,6 +288,67 @@ def ratings_scraped_xml_raw(
 
 
 @asset(deps=["ratings_scraped_xml_raw"])
+def ratings_combined_xml(
+    ecs_resource: ConfigurableResource,
+    s3_resource: ConfigurableResource,
+    config_resource: ConfigurableResource,
+) -> bool:
+    """Combines the smaller xml files into large xml files"""
+
+    rating_configs = config_resource.get_config_file()["ratings"]
+
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
+
+    task_definition = (
+        "bgg_xml_cleanup" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleanup"
+    )
+
+    overrides = {
+        "containerOverrides": [
+            {
+                "name": task_definition,
+                "environment": [
+                    {"name": "SCRAPER_TYPE", "value": "ratings"},
+                ],
+            }
+        ]
+    }
+
+    ecs_resource.launch_ecs_task(task_definition=task_definition, overrides=overrides)
+
+    data_set_file_names = (
+        [
+            f"{WORKING_ENV_DIR}{rating_configs['output_xml_directory']}/{rating_configs['output_raw_xml_suffix'].replace("{}", f'group{x}')}"
+            for x in range(30)
+        ]
+        if ENVIRONMENT == "prod"
+        else [
+            f"{WORKING_ENV_DIR}{rating_configs['output_xml_directory']}/{rating_configs['output_raw_xml_suffix'].replace('{}', 'group1')}"
+        ]
+    )
+
+    logger.info(data_set_file_names)
+
+    original_timestamps = {
+        key: s3_resource.get_last_modified(
+            bucket=s3_scraper_bucket,
+            key=key,
+        )
+        for key in data_set_file_names
+    }
+
+    compare_timestamps_for_refresh(
+        original_timestamps=original_timestamps,
+        file_list_to_check=data_set_file_names,
+        location_bucket=s3_scraper_bucket,
+        sleep_timer=REFRESH,
+        s3_resource=s3_resource,
+    )
+
+    return True
+
+
+@asset(deps=["ratings_combined_xml"])
 def ratings_dfs_dirty(
     s3_resource: ConfigurableResource,
     ecs_resource: ConfigurableResource,
@@ -235,10 +358,10 @@ def ratings_dfs_dirty(
     Creates a clean dataframe for the ratings data from the scraped ratings XML files
     """
 
-    configs = config_resource.get_config_file()
+    rating_configs = config_resource.get_config_file()["ratings"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
-    key = f'{WORKING_ENV_DIR}{configs["ratings"]["output_xml_directory"]}'
+    key = f'{WORKING_ENV_DIR}{rating_configs["output_xml_directory"]}'
 
     raw_ratings_files = s3_resource.list_file_keys(bucket=s3_scraper_bucket, key=key)
 
@@ -253,7 +376,7 @@ def ratings_dfs_dirty(
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 
     check_filenames = [
-        f"{WORKING_ENV_DIR}{configs['ratings']['dirty_dfs_directory']}/{configs['ratings']['ratings_save_file']}"
+        f"{WORKING_ENV_DIR}{rating_configs['dirty_dfs_directory']}/{rating_configs['ratings_save_file']}"
     ]
     logger.info(check_filenames)
 
@@ -269,7 +392,7 @@ def ratings_dfs_dirty(
         original_timestamps=original_timestamps,
         file_list_to_check=check_filenames,
         location_bucket=s3_scraper_bucket,
-        sleep_timer=300,
+        sleep_timer=REFRESH,
         s3_resource=s3_resource,
     )
 
@@ -394,7 +517,7 @@ def user_dfs_dirty(
         original_timestamps=original_timestamps,
         file_list_to_check=check_filenames,
         location_bucket=s3_scraper_bucket,
-        sleep_timer=300,
+        sleep_timer=REFRESH,
         s3_resource=s3_resource,
     )
 
@@ -531,7 +654,7 @@ def scrape_data(
 
     while get_total_tasks() >= allowed_tasks:
         logger.info(f"Waiting for tasks to finish. {get_total_tasks()} running")
-        time.sleep(300)
+        time.sleep(REFRESH)
 
     return True
 
