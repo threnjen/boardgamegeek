@@ -51,8 +51,9 @@ class XMLCleanup:
 
     def _delete_existing_xml_files(self, existing_files: list):
         for file in existing_files:
+            bucket_stripped_path = file.replace(f"s3://{S3_SCRAPER_BUCKET}/", "")
             delete_file_local_first(
-                file_name=file,
+                file_name=bucket_stripped_path,
             )
 
     def _create_combined_file_groups(

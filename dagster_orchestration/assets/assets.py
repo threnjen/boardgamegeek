@@ -71,7 +71,7 @@ def games_scraper_urls_raw(
 
     logger.info("Generating game scraper urls")
 
-    games_configs = config_resource.get_config_file()
+    games_configs = config_resource.get_config_file()["games"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
     raw_urls_directory = games_configs["raw_urls_directory"]
@@ -122,7 +122,7 @@ def games_combined_xml(
 ) -> bool:
     """Combines the smaller xml files into large xml files"""
 
-    games_configs = config_resource.get_config_file()
+    games_configs = config_resource.get_config_file()["games"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
@@ -145,12 +145,12 @@ def games_combined_xml(
 
     data_set_file_names = (
         [
-            f"{WORKING_ENV_DIR}{games_configs['output_xml_directory']}{games_configs['output_raw_xml_suffix'].replace("{}", x)}"
+            f"{WORKING_ENV_DIR}{games_configs['output_xml_directory']}/{games_configs['output_raw_xml_suffix'].replace("{}", f'group{x}')}"
             for x in range(30)
         ]
         if ENVIRONMENT == "prod"
         else [
-            f"{WORKING_ENV_DIR}{games_configs['output_xml_directory']}{games_configs['output_raw_xml_suffix'].replace('{}', '0')}"
+            f"{WORKING_ENV_DIR}{games_configs['output_xml_directory']}/{games_configs['output_raw_xml_suffix'].replace('{}', 'group1')}"
         ]
     )
 
@@ -318,12 +318,12 @@ def ratings_combined_xml(
 
     data_set_file_names = (
         [
-            f"{WORKING_ENV_DIR}{rating_configs['output_xml_directory']}{rating_configs['output_raw_xml_suffix'].replace("{}", x)}"
+            f"{WORKING_ENV_DIR}{rating_configs['output_xml_directory']}/{rating_configs['output_raw_xml_suffix'].replace("{}", f'group{x}')}"
             for x in range(30)
         ]
         if ENVIRONMENT == "prod"
         else [
-            f"{WORKING_ENV_DIR}{rating_configs['output_xml_directory']}{rating_configs['output_raw_xml_suffix'].replace('{}', '0')}"
+            f"{WORKING_ENV_DIR}{rating_configs['output_xml_directory']}/{rating_configs['output_raw_xml_suffix'].replace('{}', 'group1')}"
         ]
     )
 
