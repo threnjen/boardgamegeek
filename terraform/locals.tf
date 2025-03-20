@@ -19,6 +19,8 @@ locals {
     module.dev_bgg_ratings_embedder.ecr_repository_name,
     module.bgg_dynamodb_data_store_ecr.ecr_repository_name,
     module.dev_bgg_dynamodb_data_store_ecr.ecr_repository_name,
+    module.dev_bgg_xml_cleanup_ecr.ecr_repository_name,
+    module.bgg_xml_cleanup_ecr.ecr_repository_name
   ]
 }
 
@@ -43,6 +45,8 @@ locals {
     module.rag_description_generation.function_name,
     module.dev_rag_description_generation.function_name,
     module.bgg_ratings_embedder_fargate_trigger.function_name,
-    module.dev_bgg_ratings_embedder_fargate_trigger.function_name
+    module.dev_bgg_ratings_embedder_fargate_trigger.function_name,
+    module.dev_bgg_xml_cleanup_fargate_trigger.function_name,
+    module.bgg_xml_cleanup_fargate_trigger.function_name
   ]
 }
