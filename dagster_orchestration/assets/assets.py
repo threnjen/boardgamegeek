@@ -70,11 +70,11 @@ def games_scraper_urls_raw(
 
     logger.info("Generating game scraper urls")
 
-    configs = config_resource.get_config_file()
+    games_configs = config_resource.get_config_file()
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
-    raw_urls_directory = configs["games"]["raw_urls_directory"]
-    output_urls_json_suffix = configs["games"]["output_urls_json_suffix"]
+    raw_urls_directory = games_configs["raw_urls_directory"]
+    output_urls_json_suffix = games_configs["output_urls_json_suffix"]
 
     game_scraper_url_filenames = (
         [
@@ -121,7 +121,7 @@ def games_combined_xml(
 ) -> bool:
     """Combines the smaller xml files into large xml files"""
 
-    configs = config_resource.get_config_file()
+    games_configs = config_resource.get_config_file()
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
@@ -144,12 +144,12 @@ def games_combined_xml(
 
     data_set_file_names = (
         [
-            f"{WORKING_ENV_DIR}{configs['games']['output_raw_xml_suffix'].replace("{}", x)}"
+            f"{WORKING_ENV_DIR}{games_configs['output_xml_directory']}{games_configs['output_raw_xml_suffix'].replace("{}", x)}"
             for x in range(30)
         ]
         if ENVIRONMENT == "prod"
         else [
-            f"{WORKING_ENV_DIR}{configs['games']['output_raw_xml_suffix'].replace('{}', '0')}"
+            f"{WORKING_ENV_DIR}{games_configs['output_xml_directory']}{games_configs['output_raw_xml_suffix'].replace('{}', '0')}"
         ]
     )
 
@@ -184,11 +184,11 @@ def game_dfs_clean(
     Creates dirty dataframes for the game data from the scraped XML
     """
 
-    configs = config_resource.get_config_file()
+    games_configs = config_resource.get_config_file()["games"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
-    data_sets = configs["games"]["data_sets"]
+    data_sets = games_configs["data_sets"]
 
     task_definition = (
         "bgg_data_cleaner_game"
@@ -201,7 +201,7 @@ def game_dfs_clean(
     logger.info(data_sets)
 
     data_set_file_names = [
-        f"{WORKING_ENV_DIR}{configs['games']['clean_dfs_directory']}/{x}_clean.pkl"
+        f"{WORKING_ENV_DIR}{games_configs['clean_dfs_directory']}/{x}_clean.pkl"
         for x in data_sets
     ]
     logger.info(data_set_file_names)
@@ -243,11 +243,11 @@ def ratings_scraper_urls_raw(
     Update the last modified timestamp of the keys in s3.
     """
 
-    configs = config_resource.get_config_file()
+    rating_configs = config_resource.get_config_file()["ratings"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
-    raw_urls_directory = configs["ratings"]["raw_urls_directory"]
-    output_urls_json_suffix = configs["ratings"]["output_urls_json_suffix"]
+    raw_urls_directory = rating_configs["raw_urls_directory"]
+    output_urls_json_suffix = rating_configs["output_urls_json_suffix"]
 
     ratings_scraper_url_filenames = (
         [
@@ -294,7 +294,7 @@ def ratings_combined_xml(
 ) -> bool:
     """Combines the smaller xml files into large xml files"""
 
-    configs = config_resource.get_config_file()
+    rating_configs = config_resource.get_config_file()["ratings"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
@@ -317,12 +317,12 @@ def ratings_combined_xml(
 
     data_set_file_names = (
         [
-            f"{WORKING_ENV_DIR}{configs['ratings']['output_raw_xml_suffix'].replace("{}", x)}"
+            f"{WORKING_ENV_DIR}{rating_configs['output_xml_directory']}{rating_configs['output_raw_xml_suffix'].replace("{}", x)}"
             for x in range(30)
         ]
         if ENVIRONMENT == "prod"
         else [
-            f"{WORKING_ENV_DIR}{configs['ratings']['output_raw_xml_suffix'].replace('{}', '0')}"
+            f"{WORKING_ENV_DIR}{rating_configs['output_xml_directory']}{rating_configs['output_raw_xml_suffix'].replace('{}', '0')}"
         ]
     )
 
@@ -357,10 +357,10 @@ def ratings_dfs_dirty(
     Creates a clean dataframe for the ratings data from the scraped ratings XML files
     """
 
-    configs = config_resource.get_config_file()
+    rating_configs = config_resource.get_config_file()["ratings"]
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
-    key = f'{WORKING_ENV_DIR}{configs["ratings"]["output_xml_directory"]}'
+    key = f'{WORKING_ENV_DIR}{rating_configs["output_xml_directory"]}'
 
     raw_ratings_files = s3_resource.list_file_keys(bucket=s3_scraper_bucket, key=key)
 
@@ -375,7 +375,7 @@ def ratings_dfs_dirty(
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 
     check_filenames = [
-        f"{WORKING_ENV_DIR}{configs['ratings']['dirty_dfs_directory']}/{configs['ratings']['ratings_save_file']}"
+        f"{WORKING_ENV_DIR}{rating_configs['dirty_dfs_directory']}/{rating_configs['ratings_save_file']}"
     ]
     logger.info(check_filenames)
 
