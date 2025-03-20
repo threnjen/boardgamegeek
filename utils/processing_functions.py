@@ -101,12 +101,9 @@ def load_file_local_first(path: str = None, file_name: str = ""):
     try:
         # open from local_pile_path
         file = LocalFileHandler().load_file(file_path=load_path)
-        print(f"Loaded {file_path} from {load_path}")
     except FileNotFoundError as e:
-        print(f"Downloading {file_name} from S3")
         file = S3FileHandler().load_file(file_path=load_path)
         if IS_LOCAL:
-            print(f"Saving {file_name} to local")
             LocalFileHandler().save_file(file_path=load_path, data=file)
     return file
 
