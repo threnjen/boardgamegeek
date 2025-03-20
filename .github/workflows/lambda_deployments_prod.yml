@@ -27,7 +27,7 @@ jobs:
           zip -r bgg_data_cleaner_ratings_fargate_trigger.zip bgg_data_cleaner_ratings_fargate_trigger.py ../config.py ../utils
           zip -r rag_description_generation_fargate_trigger.zip rag_description_generation_fargate_trigger.py ../config.py ../utils
           zip -r bgg_ratings_embedder_fargate_trigger.zip bgg_ratings_embedder_fargate_trigger.py ../config.py ../utils
-          zip -r bgg_xml_cleanup_fargate_trigger.zip bgg_ratings_embedder_fargate_trigger.py ../config.py ../utils
+          zip -r bgg_xml_cleanup_fargate_trigger.zip bgg_xml_cleanup_fargate_trigger.py ../config.py ../utils
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
