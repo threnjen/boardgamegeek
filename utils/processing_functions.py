@@ -34,10 +34,11 @@ def get_xml_file_keys_based_on_env(xml_directory):
     The function will return a list of keys from the dev S3 bucket if the ENVIRONMENT is set to dev.
     If there are no keys in the S3 bucket, the function will return a list of local files in the dev directory.
     """
-    xml_files_to_process = get_s3_keys_based_on_env(xml_directory)
-    if not xml_files_to_process:
-        local_files = get_local_keys_based_on_env(xml_directory)
-        xml_files_to_process = [x for x in local_files if x.endswith(".xml")]
+    if IS_LOCAL:
+        xml_files_to_process = get_local_keys_based_on_env(xml_directory)
+    else:
+        xml_files_to_process = get_s3_keys_based_on_env(xml_directory)
+    xml_files_to_process = [x for x in xml_files_to_process if x.endswith(".xml")]
     return xml_files_to_process
 
 
@@ -100,14 +101,19 @@ def load_file_local_first(path: str = None, file_name: str = ""):
     try:
         # open from local_pile_path
         file = LocalFileHandler().load_file(file_path=load_path)
-        print(f"Loaded {file_path} from {load_path}")
     except FileNotFoundError as e:
-        print(f"Downloading {file_name} from S3")
         file = S3FileHandler().load_file(file_path=load_path)
         if IS_LOCAL:
-            print(f"Saving {file_name} to local")
             LocalFileHandler().save_file(file_path=load_path, data=file)
     return file
+
+
+def delete_file_local_first(path: str = None, file_name: str = ""):
+    file_path = f"{path}/{file_name}" if path else file_name
+
+    if IS_LOCAL:
+        LocalFileHandler().delete_file(file_path=file_path)
+    S3FileHandler().delete_file(file_path=file_path)
 
 
 def save_to_aws_glue(data: pd.DataFrame, table: str, database: str = "boardgamegeek"):

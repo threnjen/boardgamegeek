@@ -6,6 +6,7 @@
     "game_cleaner_task_definition": "bgg_data_cleaner_game",
     "ratings_cleaner_task_definition": "bgg_data_cleaner_ratings",
     "user_cleaner_task_definition": "bgg_data_cleaner_users",
+    "xml_cleanup_task_definition": "bgg_xml_cleanup",
     "ecs_cluster": "boardgamegeek",
     "orchestrator_task_definition": "bgg_orchestrator",
     "boardgamegeek_csv_filename": "boardgames_ranks.csv",
