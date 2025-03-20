@@ -114,6 +114,61 @@ def games_scraped_xml_raw(
 
 
 @asset(deps=["games_scraped_xml_raw"])
+def games_combined_xml(
+    ecs_resource: ConfigurableResource,
+    s3_resource: ConfigurableResource,
+    config_resource: ConfigurableResource,
+) -> bool:
+    """Combines the smaller xml files into large xml files"""
+
+    configs = config_resource.get_config_file()
+
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
+
+    task_definition = (
+        "bgg_xml_cleaner" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleaner"
+    )
+
+    overrides = {
+        "containerOverrides": [
+            {
+                "name": task_definition,
+                "environment": [
+                    {"name": "SCRAPER_TYPE", "value": "games"},
+                ],
+            }
+        ]
+    }
+
+    ecs_resource.launch_ecs_task(task_definition=task_definition, overrides=overrides)
+
+    data_set_file_names = [
+        f"{WORKING_ENV_DIR}{configs['games']['output_raw_xml_suffix'].replace("{}", x)}"
+        for x in range(30)
+    ]
+
+    logger.info(data_set_file_names)
+
+    original_timestamps = {
+        key: s3_resource.get_last_modified(
+            bucket=s3_scraper_bucket,
+            key=key,
+        )
+        for key in data_set_file_names
+    }
+
+    compare_timestamps_for_refresh(
+        original_timestamps=original_timestamps,
+        file_list_to_check=data_set_file_names,
+        location_bucket=s3_scraper_bucket,
+        sleep_timer=300,
+        s3_resource=s3_resource,
+    )
+
+    return True
+
+
+@asset(deps=["games_combined_xml"])
 def game_dfs_clean(
     s3_resource: ConfigurableResource,
     ecs_resource: ConfigurableResource,
@@ -225,7 +280,62 @@ def ratings_scraped_xml_raw(
     return True
 
 
-@asset(deps=["ratings_scraped_xml_raw"])
+@asset(deps=["ratings_scraper_urls_raw"])
+def ratings_combined_xml(
+    ecs_resource: ConfigurableResource,
+    s3_resource: ConfigurableResource,
+    config_resource: ConfigurableResource,
+) -> bool:
+    """Combines the smaller xml files into large xml files"""
+
+    configs = config_resource.get_config_file()
+
+    s3_scraper_bucket = S3_SCRAPER_BUCKET
+
+    task_definition = (
+        "bgg_xml_cleaner" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleaner"
+    )
+
+    overrides = {
+        "containerOverrides": [
+            {
+                "name": task_definition,
+                "environment": [
+                    {"name": "SCRAPER_TYPE", "value": "ratings"},
+                ],
+            }
+        ]
+    }
+
+    ecs_resource.launch_ecs_task(task_definition=task_definition, overrides=overrides)
+
+    data_set_file_names = [
+        f"{WORKING_ENV_DIR}{configs['ratings']['output_raw_xml_suffix'].replace("{}", x)}"
+        for x in range(30)
+    ]
+
+    logger.info(data_set_file_names)
+
+    original_timestamps = {
+        key: s3_resource.get_last_modified(
+            bucket=s3_scraper_bucket,
+            key=key,
+        )
+        for key in data_set_file_names
+    }
+
+    compare_timestamps_for_refresh(
+        original_timestamps=original_timestamps,
+        file_list_to_check=data_set_file_names,
+        location_bucket=s3_scraper_bucket,
+        sleep_timer=300,
+        s3_resource=s3_resource,
+    )
+
+    return True
+
+
+@asset(deps=["ratings_combined_xml"])
 def ratings_dfs_dirty(
     s3_resource: ConfigurableResource,
     ecs_resource: ConfigurableResource,
