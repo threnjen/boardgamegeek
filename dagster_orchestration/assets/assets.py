@@ -8,6 +8,7 @@ logger = get_dagster_logger()
 ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
 WORKING_ENV_DIR = "data/prod/" if ENVIRONMENT == "prod" else "data/test/"
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+REFRESH = 300 if ENVIRONMENT == "prod" else 30
 
 
 @asset
@@ -167,7 +168,7 @@ def games_combined_xml(
         original_timestamps=original_timestamps,
         file_list_to_check=data_set_file_names,
         location_bucket=s3_scraper_bucket,
-        sleep_timer=300,
+        sleep_timer=REFRESH,
         s3_resource=s3_resource,
     )
 
@@ -218,7 +219,7 @@ def game_dfs_clean(
         original_timestamps=original_timestamps,
         file_list_to_check=data_set_file_names,
         location_bucket=s3_scraper_bucket,
-        sleep_timer=300,
+        sleep_timer=REFRESH,
         s3_resource=s3_resource,
     )
 
@@ -340,7 +341,7 @@ def ratings_combined_xml(
         original_timestamps=original_timestamps,
         file_list_to_check=data_set_file_names,
         location_bucket=s3_scraper_bucket,
-        sleep_timer=300,
+        sleep_timer=REFRESH,
         s3_resource=s3_resource,
     )
 
@@ -391,7 +392,7 @@ def ratings_dfs_dirty(
         original_timestamps=original_timestamps,
         file_list_to_check=check_filenames,
         location_bucket=s3_scraper_bucket,
-        sleep_timer=300,
+        sleep_timer=REFRESH,
         s3_resource=s3_resource,
     )
 
@@ -516,7 +517,7 @@ def user_dfs_dirty(
         original_timestamps=original_timestamps,
         file_list_to_check=check_filenames,
         location_bucket=s3_scraper_bucket,
-        sleep_timer=300,
+        sleep_timer=REFRESH,
         s3_resource=s3_resource,
     )
 
@@ -653,7 +654,7 @@ def scrape_data(
 
     while get_total_tasks() >= allowed_tasks:
         logger.info(f"Waiting for tasks to finish. {get_total_tasks()} running")
-        time.sleep(300)
+        time.sleep(REFRESH)
 
     return True
 
