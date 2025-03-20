@@ -149,7 +149,7 @@ def games_combined_xml(
         ]
         if ENVIRONMENT == "prod"
         else [
-            f"{WORKING_ENV_DIR}{configs['games']['output_raw_xml_suffix'].replace('{}', 0)}"
+            f"{WORKING_ENV_DIR}{configs['games']['output_raw_xml_suffix'].replace('{}', '0')}"
         ]
     )
 
@@ -322,7 +322,7 @@ def ratings_combined_xml(
         ]
         if ENVIRONMENT == "prod"
         else [
-            f"{WORKING_ENV_DIR}{configs['ratings']['output_raw_xml_suffix'].replace('{}', 0)}"
+            f"{WORKING_ENV_DIR}{configs['ratings']['output_raw_xml_suffix'].replace('{}', '0')}"
         ]
     )
 
