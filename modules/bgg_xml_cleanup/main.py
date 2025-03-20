@@ -30,11 +30,12 @@ class XMLCleanup:
         new_xml_files_to_process, old_combined_xml_files = (
             self._get_xml_processing_lists()
         )
-        self._delete_old_combined_xml_files(old_combined_xml_files)
+        self._delete_existing_xml_files(old_combined_xml_files)
         combined_file_groups = self._create_combined_file_groups(
             new_xml_files_to_process
         )
         self._process_raw_xml_files(combined_file_groups)
+        self._delete_existing_xml_files(new_xml_files_to_process)
 
     def _get_xml_processing_lists(self) -> tuple[list, list]:
         xml_directory_files = get_xml_file_keys_based_on_env(
@@ -48,8 +49,8 @@ class XMLCleanup:
         ]
         return new_xml_files_to_process, old_combined_xml_files
 
-    def _delete_old_combined_xml_files(self, old_combined_xml_files: list):
-        for file in old_combined_xml_files:
+    def _delete_existing_xml_files(self, existing_files: list):
+        for file in existing_files:
             delete_file_local_first(
                 file_name=file,
             )
