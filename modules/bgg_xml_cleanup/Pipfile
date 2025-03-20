@@ -1,0 +1,22 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pandas = "*"
+requests = "*"
+lxml = "*"
+regex = "*"
+boto3 = "*"
+awswrangler = "*"
+xmltodict = "*"
+
+[dev-packages]
+pytest = "*"
+black = {extras = ["jupyter"], version = "*"}
+ipykernel = "*"
+isort = "*"
+
+[requires]
+python_version = "3.12"

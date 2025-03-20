@@ -32,6 +32,7 @@ jobs:
           zip -r bgg_data_cleaner_ratings_fargate_trigger.zip bgg_data_cleaner_ratings_fargate_trigger.py ../config.py ../utils
           zip -r rag_description_generation_fargate_trigger.zip rag_description_generation_fargate_trigger.py ../config.py ../utils
           zip -r bgg_ratings_embedder_fargate_trigger.zip bgg_ratings_embedder_fargate_trigger.py ../config.py ../utils
+          zip -r bgg_xml_cleanup_fargate_trigger.zip bgg_ratings_embedder_fargate_trigger.py ../config.py ../utils
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -49,4 +50,5 @@ jobs:
           aws lambda update-function-code --function-name=dev_bgg_data_cleaner_ratings_fargate_trigger  --zip-file=fileb://bgg_data_cleaner_ratings_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_rag_description_generation_fargate_trigger  --zip-file=fileb://rag_description_generation_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_bgg_ratings_embedder_fargate_trigger  --zip-file=fileb://bgg_ratings_embedder_fargate_trigger.zip > /dev/null 2>&1
+          aws lambda update-function-code --function-name=dev_bgg_xml_cleanup_fargate_trigger  --zip-file=fileb://bgg_xml_cleanup_fargate_trigger.zip > /dev/null 2>&1
 
