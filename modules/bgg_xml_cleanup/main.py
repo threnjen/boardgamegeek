@@ -1,11 +1,6 @@
-import gc
 import os
 import sys
 import xml.etree.ElementTree as ET
-from collections import defaultdict
-
-import pandas as pd
-from bs4 import BeautifulSoup
 
 from config import CONFIGS
 from utils.processing_functions import (
