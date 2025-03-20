@@ -142,10 +142,16 @@ def games_combined_xml(
 
     ecs_resource.launch_ecs_task(task_definition=task_definition, overrides=overrides)
 
-    data_set_file_names = [
-        f"{WORKING_ENV_DIR}{configs['games']['output_raw_xml_suffix'].replace("{}", x)}"
-        for x in range(30)
-    ]
+    data_set_file_names = (
+        [
+            f"{WORKING_ENV_DIR}{configs['games']['output_raw_xml_suffix'].replace("{}", x)}"
+            for x in range(30)
+        ]
+        if ENVIRONMENT == "prod"
+        else [
+            f"{WORKING_ENV_DIR}{configs['games']['output_raw_xml_suffix'].replace('{}', 0)}"
+        ]
+    )
 
     logger.info(data_set_file_names)
 
@@ -309,10 +315,16 @@ def ratings_combined_xml(
 
     ecs_resource.launch_ecs_task(task_definition=task_definition, overrides=overrides)
 
-    data_set_file_names = [
-        f"{WORKING_ENV_DIR}{configs['ratings']['output_raw_xml_suffix'].replace("{}", x)}"
-        for x in range(30)
-    ]
+    data_set_file_names = (
+        [
+            f"{WORKING_ENV_DIR}{configs['ratings']['output_raw_xml_suffix'].replace("{}", x)}"
+            for x in range(30)
+        ]
+        if ENVIRONMENT == "prod"
+        else [
+            f"{WORKING_ENV_DIR}{configs['ratings']['output_raw_xml_suffix'].replace('{}', 0)}"
+        ]
+    )
 
     logger.info(data_set_file_names)
 
