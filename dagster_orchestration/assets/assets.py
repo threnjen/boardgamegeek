@@ -280,7 +280,7 @@ def ratings_scraped_xml_raw(
     return True
 
 
-@asset(deps=["ratings_scraper_urls_raw"])
+@asset(deps=["ratings_scraped_xml_raw"])
 def ratings_combined_xml(
     ecs_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
