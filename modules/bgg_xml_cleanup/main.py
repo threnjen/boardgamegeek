@@ -1,5 +1,6 @@
 import os
 import sys
+import boto3
 import xml.etree.ElementTree as ET
 
 from config import CONFIGS
@@ -30,11 +31,11 @@ class XMLCleanup:
         new_xml_files_to_process, old_combined_xml_files = (
             self._get_xml_processing_lists()
         )
-        self._delete_existing_xml_files(old_combined_xml_files)
-        combined_file_groups = self._create_combined_file_groups(
-            new_xml_files_to_process
-        )
-        self._process_raw_xml_files(combined_file_groups)
+        # self._delete_existing_xml_files(old_combined_xml_files)
+        # combined_file_groups = self._create_combined_file_groups(
+        #     new_xml_files_to_process
+        # )
+        # self._process_raw_xml_files(combined_file_groups)
         self._delete_existing_xml_files(new_xml_files_to_process)
 
     def _get_xml_processing_lists(self) -> tuple[list, list]:
@@ -50,11 +51,27 @@ class XMLCleanup:
         return new_xml_files_to_process, old_combined_xml_files
 
     def _delete_existing_xml_files(self, existing_files: list):
-        for file in existing_files:
-            bucket_stripped_path = file.replace(f"s3://{S3_SCRAPER_BUCKET}/", "")
-            delete_file_local_first(
-                file_name=bucket_stripped_path,
+        print(f"\nDeleting existing XML files from S3 bucket {S3_SCRAPER_BUCKET}...")
+        s3_client = boto3.client("s3")
+
+        start = 0
+        end = len(existing_files)
+        block = 1000
+
+        while start < end:
+            delete_objects = {
+                "Objects": [
+                    {"Key": x.replace(f"s3://{S3_SCRAPER_BUCKET}/", "")}
+                    for x in existing_files[start : start + block]
+                    if x.endswith(".xml") and x.startswith(f"s3://{S3_SCRAPER_BUCKET}/")
+                ]
+            }
+            s3_client.delete_objects(Bucket=S3_SCRAPER_BUCKET, Delete=delete_objects)
+            start += block
+            print(
+                f"Deleted {min(start, end)} of {end} existing XML files from S3 bucket"
             )
+        print("Deletion of existing XML files completed.")
 
     def _create_combined_file_groups(
         self, new_xml_files_to_process: list
