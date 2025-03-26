@@ -31,11 +31,11 @@ class XMLCleanup:
         new_xml_files_to_process, old_combined_xml_files = (
             self._get_xml_processing_lists()
         )
-        # self._delete_existing_xml_files(old_combined_xml_files)
-        # combined_file_groups = self._create_combined_file_groups(
-        #     new_xml_files_to_process
-        # )
-        # self._process_raw_xml_files(combined_file_groups)
+        self._delete_existing_xml_files(old_combined_xml_files)
+        combined_file_groups = self._create_combined_file_groups(
+            new_xml_files_to_process
+        )
+        self._process_raw_xml_files(combined_file_groups)
         self._delete_existing_xml_files(new_xml_files_to_process)
 
     def _get_xml_processing_lists(self) -> tuple[list, list]:
