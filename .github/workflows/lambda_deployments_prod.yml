@@ -33,7 +33,7 @@ jobs:
         run: |
           cd lambda_functions
           aws lambda update-function-code --function-name=bgg_scraper_fargate_trigger  --zip-file=fileb://bgg_scraper_fargate_trigger.zip > /dev/null 2>&1
-          aws lambda update-function-code --function-name=bgg_generate_urls_lambda  --zip-file=fileb://bgg_generate_urls_lambda.zip > /dev/null 2>&1
+          aws lambda update-function-code --function-name=bgg_generate_urls  --zip-file=fileb://bgg_generate_urls_lambda.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_orchestrator_fargate_trigger  --zip-file=fileb://bgg_orchestrator_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=bgg_data_cleaner_fargate_trigger  --zip-file=fileb://bgg_data_cleaner_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=rag_description_generation_fargate_trigger  --zip-file=fileb://rag_description_generation_fargate_trigger.zip > /dev/null 2>&1
