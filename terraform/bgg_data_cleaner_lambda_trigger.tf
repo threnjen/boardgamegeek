@@ -49,10 +49,7 @@ resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_ratings_describe_att
   policy_arn = module.bgg_data_cleaner_ratings_describe_task_def_policy.lambda_ecs_trigger_arn
 }
 
-resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_s3_attach" {
-  role       = module.bgg_data_cleaner_fargate_trigger_role.role_name
-  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
-}
+
 
 module "bgg_data_cleaner_game_describe_task_def_policy" {
   source     = "./modules/lambda_ecs_trigger_policies"
@@ -68,5 +65,21 @@ resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_games_describe_attac
 }
 
 
+module "bgg_data_cleaner_users_describe_task_def_policy" {
+  source     = "./modules/lambda_ecs_trigger_policies"
+  name       = "${var.bgg_data_cleaner}_users_lambda_ecs_trigger"
+  task_name  = var.bgg_data_cleaner_users
+  region     = var.REGION
+  account_id = data.aws_caller_identity.current.account_id
+}
+
+resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_users_describe_attach" {
+  role       = module.bgg_data_cleaner_fargate_trigger_role.role_name
+  policy_arn = module.bgg_data_cleaner_users_describe_task_def_policy.lambda_ecs_trigger_arn
+}
 
 
+resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_s3_attach" {
+  role       = module.bgg_data_cleaner_fargate_trigger_role.role_name
+  policy_arn = aws_iam_policy.S3_Access_bgg_scraper_policy.arn
+}
