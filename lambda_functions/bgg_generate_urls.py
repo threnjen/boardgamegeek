@@ -14,8 +14,7 @@ S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
 GAME_CONFIGS = CONFIGS["games"]
 RATING_CONFIGS = CONFIGS["ratings"]
 USER_CONFIGS = CONFIGS["users"]
-url_block_size = 20
-number_url_files = 29
+URL_BLOCK_SIZE = 20
 NUMBER_PROCESSES = 29
 
 
@@ -36,10 +35,10 @@ class GameUrls(UrlGenerator):
     def _generate_urls_list(self, game_ids: list[str]):
         """Generate the raw urls for the scraper"""
         targets = [
-            game_ids[i : i + url_block_size]
-            for i in range(0, len(game_ids), url_block_size)
+            game_ids[i : i + URL_BLOCK_SIZE]
+            for i in range(0, len(game_ids), URL_BLOCK_SIZE)
         ]
-        print(f"Generated {len(targets)} URLS with block size {url_block_size}")
+        print(f"Generated {len(targets)} URLS with block size {URL_BLOCK_SIZE}")
 
         return [
             f"https://www.boardgamegeek.com/xmlapi2/thing?id={','.join(block)}&stats=1&type=boardgame"
@@ -55,20 +54,20 @@ class GameUrls(UrlGenerator):
         scraper_urls_raw = self._generate_urls_list(game_ids)
 
         print(f"Number of scraper urls: {len(scraper_urls_raw)}")
-        url_block_size = (
-            math.ceil(len(scraper_urls_raw) / number_url_files)
+        URL_BLOCK_SIZE = (
+            math.ceil(len(scraper_urls_raw) / NUMBER_PROCESSES)
             if ENVIRONMENT == "prod"
             else 3
         )
-        print(f"URL block size: {url_block_size}")
+        print(f"URL block size: {URL_BLOCK_SIZE}")
 
-        for i in range(number_url_files):
+        for i in range(NUMBER_PROCESSES):
             print(
-                f"Saving block size {i * url_block_size} : {(i + 1) * url_block_size}"
+                f"Saving block size {i * URL_BLOCK_SIZE} : {(i + 1) * URL_BLOCK_SIZE}"
             )
 
             scraper_urls_set = scraper_urls_raw[
-                i * url_block_size : (i + 1) * url_block_size
+                i * URL_BLOCK_SIZE : (i + 1) * URL_BLOCK_SIZE
             ]
 
             save_file_local_first(
