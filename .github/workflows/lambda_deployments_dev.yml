@@ -24,7 +24,7 @@ jobs:
         run: |
           cd lambda_functions
           zip -r bgg_scraper_fargate_trigger.zip bgg_scraper_fargate_trigger.py ../config.py ../utils
-          zip -r bgg_generate_urls_lambda.zip bgg_generate_urls_lambda.py ../config.py ../utils
+          zip -r bgg_generate_urls_lambda.zip bgg_generate_urls.py ../config.py ../utils
           zip -r bgg_orchestrator_fargate_trigger.zip bgg_orchestrator_fargate_trigger.py ../config.py ../utils
           zip -r bgg_data_cleaner_fargate_trigger.zip bgg_data_cleaner_fargate_trigger.py ../config.py ../utils
           zip -r rag_description_generation_fargate_trigger.zip rag_description_generation_fargate_trigger.py ../config.py ../utils
