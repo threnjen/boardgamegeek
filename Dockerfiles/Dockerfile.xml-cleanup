@@ -6,8 +6,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-ARG SCRAPER_TYPE
-ENV SCRAPER_TYPE=$SCRAPER_TYPE
+ARG DATA_TYPE
+ENV DATA_TYPE=$DATA_TYPE
 
 # Install pipenv
 RUN pip3 install pipenv
@@ -24,4 +24,4 @@ RUN pipenv sync
 
 # Set the entry point and command
 ENTRYPOINT ["pipenv", "run", "python", "modules/bgg_xml_cleanup/main.py"]
-CMD ["$SCRAPER_TYPE"]
+CMD ["$DATA_TYPE"]

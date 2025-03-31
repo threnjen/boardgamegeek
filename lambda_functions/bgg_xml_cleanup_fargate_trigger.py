@@ -14,8 +14,8 @@ TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 def lambda_handler(event, context=None):
     """Trigger the Fargate task to process the files in the S3 bucket"""
 
-    scraper_type = event.get("scraper_type")
-    print(f"Running XML cleanup task for scraper type {scraper_type}")
+    data_type = event.get("data_type")
+    print(f"Running XML cleanup task for scraper type {data_type}")
 
     terraform_state_file = S3FileHandler().load_tfstate(
         file_path=CONFIGS["terraform_state_file"]
@@ -55,7 +55,7 @@ def lambda_handler(event, context=None):
                 {
                     "name": task_definition,
                     "environment": [
-                        {"name": "SCRAPER_TYPE", "value": scraper_type},
+                        {"name": "DATA_TYPE", "value": data_type},
                     ],
                 }
             ]
@@ -64,6 +64,6 @@ def lambda_handler(event, context=None):
 
 
 if __name__ == "__main__":
-    scraper_type = sys.argv[1]
+    data_type = sys.argv[1]
 
-    lambda_handler(event={"scraper_type": scraper_type})
+    lambda_handler(event={"data_type": data_type})

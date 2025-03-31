@@ -7,8 +7,14 @@ from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-TASK_DEFINITION = CONFIGS["ratings_cleaner_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
+TERRAFORM_STATE_PATH = CONFIGS["terraform_state_file"]
+
+task_definition_ref = {
+    "games": CONFIGS["game_cleaner_task_definition"],
+    "ratings": CONFIGS["ratings_cleaner_task_definition"],
+    "users": CONFIGS["user_cleaner_task_definition"],
+}
 
 
 def lambda_handler(event, context):
@@ -16,12 +22,15 @@ def lambda_handler(event, context):
 
     print(f"Running User Data Cleaner task")
 
-    terraform_state_file = S3FileHandler().load_tfstate(
-        file_path=CONFIGS["terraform_state_file"]
-    )
+    data_type = event.get("data_type")
+    print(f"Running data cleanup task for scraper type {data_type}")
+
+    terraform_state_file = S3FileHandler().load_tfstate(file_path=TERRAFORM_STATE_PATH)
+
+    data_type_task_def = task_definition_ref.get(data_type)
 
     task_definition = (
-        f"dev_{TASK_DEFINITION}" if ENVIRONMENT != "prod" else TASK_DEFINITION
+        f"dev_{data_type_task_def}" if ENVIRONMENT != "prod" else data_type_task_def
     )
     print(task_definition)
 

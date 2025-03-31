@@ -109,7 +109,7 @@ def games_scraped_xml_raw(
 
     configs = config_resource.get_config_file()
 
-    scrape_data(ecs_resource, s3_resource, configs, scraper_type="games")
+    scrape_data(ecs_resource, s3_resource, configs, data_type="games")
 
     return True
 
@@ -135,7 +135,7 @@ def games_combined_xml(
             {
                 "name": task_definition,
                 "environment": [
-                    {"name": "SCRAPER_TYPE", "value": "games"},
+                    {"name": "DATA_TYPE", "value": "games"},
                 ],
             }
         ]
@@ -282,7 +282,7 @@ def ratings_scraped_xml_raw(
 
     configs = config_resource.get_config_file()
 
-    scrape_data(ecs_resource, s3_resource, configs, scraper_type="ratings")
+    scrape_data(ecs_resource, s3_resource, configs, data_type="ratings")
 
     return True
 
@@ -308,7 +308,7 @@ def ratings_combined_xml(
             {
                 "name": task_definition,
                 "environment": [
-                    {"name": "SCRAPER_TYPE", "value": "ratings"},
+                    {"name": "DATA_TYPE", "value": "ratings"},
                 ],
             }
         ]
@@ -473,7 +473,7 @@ def users_scraped_xml_raw(
 
     configs = config_resource.get_config_file()
 
-    scrape_data(ecs_resource, s3_resource, configs, scraper_type="users")
+    scrape_data(ecs_resource, s3_resource, configs, data_type="users")
 
     return True
 
@@ -605,11 +605,11 @@ def scrape_data(
     ecs_resource: ConfigurableResource,
     s3_resource: ConfigurableResource,
     configs: dict,
-    scraper_type: str,
+    data_type: str,
 ) -> bool:
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
-    input_urls_key = configs[scraper_type]["raw_urls_directory"]
+    input_urls_key = configs[data_type]["raw_urls_directory"]
 
     input_urls_key = f"{WORKING_ENV_DIR}{input_urls_key}"
 
@@ -634,7 +634,7 @@ def scrape_data(
                     "name": task_definition,
                     "environment": [
                         {"name": "FILENAME", "value": filename},
-                        {"name": "SCRAPER_TYPE", "value": scraper_type},
+                        {"name": "DATA_TYPE", "value": data_type},
                     ],
                 }
             ]

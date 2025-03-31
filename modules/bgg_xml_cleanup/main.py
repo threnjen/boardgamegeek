@@ -21,11 +21,11 @@ WORKING_DIR = (
 
 class XMLCleanup:
 
-    def __init__(self, scraper_type: str) -> None:
-        self.scraper_type = scraper_type
-        self.scraper_configs = CONFIGS[scraper_type]
+    def __init__(self, data_type: str) -> None:
+        self.data_type = data_type
+        self.scraper_configs = CONFIGS[data_type]
         self.output_file_string = self.scraper_configs["output_raw_xml_suffix"]
-        print(f"\n\nProcessing items of type {self.scraper_type}...")
+        print(f"\n\nProcessing items of type {self.data_type}...")
 
     def data_extraction_chain(self):
         new_xml_files_to_process, old_combined_xml_files = (
@@ -135,6 +135,6 @@ class XMLCleanup:
 
 if __name__ == "__main__":
 
-    scraper_type = sys.argv[1]
+    data_type = sys.argv[1]
 
-    XMLCleanup(scraper_type=scraper_type).data_extraction_chain()
+    XMLCleanup(data_type=data_type).data_extraction_chain()

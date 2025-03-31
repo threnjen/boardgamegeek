@@ -161,13 +161,13 @@ class UserSpider(scrapy.Spider):
 
 class DataScraper:
 
-    def __init__(self, scraper_type: str, urls_filename: str) -> None:
+    def __init__(self, data_type: str, urls_filename: str) -> None:
         self.file_group = urls_filename.split("_")[0]
         self.urls_filename = urls_filename.split(".")[0]
-        self.bot_scraper_name = CONFIGS[scraper_type]["scrapy_bot_name"]
-        self.raw_urls_folder = CONFIGS[scraper_type]["raw_urls_directory"]
-        self.scraped_files_folder = CONFIGS[scraper_type]["output_xml_directory"]
-        self.scraper_type = scraper_type
+        self.bot_scraper_name = CONFIGS[data_type]["scrapy_bot_name"]
+        self.raw_urls_folder = CONFIGS[data_type]["raw_urls_directory"]
+        self.scraped_files_folder = CONFIGS[data_type]["output_xml_directory"]
+        self.data_type = data_type
 
     def scraper_process_chain(self):
         scraper_urls_raw = load_file_local_first(
@@ -178,7 +178,7 @@ class DataScraper:
 
     def _run_scrapy_scraper(self, scraper_urls_raw) -> None:
 
-        if self.scraper_type in ["games", "ratings"]:
+        if self.data_type in ["games", "ratings"]:
             process = CrawlerProcess(
                 settings={
                     "LOG_LEVEL": "DEBUG",
@@ -204,7 +204,7 @@ class DataScraper:
 
             process.start()
 
-        if self.scraper_type == "users":
+        if self.data_type == "users":
             process = CrawlerProcess(
                 settings={
                     "LOG_LEVEL": "DEBUG",
@@ -239,7 +239,7 @@ class DataScraper:
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "scraper_type",
+        "data_type",
         type=str,
         help="The type of scraper to run.  Current options are ['games', 'ratings', 'users']",
     )
@@ -254,9 +254,9 @@ def parse_args():
 if __name__ == "__main__":
 
     args = parse_args()
-    scraper_type = args.scraper_type
+    data_type = args.data_type
     urls_filename = args.urls_filename
 
-    print(f"Running {scraper_type} scraper with urls from {urls_filename}")
+    print(f"Running {data_type} scraper with urls from {urls_filename}")
 
-    DataScraper(scraper_type, urls_filename).scraper_process_chain()
+    DataScraper(data_type, urls_filename).scraper_process_chain()

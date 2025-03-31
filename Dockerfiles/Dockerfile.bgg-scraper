@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y \
 ARG FILENAME
 ENV FILENAME=$FILENAME
 
-ARG SCRAPER_TYPE
-ENV SCRAPER_TYPE=$SCRAPER_TYPE
+ARG DATA_TYPE
+ENV DATA_TYPE=$DATA_TYPE
 
 # Install pipenv
 RUN pip3 install pipenv
@@ -28,4 +28,4 @@ RUN pipenv sync
 
 # Set the entry point and command
 ENTRYPOINT ["pipenv", "run", "python", "modules/bgg_scraper/main.py"]
-CMD ["$SCRAPER_TYPE", "$FILENAME"]
+CMD ["$DATA_TYPE", "$FILENAME"]
