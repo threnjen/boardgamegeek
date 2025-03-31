@@ -45,7 +45,7 @@ jobs:
           aws lambda update-function-code --function-name=dev_bgg_generate_user_urls  --zip-file=fileb://generate_user_urls_lambda.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_bgg_generate_ratings_urls  --zip-file=fileb://generate_ratings_urls_lambda.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_bgg_orchestrator_fargate_trigger  --zip-file=fileb://bgg_orchestrator_fargate_trigger.zip > /dev/null 2>&1
-          aws lambda update-function-code --function-name=bgg_data_cleaner_fargate_trigger  --zip-file=fileb://bgg_data_cleaner_fargate_trigger.zip > /dev/null 2>&1
+          aws lambda update-function-code --function-name=dev_bgg_data_cleaner_fargate_trigger  --zip-file=fileb://bgg_data_cleaner_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_rag_description_generation_fargate_trigger  --zip-file=fileb://rag_description_generation_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_bgg_ratings_embedder_fargate_trigger  --zip-file=fileb://bgg_ratings_embedder_fargate_trigger.zip > /dev/null 2>&1
           aws lambda update-function-code --function-name=dev_bgg_xml_cleanup_fargate_trigger  --zip-file=fileb://bgg_xml_cleanup_fargate_trigger.zip > /dev/null 2>&1
