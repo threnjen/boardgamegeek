@@ -22,9 +22,9 @@ print(SCRAPER_TASK_DEFINITION)
 def lambda_handler(event, context):
     """Trigger the Fargate task to process the files in the S3 bucket"""
 
-    scraper_type = event.get("scraper_type")
+    data_type = event.get("data_type")
 
-    print(f"Running scraper for {scraper_type}")
+    print(f"Running scraper for {data_type}")
 
     terraform_state_file = S3FileHandler().load_tfstate(
         file_path=CONFIGS["terraform_state_file"]
@@ -34,13 +34,13 @@ def lambda_handler(event, context):
 
     if not event.get("file_name"):
         file_prefixes = get_s3_keys_based_on_env(
-            directory=f'{CONFIGS[scraper_type]["raw_urls_directory"]}'
+            directory=f'{CONFIGS[data_type]["raw_urls_directory"]}'
         )
 
     else:
         file_name = event.get("file_name")
         file_prefixes = [
-            f"{WORKING_DIR}{CONFIGS[scraper_type]['raw_urls_directory']}/{file_name}"
+            f"{WORKING_DIR}{CONFIGS[data_type]['raw_urls_directory']}/{file_name}"
         ]
 
     task_definition = (
@@ -89,7 +89,7 @@ def lambda_handler(event, context):
                         "name": task_definition,
                         "environment": [
                             {"name": "FILENAME", "value": filename},
-                            {"name": "SCRAPER_TYPE", "value": scraper_type},
+                            {"name": "DATA_TYPE", "value": data_type},
                         ],
                     }
                 ]
@@ -98,12 +98,12 @@ def lambda_handler(event, context):
 
 
 if __name__ == "__main__":
-    scraper_type = sys.argv[1]
+    data_type = sys.argv[1]
 
     try:
         file_name = sys.argv[2]
-        event = {"scraper_type": scraper_type, "file_name": file_name}
+        event = {"data_type": data_type, "file_name": file_name}
     except IndexError:
-        event = {"scraper_type": scraper_type, "file_name": None}
+        event = {"data_type": data_type, "file_name": None}
 
     lambda_handler(event, None)

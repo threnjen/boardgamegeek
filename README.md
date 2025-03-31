@@ -93,10 +93,10 @@ The module orders are also set out in the Orchestration, under `dagster_orchestr
 Primary chain chain; Dagster job `bgg_job`
 - `modules/bgg_boardgame_file_retrieval` - Gets the `boardgames_ranks.csv` file from BGG and saves it to S3.
 - `lambda_functions.generate_game_urls_lambda.py` - Generates games urls for the games scraper.
-- `modules/bgg_scraper/main.py` with `scraper_type="games"` - scrape game info from the games urls.
+- `modules/bgg_scraper/main.py` with `data_type="games"` - scrape game info from the games urls.
 - `modules/bgg_data_cleaner_game/main.py` - Clean the scraped games data.
 - `lambda_functions.generate_ratings_urls_lambda.py` - Generate ratings urls for the ratings scraper.
-- `modules/bgg_scraper/main.py` with `scraper_type="ratings"` - Scrapes ratings info from the game data.
+- `modules/bgg_scraper/main.py` with `data_type="ratings"` - Scrapes ratings info from the game data.
 - `modules/ratings_daga_cleaner/main.py` - Clean the scraped ratings data.
 
 Optional chain; Dagster job `user_job`
@@ -127,7 +127,7 @@ Optional chain; Dagster job `user_job`
     - On AWS, navigate to lambda
     - From lambda, select `dev_bgg_scraper_fargate_trigger`
     - To manually run, go to the "Test" tab
-    - In the "Event JSON" section, replace the existing keys with `"scraper_type": "games"`.  It is recommended to enter in an event name and save the json for future.
+    - In the "Event JSON" section, replace the existing keys with `"data_type": "games"`.  It is recommended to enter in an event name and save the json for future.
     - Click "Test" to run.
 
 - PROD - `lambda_functions.bgg_scraper_fargate_trigger` for GAME will trigger process to run and write scraping on S3    
@@ -136,7 +136,7 @@ Optional chain; Dagster job `user_job`
     - On AWS, navigate to lambda
     - From lambda, select `bgg_scraper_fargate_trigger`
     - To manually run, go to the "Test" tab
-    - In the "Event JSON" section, replace the existing keys with `"scraper_type": "games"`.  It is recommended to enter in an event name and save the json for future.
+    - In the "Event JSON" section, replace the existing keys with `"data_type": "games"`.  It is recommended to enter in an event name and save the json for future.
     - Click "Test" to run.
 
 ### 04 Clean raw scraped GAME data
