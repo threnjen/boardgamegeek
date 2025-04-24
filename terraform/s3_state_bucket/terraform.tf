@@ -10,3 +10,8 @@ terraform {
   }
   backend "local" {}
 }
+
+provider "aws" {
+  region = var.REGION
+  profile = var.AWS_PROFILE
+}
