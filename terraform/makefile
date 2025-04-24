@@ -46,7 +46,22 @@ get_terraform_bucket: get_region
 	echo "bucket=\"$$response\"" >> backend.conf && \
 	export TF_VAR_BUCKET
 
-get_current_ip: get_terraform_bucket
+get_environment: get_terraform_bucket
+	@echo "\nType the environment you want to use for Terraform either dev or prod and Enter." ; \
+	read -p "Enter environment name: " response; \
+	TF_VAR_ENVIRONMENT=$$response; \
+	echo "TF_VAR_ENVIRONMENT=$$response" >> ../.env && \
+	export TF_VAR_ENVIRONMENT
+
+get_aws_profile_for_deploy: get_environment
+	@echo "\nType the AWS profile you want to use for Terraform EXACTLY, without brackets, and Enter. Example: 123456789_ProfileName" ; \
+	read -p "Enter profile: " response; \
+	TF_VAR_AWS_PROFILE=$$response; \
+	echo "TF_VAR_AWS_PROFILE=$$response" >> ../.env && \
+	echo "profile=\"$$response\"" >> backend.conf && \
+	export TF_VAR_AWS_PROFILE
+
+get_current_ip: get_aws_profile_for_deploy
 	@echo "\n"
 	@curl ifconfig.me
 	@echo "\nType the first 3 numbers of the IP printed above, in format x.x.x and press Enter. EXAMPLE 10.123.123" ;\
@@ -77,7 +92,7 @@ terraform: backend_config
 install_state_file_bucket:
 	cd s3_state_bucket && \
 	\[ -f .terraform.lock.hcl \] && rm .terraform.lock.hcl && \
-	pipenv run terraform init && \
+	pipenv run terraform init -backend-config ../backend.conf && \
 	pipenv run terraform apply && \
 	cd .. && \
 	cd ..

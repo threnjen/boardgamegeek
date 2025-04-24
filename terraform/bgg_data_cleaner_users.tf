@@ -8,46 +8,24 @@ module "bgg_data_cleaner_users_ecr" {
   source              = "./modules/ecr"
   ecr_repository_name = var.bgg_data_cleaner_users
 }
-
-module "dev_bgg_data_cleaner_users_ecr" {
-  source              = "./modules/ecr"
-  ecr_repository_name = "dev_${var.bgg_data_cleaner_users}"
-}
-
 module "ecs_run_permissions_bgg_data_cleaner_users" {
   source               = "./modules/fargate_iam_policies"
-  task_definition_name = var.bgg_data_cleaner_users
+  task_definition_name = "${var.bgg_data_cleaner_users}_${var.ENVIRONMENT}"
   region               = var.REGION
   account_id           = data.aws_caller_identity.current.account_id
 }
-
 module "bgg_data_cleaner_users_ecs" {
   source                 = "./modules/ecs_task_definition"
-  task_definition_family = var.bgg_data_cleaner_users
-  task_definition_name   = var.bgg_data_cleaner_users
+  task_definition_family = "${var.bgg_data_cleaner_users}_${var.ENVIRONMENT}"
+  task_definition_name   = "${var.bgg_data_cleaner_users}_${var.ENVIRONMENT}"
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_data_cleaner_users}:latest"
   environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.ENVIRONMENT}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_data_cleaner_users}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_data_cleaner_users}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_data_cleaner_users}:latest"
   cpu                    = "4096"
   memory                 = "24576"
-  region                 = var.REGION
-}
-
-module "dev_bgg_data_cleaner_users_ecs" {
-  source                 = "./modules/ecs_task_definition"
-  task_definition_family = "dev_${var.bgg_data_cleaner_users}"
-  task_definition_name   = "dev_${var.bgg_data_cleaner_users}"
-  registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_data_cleaner_users}:latest"
-  environment            = "dev"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
-  task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_data_cleaner_users}_FargateTaskRole"
-  execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_data_cleaner_users}_FargateExecutionRole"
-  image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_data_cleaner_users}:latest"
-  cpu                    = "1024"
-  memory                 = "8192"
   region                 = var.REGION
 }
 

@@ -1,13 +1,9 @@
 # Copyright (c) HashiCorp, Inc.
 # SPDX-License-Identifier: MPL-2.0
 
-provider "aws" {
-  region = var.REGION
-}
-
 module "aws_s3_bucket" {
   source = "terraform-aws-modules/s3-bucket/aws"
-  bucket = var.BUCKET
+  bucket = "${var.TF_VAR_BUCKET}_${var.ENVIRONMENT}"
   acl    = "private"
 
   control_object_ownership = true

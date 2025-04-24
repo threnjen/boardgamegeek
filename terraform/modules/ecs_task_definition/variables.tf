@@ -9,11 +9,6 @@ variable "task_definition_name" {
 variable "registry_name"{
     type = string
 }
-
-variable "environment" {
-  type = string
-}
-
 variable "env_file" {
     type = string
 }
@@ -39,5 +34,9 @@ variable "region" {
 }
 
 variable "image" {
+  type = string
+}
+
+variable "ENVIRONMENT" {
   type = string
 }

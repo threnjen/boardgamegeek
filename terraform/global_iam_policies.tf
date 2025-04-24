@@ -14,8 +14,8 @@ resource "aws_iam_policy" "S3_Access_bgg_scraper_policy" {
         ]
         Effect = "Allow"
         Resource = [
-          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}",
-          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/*",
+          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.ENVIRONMENT}",
+          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.ENVIRONMENT}/*",
           "arn:aws:s3:::${var.BUCKET}",
           "arn:aws:s3:::${var.BUCKET}/*"
         ]

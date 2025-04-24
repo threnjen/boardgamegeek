@@ -16,7 +16,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       environment = [
         {
           name  = "ENVIRONMENT",
-          value = var.environment
+          value = var.ENVIRONMENT
         },
         {
           name = "IS_LOCAL",
@@ -35,7 +35,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       logConfiguration = {
         logDriver = "awslogs",
         options = {
-          "awslogs-group"         = "/ecs/${var.task_definition_name}",
+          "awslogs-group"         = "/ecs/${var.task_definition_name}_${var.ENVIRONMENT}",
           "awslogs-create-group"  = "true",
           "awslogs-region"        = var.region,
           "awslogs-stream-prefix" = "ecs"
@@ -83,10 +83,15 @@ resource "aws_ecs_task_definition" "task_definition" {
     cpu_architecture        = "X86_64"
     operating_system_family = "LINUX"
   }
+
+  tags = {
+    Name        = "${var.task_definition_name}_${var.ENVIRONMENT}"
+    Environment = var.ENVIRONMENT
+  }
 }
 
 resource "aws_cloudwatch_log_group" "cloudwatch_log_group" {
-  name = "/ecs/${var.task_definition_name}"
+  name = "/ecs/${var.ENVIRONMENT}_${var.task_definition_name}"
 
   retention_in_days = 3
 }

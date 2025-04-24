@@ -1,6 +1,6 @@
 resource "aws_lambda_function" "lambda" {
   filename         = "lambda_function.zip"
-  function_name    = var.function_name
+  function_name    = "${var.function_name}_${var.ENVIRONMENT}"
   timeout          = var.timeout
   memory_size      = var.memory_size
   role             = var.role
@@ -18,7 +18,7 @@ resource "aws_lambda_function" "lambda" {
       if !(tuple[0] == "IS_LOCAL" || tuple[0] == "ENVIRONMENT" || tuple[0] == "PYTHONPATH")
     },
       {
-        ENVIRONMENT = var.environment
+        ENVIRONMENT = var.ENVIRONMENT
         IS_LOCAL=false
       }
     )
@@ -30,7 +30,7 @@ output "function_name" {
 }
 
 resource "aws_cloudwatch_log_group" "cloudwatch_log_group" {
-  name = "/aws/lambda/${var.function_name}"
+  name = "/aws/lambda/${var.function_name}_${var.ENVIRONMENT}"
 
   retention_in_days = 3
 }
