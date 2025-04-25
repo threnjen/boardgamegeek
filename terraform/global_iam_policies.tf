@@ -14,10 +14,10 @@ resource "aws_iam_policy" "S3_Access_bgg_scraper_policy" {
         ]
         Effect = "Allow"
         Resource = [
-          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}",
-          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/*",
-          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}",
-          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/*"
+          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}-${var.RESOURCE_ENV}",
+          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}-${var.RESOURCE_ENV}/*",
+          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}-${var.RESOURCE_ENV}",
+          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}-${var.RESOURCE_ENV}/*"
         ]
       },
       { Action = [
