@@ -43,7 +43,7 @@ def get_xml_file_keys_based_on_env(xml_directory):
 
 
 def get_s3_keys_based_on_env(directory: str):
-    directory = f"s3://{S3_SCRAPER_BUCKET}/{WORKING_DIR}{directory}"
+    directory = f"s3://{S3_SCRAPER_BUCKET}-{ENVIRONMENT}/{WORKING_DIR}{directory}"
     return S3FileHandler().list_files(directory)
 
 
@@ -125,7 +125,7 @@ def save_to_aws_glue(data: pd.DataFrame, table: str, database: str = "boardgameg
 
         wr.s3.to_parquet(
             df=data,
-            path=f"s3://{S3_SCRAPER_BUCKET}/bgg-data-lake/{database}/{table}/",
+            path=f"s3://{S3_SCRAPER_BUCKET}-{ENVIRONMENT}/bgg-data-lake/{database}/{table}/",
             dataset=True,
             database=database,
             table=table,

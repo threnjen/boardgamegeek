@@ -26,7 +26,7 @@ def initialize_driver(default_directory: str) -> webdriver.Chrome:
     options for the scraper to work. The function will return the
     initialized driver."""
 
-    if not os.environ.get("ENVIRONMENT", "dev") == "prod":
+    if not ENVIRONMENT == "prod":
         return webdriver.Chrome()
 
     chrome_options = ChromeOptions()
@@ -129,12 +129,12 @@ def lambda_handler(event: dict = None, context: dict = None) -> None:
 
     wr.s3.upload(
         local_file=output_file,
-        path=f"s3://{S3_SCRAPER_BUCKET}/data/prod/{CONFIGS['boardgamegeek_csv_filename']}",
+        path=f"s3://{S3_SCRAPER_BUCKET}-{ENVIRONMENT}/data/prod/{CONFIGS['boardgamegeek_csv_filename']}",
     )
 
     wr.s3.upload(
         local_file=output_file,
-        path=f"s3://{S3_SCRAPER_BUCKET}/data/test/{CONFIGS['boardgamegeek_csv_filename']}",
+        path=f"s3://{S3_SCRAPER_BUCKET}-{ENVIRONMENT}/data/test/{CONFIGS['boardgamegeek_csv_filename']}",
     )
 
 

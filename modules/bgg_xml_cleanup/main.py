@@ -51,7 +51,9 @@ class XMLCleanup:
         return new_xml_files_to_process, old_combined_xml_files
 
     def _delete_existing_xml_files(self, existing_files: list):
-        print(f"\nDeleting existing XML files from S3 bucket {S3_SCRAPER_BUCKET}...")
+        print(
+            f"\nDeleting existing XML files from S3 bucket {S3_SCRAPER_BUCKET}-{ENVIRONMENT}..."
+        )
         s3_client = boto3.client("s3")
 
         start = 0
@@ -61,9 +63,10 @@ class XMLCleanup:
         while start < end:
             delete_objects = {
                 "Objects": [
-                    {"Key": x.replace(f"s3://{S3_SCRAPER_BUCKET}/", "")}
+                    {"Key": x.replace(f"s3://{S3_SCRAPER_BUCKET}-{ENVIRONMENT}/", "")}
                     for x in existing_files[start : start + block]
-                    if x.endswith(".xml") and x.startswith(f"s3://{S3_SCRAPER_BUCKET}/")
+                    if x.endswith(".xml")
+                    and x.startswith(f"s3://{S3_SCRAPER_BUCKET}-{ENVIRONMENT}/")
                 ]
             }
             s3_client.delete_objects(Bucket=S3_SCRAPER_BUCKET, Delete=delete_objects)
