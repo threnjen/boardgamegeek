@@ -13,7 +13,7 @@
     "game_id_lookup_filename": "game_id_lookup.json",
     "game_avg_ratings_filename": "game_avg_ratings.json",
     "bgg_boardgame_csv_lambda": "bgg_boardgame_file_retrieval",
-    "dev_directory": "data/test/",
+    "dev_directory": "data/dev/",
     "prod_directory": "data/prod/",
     "users": {
         "scrapy_bot_name": "bggscraper_users",

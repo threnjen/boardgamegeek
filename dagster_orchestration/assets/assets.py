@@ -6,7 +6,7 @@ from dagster import ConfigurableResource, asset, get_dagster_logger, op
 logger = get_dagster_logger()
 
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
-WORKING_ENV_DIR = "data/prod/" if ENVIRONMENT == "prod" else "data/test/"
+WORKING_ENV_DIR = f"data/{ENVIRONMENT}/"
 S3_SCRAPER_BUCKET = f'{os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")}-{os.environ.get("TF_VAR_RESOURCE_ENV")}'
 REFRESH = 300 if ENVIRONMENT == "prod" else 30
 

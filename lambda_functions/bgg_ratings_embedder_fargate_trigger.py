@@ -7,7 +7,7 @@ from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
-TASK_DEFINITION = "bgg_ratings_embedder"
+TASK_DEFINITION = f"bgg_ratings_embedder_{ENVIRONMENT}"
 TERRAFORM_STATE_BUCKET = CONFIGS["terraform_state_bucket"]
 
 
@@ -20,10 +20,7 @@ def lambda_handler(event, context):
         file_path=CONFIGS["terraform_state_file"]
     )
 
-    task_definition = (
-        f"dev_{TASK_DEFINITION}" if ENVIRONMENT != "prod" else TASK_DEFINITION
-    )
-    print(task_definition)
+    print(TASK_DEFINITION)
 
     ecs_client = boto3.client("ecs")
 
@@ -38,7 +35,7 @@ def lambda_handler(event, context):
     print(subnets)
 
     latest_version = (
-        ecs_client.describe_task_definition(taskDefinition=task_definition)
+        ecs_client.describe_task_definition(taskDefinition=TASK_DEFINITION)
         .get("taskDefinition")
         .get("revision")
     )

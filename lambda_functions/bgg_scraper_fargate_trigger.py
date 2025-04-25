@@ -9,12 +9,9 @@ from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
-SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
+SCRAPER_TASK_DEFINITION = f'{CONFIGS["scraper_task_definition"]}_{ENVIRONMENT}'
 TERRAFORM_STATE_BUCKET = CONFIGS["terraform_state_bucket"]
-
-WORKING_DIR = (
-    CONFIGS["dev_directory"] if ENVIRONMENT == "dev" else CONFIGS["prod_directory"]
-)
+WORKING_DIR = f"data/{ENVIRONMENT}/"
 
 print(SCRAPER_TASK_DEFINITION)
 
@@ -43,17 +40,12 @@ def lambda_handler(event, context):
             f"{WORKING_DIR}{CONFIGS[data_type]['raw_urls_directory']}/{file_name}"
         ]
 
-    task_definition = (
-        f"dev_{SCRAPER_TASK_DEFINITION}"
-        if ENVIRONMENT != "prod"
-        else SCRAPER_TASK_DEFINITION
-    )
-    print(task_definition)
+    print(SCRAPER_TASK_DEFINITION)
 
     ecs_client = boto3.client("ecs")
 
     latest_version = (
-        ecs_client.describe_task_definition(taskDefinition=task_definition)
+        ecs_client.describe_task_definition(taskDefinition=SCRAPER_TASK_DEFINITION)
         .get("taskDefinition")
         .get("revision")
     )

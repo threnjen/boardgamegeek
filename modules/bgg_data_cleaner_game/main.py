@@ -161,8 +161,8 @@ class DirtyDataExtractor:
         return dirty_game_data_frames
 
     def _save_dirty_dfs(self, dirty_game_data_frames: dict[pd.DataFrame]):
-        """Save all files as pkl files. Save to local drive in ENVIRONMENT==dev, or
-        copy pkl to s3 if ENVIRONMENT==prod"""
+        """Save all files as pkl files. Save to local drive in in dev, or
+        copy pkl to s3 if in prod"""
 
         for table_name, table in dirty_game_data_frames.items():
 

@@ -29,9 +29,8 @@ def lambda_handler(event, context):
 
     data_type_task_def = task_definition_ref.get(data_type)
 
-    task_definition = (
-        f"dev_{data_type_task_def}" if ENVIRONMENT != "prod" else data_type_task_def
-    )
+    task_definition = f"{data_type_task_def}_{ENVIRONMENT}"
+
     print(task_definition)
 
     ecs_client = boto3.client("ecs")

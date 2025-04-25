@@ -17,9 +17,7 @@ from utils.s3_file_handler import S3FileHandler
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
-WORKING_DIR = (
-    CONFIGS["dev_directory"] if ENVIRONMENT == "dev" else CONFIGS["prod_directory"]
-)
+WORKING_DIR = f"data/{ENVIRONMENT}"
 
 
 class GameSpider(scrapy.Spider):
