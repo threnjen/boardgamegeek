@@ -33,6 +33,11 @@
 #   value       = module.vpc.private_subnets
 # }
 
+output "lambda_functions" {
+  description = "List of Lambda function names"
+  value       = local.lambda_functions
+}
+
 output "caller_identity" {
   value = data.aws_caller_identity.current
 }

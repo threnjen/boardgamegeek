@@ -13,7 +13,6 @@ locals {
     module.bgg_xml_cleanup_ecr.ecr_repository_name
   ]
 }
-
 locals {
   lambda_functions = [
     module.bgg_scraper_fargate_trigger.function_name,

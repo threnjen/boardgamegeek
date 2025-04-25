@@ -60,7 +60,7 @@ resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metric_bgg_xml_cleanup
 
 module "bgg_xml_cleanup_fargate_trigger" {
   source        = "./modules/lambda_function_direct"
-  function_name = "bgg_xml_cleanup_fargate_trigger"
+  function_name = "${var.bgg_xml_cleanup}_fargate_trigger_${var.RESOURCE_ENV}"
   timeout       = 600
   memory_size   = 128
   role          = module.bgg_xml_cleanup_fargate_trigger_role.arn
