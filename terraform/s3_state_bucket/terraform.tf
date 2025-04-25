@@ -5,13 +5,19 @@ terraform {
 
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
+      source = "hashicorp/aws"
     }
   }
-  backend "local" {}
+  # backend "local" {}
+  backend "s3" {
+    bucket  = ""
+    key     = ""
+    region  = ""
+    profile = ""
+  }
 }
 
 provider "aws" {
-  region = var.REGION
+  region  = var.REGION
   profile = var.AWS_PROFILE
 }
