@@ -14,7 +14,7 @@ output "arn" {
   value = aws_iam_policy.ecs_run_permissions.arn
 }
 
-variable "ENVIRONMENT" {
+variable "RESOURCE_ENV" {
   type = string
 }
 
@@ -30,8 +30,8 @@ resource "aws_iam_policy" "ecs_run_permissions" {
         Effect = "Allow",
         Action = "ecs:DescribeTasks",
         Resource = [
-          "arn:aws:ecs:${var.region}:${var.account_id}:task/*/${var.task_definition_name}_${var.ENVIRONMENT}",
-          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}_${var.ENVIRONMENT}:*",
+          "arn:aws:ecs:${var.region}:${var.account_id}:task/*/${var.task_definition_name}_${var.RESOURCE_ENV}",
+          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}_${var.RESOURCE_ENV}:*",
         ]
       },
       {
@@ -45,7 +45,7 @@ resource "aws_iam_policy" "ecs_run_permissions" {
         Effect = "Allow",
         Action = "ecs:RunTask",
         Resource = [
-          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}_${var.ENVIRONMENT}:*",
+          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}_${var.RESOURCE_ENV}:*",
         ]
       },
       {

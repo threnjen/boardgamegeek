@@ -3,7 +3,7 @@ variable "AWS_PROFILE" {
   type        = string
 }
 
-variable "ENVIRONMENT" {
+variable "RESOURCE_ENV" {
   description = "Environment for the deployment, e.g., dev, prod"
   type        = string
 }

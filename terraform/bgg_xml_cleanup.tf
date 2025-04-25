@@ -9,47 +9,30 @@ module "bgg_xml_cleanup_ecr" {
   ecr_repository_name = var.bgg_xml_cleanup
 }
 
-module "dev_bgg_xml_cleanup_ecr" {
-  source              = "./modules/ecr"
-  ecr_repository_name = "dev_${var.bgg_xml_cleanup}"
-}
 
 module "ecs_run_permissions_bgg_xml_cleanup" {
   source               = "./modules/fargate_iam_policies"
-  task_definition_name = var.bgg_xml_cleanup
+  task_definition_name = "${var.bgg_xml_cleanup}_${var.RESOURCE_ENV}"
   region               = var.REGION
   account_id           = data.aws_caller_identity.current.account_id
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 module "bgg_xml_cleanup_ecs" {
   source                 = "./modules/ecs_task_definition"
-  task_definition_family = var.bgg_xml_cleanup
-  task_definition_name   = var.bgg_xml_cleanup
+  task_definition_family = "${var.bgg_xml_cleanup}_${var.RESOURCE_ENV}"
+  task_definition_name   = "${var.bgg_xml_cleanup}_${var.RESOURCE_ENV}"
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_xml_cleanup}:latest"
-  environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.ENVIRONMENT}/boardgamegeek.env"
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_xml_cleanup}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_xml_cleanup}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_xml_cleanup}:latest"
   cpu                    = "1024"
   memory                 = "8192"
   region                 = var.REGION
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
-module "dev_bgg_xml_cleanup_ecs" {
-  source                 = "./modules/ecs_task_definition"
-  task_definition_family = "dev_${var.bgg_xml_cleanup}"
-  task_definition_name   = "dev_${var.bgg_xml_cleanup}"
-  registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_xml_cleanup}:latest"
-  environment            = "dev"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.ENVIRONMENT}/boardgamegeek.env"
-  task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_xml_cleanup}_FargateTaskRole"
-  execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_xml_cleanup}_FargateExecutionRole"
-  image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_xml_cleanup}:latest"
-  cpu                    = "256"
-  memory                 = "2048"
-  region                 = var.REGION
-}
 
 module "bgg_xml_cleanup_FargateExecutionRole_role" {
   source          = "./modules/iam_ecs_roles"
@@ -83,21 +66,10 @@ module "bgg_xml_cleanup_fargate_trigger" {
   role          = module.bgg_xml_cleanup_fargate_trigger_role.arn
   handler       = "${var.bgg_xml_cleanup}_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
   description   = "Lambda function to trigger the boardgamegeek scraper fargate task"
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
-module "dev_bgg_xml_cleanup_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_xml_cleanup_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_xml_cleanup_fargate_trigger_role.arn
-  handler       = "${var.bgg_xml_cleanup}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the boardgamegeek scraper fargate task"
-}
 
 module "bgg_xml_cleanup_fargate_trigger_role" {
   source    = "./modules/iam_lambda_roles"
@@ -117,7 +89,8 @@ resource "aws_iam_role_policy_attachment" "bgg_xml_cleanup_S3_attach" {
 module "bgg_xml_cleanup_describe_task_def_policy" {
   source     = "./modules/lambda_ecs_trigger_policies"
   name       = "${var.bgg_xml_cleanup}_lambda_ecs_trigger"
-  task_name  = var.bgg_xml_cleanup
+  task_name  = "${var.bgg_xml_cleanup}_${var.RESOURCE_ENV}"
   region     = var.REGION
   account_id = data.aws_caller_identity.current.account_id
+  RESOURCE_ENV = var.RESOURCE_ENV
 }

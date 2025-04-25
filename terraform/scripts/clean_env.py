@@ -10,7 +10,7 @@ if __name__ == "__main__":
                 or "TF_VAR_MY_IP_FIRST_THREE_BLOCKS" in line
                 or "PYTHONPATH" in line
                 or "IS_LOCAL" in line
-                or "TF_VAR_ENVIRONMENT" in line
+                or "TF_VAR_RESOURCE_ENV" in line
                 or "TF_VAR_AWS_PROFILE" in line
             ):
                 continue

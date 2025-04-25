@@ -14,6 +14,6 @@ variable "account_id" {
     type = string
 }
 
-variable "ENVIRONMENT" {
+variable "RESOURCE_ENV" {
     type = string
 }

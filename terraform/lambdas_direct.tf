@@ -1,16 +1,20 @@
 
-
+variable "bgg_generate_urls" {
+  description = "The name of the ECS task definition for the bgg_scraper"
+  type        = string
+  default     = "bgg_generate_urls"
+}
 
 module "bgg_generate_urls" {
   source        = "./modules/lambda_function_direct"
-  function_name = "${bgg_generate_urls}_${var.ENVIRONMENT}"
+  function_name = "${var.bgg_generate_urls}_${var.RESOURCE_ENV}"
   timeout       = 900
   memory_size   = 1024
   role          = module.bgg_generate_urls_lambda_role.arn
   handler       = "bgg_generate_urls.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
   description   = "Lambda function to generate game urls"
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 module "bgg_generate_urls_lambda_role" {

@@ -34,7 +34,8 @@ set_config_variables: cleanup_env_files
 	\
 	echo "\nType the environment you want to use for Terraform (dev or prod) and press Enter."; \
 	read -p "Enter environment name: " env_response; \
-	echo "TF_VAR_ENVIRONMENT=$$env_response" >> ../.env; \
+	echo "TF_VAR_RESOURCE_ENV=$$env_response" >> ../.env; \
+	echo "ENVIRONMENT=$$env_response" >> ../.env; \
 	\
 	echo "\nType the name of the S3 bucket you want to use for Terraform files and press Enter. EXAMPLE my-terraform-bucket"; \
 	read -p "Enter bucket name: " bucket_response; \

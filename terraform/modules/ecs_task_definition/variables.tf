@@ -37,6 +37,6 @@ variable "image" {
   type = string
 }
 
-variable "ENVIRONMENT" {
+variable "RESOURCE_ENV" {
   type = string
 }

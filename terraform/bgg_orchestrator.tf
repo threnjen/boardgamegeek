@@ -11,17 +11,18 @@ module "bgg_orchestrator_ecr" {
 
 module "bgg_orchestrator_ecs" {
   source                 = "./modules/ecs_task_definition"
-  task_definition_family = "${var.bgg_orchestrator}_${var.ENVIRONMENT}"
-  task_definition_name   = "${var.bgg_orchestrator}_${var.ENVIRONMENT}"
+  task_definition_family = "${var.bgg_orchestrator}_${var.RESOURCE_ENV}"
+  task_definition_name   = "${var.bgg_orchestrator}_${var.RESOURCE_ENV}"
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_orchestrator}:latest"
-  environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.ENVIRONMENT}/boardgamegeek.env"
+
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_orchestrator}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_orchestrator}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_orchestrator}:latest"
   cpu                    = "1024"
   memory                 = "4096"
   region                 = var.REGION
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 module "bgg_orchestrator_FargateExecutionRole_role" {
@@ -52,20 +53,21 @@ resource "aws_iam_role_policy_attachment" "trigger_bgg_lambda_run_attach_to_orch
 resource "aws_iam_role_policy_attachment" "ecs_all_to_orchestrator_dev" {
   role       = module.bgg_orchestrator_FargateTaskRole_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
-  }
+}
 
 
 
 module "bgg_orchestrator_fargate_trigger" {
   source        = "./modules/lambda_function_direct"
-  function_name = "${var.bgg_orchestrator}_fargate_trigger_${var.ENVIRONMENT}"
+  function_name = "${var.bgg_orchestrator}_fargate_trigger_${var.RESOURCE_ENV}"
   timeout       = 600
   memory_size   = 128
   role          = module.bgg_orchestrator_fargate_trigger_role.arn
   handler       = "${var.bgg_orchestrator}_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
+
   description   = "Lambda function to trigger the boardgamegeek orchestrator fargate task"
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 
@@ -87,7 +89,8 @@ resource "aws_iam_role_policy_attachment" "bgg_orchestrator_s3_attach" {
 module "bgg_orchestrator_task_def_policy" {
   source     = "./modules/lambda_ecs_trigger_policies"
   name       = "${var.bgg_orchestrator}_lambda_ecs_trigger"
-  task_name  = "${var.bgg_orchestrator}_${var.ENVIRONMENT}"
+  task_name  = "${var.bgg_orchestrator}_${var.RESOURCE_ENV}"
   region     = var.REGION
   account_id = data.aws_caller_identity.current.account_id
+  RESOURCE_ENV = var.RESOURCE_ENV
 }

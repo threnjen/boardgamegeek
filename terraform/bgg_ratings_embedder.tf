@@ -26,8 +26,8 @@
 #   task_definition_family = var.bgg_ratings_embedder
 #   task_definition_name   = var.bgg_ratings_embedder
 #   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_ratings_embedder}:latest"
-#   environment            = "prod"
-#   env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.ENVIRONMENT}/boardgamegeek.env"
+# 
+#   env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/boardgamegeek.env"
 #   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_embedder}_FargateTaskRole"
 #   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_embedder}_FargateExecutionRole"
 #   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_ratings_embedder}:latest"
@@ -42,7 +42,7 @@
 #   task_definition_name   = "dev_${var.bgg_ratings_embedder}"
 #   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_ratings_embedder}:latest"
 #   environment            = "dev"
-#   env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.ENVIRONMENT}/boardgamegeek.env"
+#   env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/boardgamegeek.env"
 #   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_embedder}_FargateTaskRole"
 #   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_ratings_embedder}_FargateExecutionRole"
 #   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_ratings_embedder}:latest"
@@ -85,7 +85,7 @@
 #   role          = module.bgg_ratings_embedder_fargate_trigger_role.arn
 #   handler       = "${var.bgg_ratings_embedder}_fargate_trigger.lambda_handler"
 #   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-#   environment   = "prod"
+# 
 #   description   = "Lambda function to trigger the boardgamegeek cleaner fargate task"
 # }
 

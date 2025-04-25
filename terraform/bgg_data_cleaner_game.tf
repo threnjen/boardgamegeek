@@ -11,24 +11,26 @@ module "bgg_data_cleaner_game_ecr" {
 
 module "ecs_run_permissions_bgg_data_cleaner_game" {
   source               = "./modules/fargate_iam_policies"
-  task_definition_name = "${var.bgg_data_cleaner_game}_${var.ENVIRONMENT}"
+  task_definition_name = "${var.bgg_data_cleaner_game}_${var.RESOURCE_ENV}"
   region               = var.REGION
   account_id           = data.aws_caller_identity.current.account_id
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 module "bgg_data_cleaner_game_ecs" {
   source                 = "./modules/ecs_task_definition"
-  task_definition_family = "${var.bgg_data_cleaner_game}_${var.ENVIRONMENT}"
-  task_definition_name   = "${var.bgg_data_cleaner_game}_${var.ENVIRONMENT}"
+  task_definition_family = "${var.bgg_data_cleaner_game}_${var.RESOURCE_ENV}"
+  task_definition_name   = "${var.bgg_data_cleaner_game}_${var.RESOURCE_ENV}"
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_data_cleaner_game}:latest"
-  environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.ENVIRONMENT}/boardgamegeek.env"
+
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_data_cleaner_game}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_data_cleaner_game}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_data_cleaner_game}:latest"
   cpu                    = "4096"
   memory                 = "24576"
   region                 = var.REGION
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 module "bgg_data_cleaner_game_FargateExecutionRole_role" {
