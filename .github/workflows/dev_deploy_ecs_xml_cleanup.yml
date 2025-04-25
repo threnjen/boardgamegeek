@@ -24,17 +24,17 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_DEV }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
           
-      - name: Build, tag, push image to AWS ECR dev_bgg_xml_cleanup
+      - name: Build, tag, push image to AWS ECR bgg_xml_cleanup
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev_bgg_xml_cleanup
+          ECR_REPOSITORY: bgg_xml_cleanup
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.xml-cleanup --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY

@@ -24,31 +24,31 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_DEV }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
           
-      - name: Build, tag, push image to AWS ECR dev_bgg_data_cleaner_game
+      - name: Build, tag, push image to AWS ECR bgg_data_cleaner_game
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev_bgg_data_cleaner_game
+          ECR_REPOSITORY: bgg_data_cleaner_game
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.game-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
-      - name: Build, tag, push image to AWS ECR dev_bgg_data_cleaner_users
+      - name: Build, tag, push image to AWS ECR bgg_data_cleaner_users
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev_bgg_data_cleaner_users
+          ECR_REPOSITORY: bgg_data_cleaner_users
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.users-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
-      - name: Build, tag, push image to AWS ECR dev_bgg_data_cleaner_ratings
+      - name: Build, tag, push image to AWS ECR bgg_data_cleaner_ratings
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: dev_bgg_data_cleaner_ratings
+          ECR_REPOSITORY: bgg_data_cleaner_ratings
         run: |
           DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.ratings-data-cleaner --build-arg GROUP="group1" -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY

@@ -1,34 +1,23 @@
 
 variable "bgg_data_cleaner" {
-  type = string
+  type    = string
   default = "bgg_data_cleaner"
 }
 
 
 module "bgg_data_cleaner_fargate_trigger" {
   source        = "./modules/lambda_function_direct"
-  function_name = "bgg_data_cleaner_fargate_trigger"
+  function_name = "bgg_data_cleaner_fargate_trigger_${var.RESOURCE_ENV}"
   timeout       = 600
   memory_size   = 128
   role          = module.bgg_data_cleaner_fargate_trigger_role.arn
   handler       = "${var.bgg_data_cleaner}_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
+
   description   = "Lambda function to trigger the boardgamegeek cleaner fargate task"
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
-
-module "dev_bgg_data_cleaner_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_data_cleaner_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_data_cleaner_fargate_trigger_role.arn
-  handler       = "${var.bgg_data_cleaner}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the boardgamegeek cleaner fargate task"
-}
 
 
 module "bgg_data_cleaner_fargate_trigger_role" {
@@ -38,10 +27,11 @@ module "bgg_data_cleaner_fargate_trigger_role" {
 
 module "bgg_data_cleaner_ratings_describe_task_def_policy" {
   source     = "./modules/lambda_ecs_trigger_policies"
-  name       = "${var.bgg_data_cleaner}_ratings_lambda_ecs_trigger"
-  task_name  = var.bgg_data_cleaner_ratings
+  name       = "${var.bgg_data_cleaner_ratings}_lambda_ecs_trigger"
+  task_name  = "${var.bgg_data_cleaner_ratings}_${var.RESOURCE_ENV}"
   region     = var.REGION
   account_id = data.aws_caller_identity.current.account_id
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_ratings_describe_attach" {
@@ -49,14 +39,13 @@ resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_ratings_describe_att
   policy_arn = module.bgg_data_cleaner_ratings_describe_task_def_policy.lambda_ecs_trigger_arn
 }
 
-
-
 module "bgg_data_cleaner_game_describe_task_def_policy" {
   source     = "./modules/lambda_ecs_trigger_policies"
-  name       = "${var.bgg_data_cleaner}_game_lambda_ecs_trigger"
-  task_name  = var.bgg_data_cleaner_game
+  name       = "${var.bgg_data_cleaner_game}_lambda_ecs_trigger"
+  task_name  = "${var.bgg_data_cleaner_game}_${var.RESOURCE_ENV}"
   region     = var.REGION
   account_id = data.aws_caller_identity.current.account_id
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_games_describe_attach" {
@@ -67,10 +56,11 @@ resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_games_describe_attac
 
 module "bgg_data_cleaner_users_describe_task_def_policy" {
   source     = "./modules/lambda_ecs_trigger_policies"
-  name       = "${var.bgg_data_cleaner}_users_lambda_ecs_trigger"
-  task_name  = var.bgg_data_cleaner_users
+  name       = "${var.bgg_data_cleaner_users}_lambda_ecs_trigger"
+  task_name  = "${var.bgg_data_cleaner_users}_${var.RESOURCE_ENV}"
   region     = var.REGION
   account_id = data.aws_caller_identity.current.account_id
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 resource "aws_iam_role_policy_attachment" "bgg_data_cleaner_users_describe_attach" {

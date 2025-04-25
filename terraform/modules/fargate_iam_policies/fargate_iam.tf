@@ -14,6 +14,10 @@ output "arn" {
   value = aws_iam_policy.ecs_run_permissions.arn
 }
 
+variable "RESOURCE_ENV" {
+  type = string
+}
+
 resource "aws_iam_policy" "ecs_run_permissions" {
   name        = "ecs_run_permissions_${var.task_definition_name}"
   description = "Policy to allow running the BGG ECS tasks"
@@ -28,8 +32,6 @@ resource "aws_iam_policy" "ecs_run_permissions" {
         Resource = [
           "arn:aws:ecs:${var.region}:${var.account_id}:task/*/${var.task_definition_name}",
           "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}:*",
-          "arn:aws:ecs:${var.region}:${var.account_id}:task/*/dev_${var.task_definition_name}",
-          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/dev_${var.task_definition_name}:*",
         ]
       },
       {
@@ -44,7 +46,6 @@ resource "aws_iam_policy" "ecs_run_permissions" {
         Action = "ecs:RunTask",
         Resource = [
           "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}:*",
-          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/dev_${var.task_definition_name}:*",
         ]
       },
       {

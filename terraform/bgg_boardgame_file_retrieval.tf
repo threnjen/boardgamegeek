@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "bgg_boardgame_file_retrieval_attach" 
 
 resource "aws_lambda_function" "bgg_boardgame_file_retrieval_lambda" {
   depends_on    = [module.bgg_boardgame_file_retrieval_ecr]
-  function_name = var.bgg_boardgame_file_retrieval
+  function_name = "${var.bgg_boardgame_file_retrieval}_${var.RESOURCE_ENV}"
   timeout       = 900
   memory_size   = 512
   image_uri     = "${module.bgg_boardgame_file_retrieval_ecr.repository_url}:latest"
@@ -34,10 +34,7 @@ resource "aws_lambda_function" "bgg_boardgame_file_retrieval_lambda" {
     variables = merge(
       {
         for tuple in regexall("(.*?)=(.*)", file("../.env")) : tuple[0] => tuple[1]
-        if !(tuple[0] == "IS_LOCAL" || tuple[0] == "ENVIRONMENT" || tuple[0] == "PYTHONPATH")
-      },
-      {
-        ENVIRONMENT = "prod"
-    })
+        if !(tuple[0] == "IS_LOCAL" || tuple[0] == "PYTHONPATH")
+    }, )
   }
 }

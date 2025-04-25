@@ -15,8 +15,8 @@ resource "aws_ecs_task_definition" "task_definition" {
       essential = true,
       environment = [
         {
-          name  = "ENVIRONMENT",
-          value = var.environment
+          name  = "RESOURCE_ENV",
+          value = var.RESOURCE_ENV
         },
         {
           name = "IS_LOCAL",
@@ -82,6 +82,11 @@ resource "aws_ecs_task_definition" "task_definition" {
   runtime_platform {
     cpu_architecture        = "X86_64"
     operating_system_family = "LINUX"
+  }
+
+  tags = {
+    Name        = var.task_definition_name
+    Environment = var.RESOURCE_ENV
   }
 }
 

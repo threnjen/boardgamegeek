@@ -13,3 +13,7 @@ variable "name" {
 variable "account_id" {
     type = string
 }
+
+variable "RESOURCE_ENV" {
+    type = string
+}

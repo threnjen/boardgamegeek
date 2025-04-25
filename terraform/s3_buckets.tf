@@ -1,6 +1,6 @@
 # module "aws_s3_bucket" {
 #   source = "terraform-aws-modules/s3-bucket/aws"
-#   bucket = var.S3_SCRAPER_BUCKET
+#   bucket = "${var.S3_SCRAPER_BUCKET}-${var.RESOURCE_ENV}"
 #   acl    = "private"
 
 #   control_object_ownership = true
@@ -11,15 +11,12 @@
 #   }
 # }
 
-import {
-  to = aws_s3_bucket.example
-  id = var.S3_SCRAPER_BUCKET
-}
 
-resource "aws_s3_bucket" "example" {
-  bucket = var.S3_SCRAPER_BUCKET
+
+resource "aws_s3_bucket" "scraper_data_bucket" {
+  bucket = "${var.S3_SCRAPER_BUCKET}-${var.RESOURCE_ENV}"
 
   tags = {
-    Name = var.S3_SCRAPER_BUCKET
+    Name = "${var.S3_SCRAPER_BUCKET}-${var.RESOURCE_ENV}"
   }
 }

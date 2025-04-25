@@ -9,13 +9,18 @@ terraform {
     }
   }
   backend "s3" {
-    key = "boardgamegeek.tfstate"
+    key     = "boardgamegeek.tfstate"
+    bucket  = ""
+    region  = ""
+    profile = ""
   }
 }
 
 provider "aws" {
-  region = var.REGION
+  region  = var.REGION
   profile = var.AWS_PROFILE
 }
 
 data "aws_caller_identity" "current" {}
+
+

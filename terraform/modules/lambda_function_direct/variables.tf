@@ -3,7 +3,7 @@ variable "function_name" {
   type = string
 }
 
-variable "environment" {
+variable "RESOURCE_ENV" {
   type = string
 }
 

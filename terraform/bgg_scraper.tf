@@ -9,46 +9,27 @@ module "bgg_scraper_ecr" {
   ecr_repository_name = var.bgg_scraper
 }
 
-module "dev_bgg_scraper_ecr" {
-  source              = "./modules/ecr"
-  ecr_repository_name = "dev_${var.bgg_scraper}"
-}
-
 module "ecs_run_permissions_bgg_scraper" {
   source               = "./modules/fargate_iam_policies"
-  task_definition_name = var.bgg_scraper
+  task_definition_name = "${var.bgg_scraper}_${var.RESOURCE_ENV}"
   region               = var.REGION
   account_id           = data.aws_caller_identity.current.account_id
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 module "bgg_scraper_ecs" {
   source                 = "./modules/ecs_task_definition"
-  task_definition_family = var.bgg_scraper
-  task_definition_name   = var.bgg_scraper
+  task_definition_family = "${var.bgg_scraper}_${var.RESOURCE_ENV}"
+  task_definition_name   = "${var.bgg_scraper}_${var.RESOURCE_ENV}"
   registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_scraper}:latest"
-  environment            = "prod"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
+  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/boardgamegeek.env"
   task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_scraper}_FargateTaskRole"
   execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_scraper}_FargateExecutionRole"
   image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/${var.bgg_scraper}:latest"
   cpu                    = "512"
   memory                 = "4096"
   region                 = var.REGION
-}
-
-module "dev_bgg_scraper_ecs" {
-  source                 = "./modules/ecs_task_definition"
-  task_definition_family = "dev_${var.bgg_scraper}"
-  task_definition_name   = "dev_${var.bgg_scraper}"
-  registry_name          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_scraper}:latest"
-  environment            = "dev"
-  env_file               = "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/boardgamegeek.env"
-  task_role_arn          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_scraper}_FargateTaskRole"
-  execution_role_arn     = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.bgg_scraper}_FargateExecutionRole"
-  image                  = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.REGION}.amazonaws.com/dev_${var.bgg_scraper}:latest"
-  cpu                    = "256"
-  memory                 = "2048"
-  region                 = var.REGION
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 module "bgg_scraper_FargateExecutionRole_role" {
@@ -77,26 +58,14 @@ resource "aws_iam_role_policy_attachment" "Cloudwatch_Put_Metric_bgg_scraper_Far
 
 module "bgg_scraper_fargate_trigger" {
   source        = "./modules/lambda_function_direct"
-  function_name = "bgg_scraper_fargate_trigger"
+  function_name = "${var.bgg_scraper}_fargate_trigger_${var.RESOURCE_ENV}"
   timeout       = 600
   memory_size   = 128
   role          = module.bgg_scraper_fargate_trigger_role.arn
   handler       = "${var.bgg_scraper}_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "prod"
   description   = "Lambda function to trigger the boardgamegeek scraper fargate task"
-}
-
-module "dev_bgg_scraper_fargate_trigger" {
-  source        = "./modules/lambda_function_direct"
-  function_name = "dev_bgg_scraper_fargate_trigger"
-  timeout       = 600
-  memory_size   = 128
-  role          = module.bgg_scraper_fargate_trigger_role.arn
-  handler       = "${var.bgg_scraper}_fargate_trigger.lambda_handler"
-  layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-  environment   = "dev"
-  description   = "DEV Lambda function to trigger the boardgamegeek scraper fargate task"
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
 
 module "bgg_scraper_fargate_trigger_role" {
@@ -117,7 +86,8 @@ resource "aws_iam_role_policy_attachment" "bgg_scraper_S3_attach" {
 module "bgg_scraper_describe_task_def_policy" {
   source     = "./modules/lambda_ecs_trigger_policies"
   name       = "${var.bgg_scraper}_lambda_ecs_trigger"
-  task_name  = var.bgg_scraper
+  task_name  = "${var.bgg_scraper}_${var.RESOURCE_ENV}"
   region     = var.REGION
   account_id = data.aws_caller_identity.current.account_id
+  RESOURCE_ENV = var.RESOURCE_ENV
 }
