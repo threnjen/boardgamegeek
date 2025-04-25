@@ -8,12 +8,8 @@ from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
-TASK_DEFINITION = f'{CONFIGS["desc_task_definition"]}_{ENVIRONMENT}'
 TERRAFORM_STATE_BUCKET = CONFIGS["terraform_state_bucket"]
-
 WORKING_DIR = f"data/{ENVIRONMENT}/"
-
-print(TASK_DEFINITION)
 
 
 def lambda_handler(event, context):
@@ -28,8 +24,11 @@ def lambda_handler(event, context):
 
     ecs_client = boto3.client("ecs")
 
+    task_definition = f'{CONFIGS["desc_task_definition"]}_{ENVIRONMENT}'
+    print(task_definition)
+
     latest_version = (
-        ecs_client.describe_task_definition(taskDefinition=TASK_DEFINITION)
+        ecs_client.describe_task_definition(taskDefinition=task_definition)
         .get("taskDefinition")
         .get("revision")
     )
