@@ -26,8 +26,8 @@ def initialize_driver(default_directory: str) -> webdriver.Chrome:
     options for the scraper to work. The function will return the
     initialized driver."""
 
-    if not ENVIRONMENT == "prod":
-        return webdriver.Chrome()
+    # if not ENVIRONMENT == "prod":
+    #     return webdriver.Chrome()
 
     chrome_options = ChromeOptions()
     chrome_options.add_argument("--headless=new")
