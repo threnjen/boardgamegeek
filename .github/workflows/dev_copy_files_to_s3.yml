@@ -21,9 +21,9 @@ jobs:
       - name: Setup AWS CLI
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE }}
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_DEV }}
           aws-region: ${{ secrets.AWS_REGION }}
       - name: Sync files to S3 bucket
         run: |
-            aws s3 cp config.json s3://${{ secrets.AWS_BUCKET_NAME }}
-            aws s3 cp modules/rag_description_generation/weaviate.env s3://${{ secrets.AWS_BUCKET_NAME }}
+            aws s3 cp config.json s3://${{ secrets.AWS_BUCKET_NAME_DEV }}
+            aws s3 cp modules/rag_description_generation/weaviate.env s3://${{ secrets.AWS_BUCKET_NAME_DEV }}
