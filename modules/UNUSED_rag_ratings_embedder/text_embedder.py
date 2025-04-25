@@ -47,7 +47,7 @@ class TextEmbedderToFile(BaseModel):
 
         self.df = load_file_local_first(path=self.path, file_name=file_name)
 
-        if os.environ.get("ENVIRONMENT", "dev") != "prod":
+        if os.environ.get("TF_VAR_RESOURCE_ENV" "dev") != "prod":
             self.df = self.df[:100]
 
         keep_columns = self.info_configs["keep_columns"]

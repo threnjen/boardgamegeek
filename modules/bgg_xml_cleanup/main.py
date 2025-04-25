@@ -11,7 +11,7 @@ from utils.processing_functions import (
     delete_file_local_first,
 )
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 WORKING_DIR = (

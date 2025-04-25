@@ -5,7 +5,7 @@ import boto3
 from config import CONFIGS
 from utils.s3_file_handler import S3FileHandler
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
 TASK_DEFINITION = "bgg_ratings_embedder"
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")

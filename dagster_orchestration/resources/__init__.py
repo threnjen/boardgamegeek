@@ -13,7 +13,7 @@ logger = get_dagster_logger()
 REGION = os.environ.get("TF_VAR_REGION", "us-west-2")
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 S3_SCRAPER_BUCKET = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 
 
 class DynamoDBResource(ConfigurableResource):

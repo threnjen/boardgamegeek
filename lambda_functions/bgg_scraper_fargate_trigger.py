@@ -7,7 +7,7 @@ from config import CONFIGS
 from utils.processing_functions import get_s3_keys_based_on_env
 from utils.s3_file_handler import S3FileHandler
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
 SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")

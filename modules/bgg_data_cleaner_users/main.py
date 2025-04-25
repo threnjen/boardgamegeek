@@ -10,7 +10,7 @@ from utils.processing_functions import (
     save_dfs_to_disk_or_s3,
 )
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 USER_CONFIGS = CONFIGS["users"]
 RATINGS_CONFIGS = CONFIGS["ratings"]
