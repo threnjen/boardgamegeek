@@ -16,8 +16,8 @@ resource "aws_iam_policy" "S3_Access_bgg_scraper_policy" {
         Resource = [
           "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}",
           "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/*",
-          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}",
-          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}/*"
+          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}",
+          "arn:aws:s3:::${var.S3_SCRAPER_BUCKET}_${var.RESOURCE_ENV}/*"
         ]
       },
       { Action = [
