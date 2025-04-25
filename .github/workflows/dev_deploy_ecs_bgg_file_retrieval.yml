@@ -1,7 +1,10 @@
-name: PROD deployment to boardgamegeek orchestrator
+name: PROD deployment to bgg file retrieval
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
     branches:
       - main
 
@@ -19,18 +22,17 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_PROD }}
+          role-to-assume: ${{ secrets.AWS_GITHUB_ROLE_DEV }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, push image to AWS ECR bgg_orchestrator
+      - name: Build, tag, push image to AWS ECR bgg_boardgame_file_retrieval
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: bgg_orchestrator
+          ECR_REPOSITORY: bgg_boardgame_file_retrieval
         run: |
-          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.bgg_orchestrator --build-arg ENVIRONMENT="prod" --build-arg ASSET="all" -t $ECR_REGISTRY/$ECR_REPOSITORY .
+          DOCKER_BUILDKIT=1 docker build -f Dockerfiles/Dockerfile.bgg_boardgame_file_retrieval -t $ECR_REGISTRY/$ECR_REPOSITORY .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY
-          
