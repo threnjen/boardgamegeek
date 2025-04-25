@@ -10,7 +10,7 @@ import pandas as pd
 
 from utils.file_handler import FileHandler
 
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
 REGION_NAME = os.environ.get("TF_VAR_REGION", "us-west-2")
 TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
 

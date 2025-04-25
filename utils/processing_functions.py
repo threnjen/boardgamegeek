@@ -11,7 +11,7 @@ from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
 IS_LOCAL = False if os.environ.get("IS_LOCAL", "True").lower() == "false" else True
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
 WORKING_DIR = (
     CONFIGS["prod_directory"] if ENVIRONMENT == "prod" else CONFIGS["dev_directory"]
 )

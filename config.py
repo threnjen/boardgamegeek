@@ -17,4 +17,4 @@ else:
     print("Loading config from S3")
     CONFIGS = S3FileHandler().load_file(file_path="config.json")
 
-CONFIGS["s3_scraper_bucket"] = os.environ.get("S3_SCRAPER_BUCKET")
+CONFIGS["s3_scraper_bucket"] = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
