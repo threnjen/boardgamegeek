@@ -12,7 +12,7 @@
     "boardgamegeek_csv_filename": "boardgames_ranks.csv",
     "game_id_lookup_filename": "game_id_lookup.json",
     "game_avg_ratings_filename": "game_avg_ratings.json",
-    "file_retrieval_lambda": "bgg_boardgame_file_retrieval",
+    "bgg_boardgame_csv_lambda": "bgg_boardgame_file_retrieval",
     "dev_directory": "data/test/",
     "prod_directory": "data/prod/",
     "users": {
