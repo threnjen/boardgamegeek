@@ -2,9 +2,7 @@
 # Load the .env file
 
 GLOBAL_PYTHON = $(DEFAULT_PYTHON)
-TF_VAR_REGION =
-TF_VAR_BUCKET =
-TF_VAR_ENVIRONMENT =
+
 
 clean:
 	@echo "\nCleaning up the terraform modules directory"
@@ -31,35 +29,31 @@ require_confirmation_env: create_env
 cleanup_env_files: require_confirmation_env
 	@output=$$(pipenv run python scripts/clean_env.py); \
 
-
 set_config_variables: cleanup_env_files
-	@echo "\nType the region you want to deploy to in format us-region-#. EXAMPLE us-west-2" ; \
-	read -p "Enter region: " region_response; \
-	TF_VAR_REGION=$$region_response; \
-	echo "\nTF_VAR_REGION=$$region_response" >> ../.env && \
-	echo "region=\"$$region_response\"" > backend.conf && \
-	export TF_VAR_REGION
-
-	@echo "\nType the environment you want to use for Terraform either dev or prod and Enter." ; \
+	@echo "\nSetting up configuration variables for Terraform"; \
+	\
+	echo "\nType the environment you want to use for Terraform (dev or prod) and press Enter."; \
 	read -p "Enter environment name: " env_response; \
-	TF_VAR_ENVIRONMENT=$$env_response; \
-	echo "TF_VAR_ENVIRONMENT=$$env_response" >> ../.env && \
-	export TF_VAR_ENVIRONMENT
-
-	@echo "\nType the name of the S3 bucket you want to use for Terraform files and press Enter. EXAMPLE my-terraform-bucket" ; \
+	echo "TF_VAR_ENVIRONMENT=$$env_response" >> ../.env; \
+	\
+	echo "\nType the name of the S3 bucket you want to use for Terraform files and press Enter. EXAMPLE my-terraform-bucket"; \
 	read -p "Enter bucket name: " bucket_response; \
-	TF_VAR_BUCKET=$$bucket_response; \
-	echo "TF_VAR_BUCKET=$$bucket_response" >> ../.env && \
-	echo "bucket=\"$$bucket_response_$$env_response\"" >> backend.conf && \
-	export TF_VAR_BUCKET
-
-	@echo "\nType the AWS profile you want to use for Terraform EXACTLY, without brackets, and Enter. Example: 123456789_ProfileName" ; \
+	bucket_env="$${bucket_response}_$${env_response}"; \
+	echo "TF_VAR_BUCKET=$$bucket_env" >> ../.env; \
+	echo "\nValues captured: TF_VAR_ENVIRONMENT=$$env_response, TF_VAR_BUCKET=$$bucket_env"; \
+	echo "bucket=\"$$bucket_env\"" > backend.conf; \
+	\
+	echo "\nType the region you want to deploy to in format us-region-#. EXAMPLE us-west-2" ; \
+	read -p "Enter region: " region_response; \
+	echo "\nTF_VAR_REGION=$$region_response" >> ../.env && \
+	echo "region=\"$$region_response\"" >> backend.conf && \
+	\
+	echo "\nType the AWS profile you want to use for Terraform EXACTLY, without brackets, and Enter. Example: 123456789_ProfileName" ; \
 	read -p "Enter profile: " profile_response; \
-	TF_VAR_AWS_PROFILE=$$profile_response; \
 	echo "TF_VAR_AWS_PROFILE=$$profile_response" >> ../.env && \
-	echo "profile=\"$$profile_response\"" >> backend.conf && \
-	export TF_VAR_AWS_PROFILE
+	echo "profile=\"$$profile_response\"" >> backend.conf
 
+set_ip_address: set_config_variables
 	@echo "\n"
 	@curl ifconfig.me
 	@echo "\nType the first 3 numbers of the IP printed above, in format x.x.x and press Enter. EXAMPLE 10.123.123" ;\
@@ -67,8 +61,7 @@ set_config_variables: cleanup_env_files
     TF_VAR_MY_IP_FIRST_THREE_BLOCKS=$$ip_response; \
     echo "TF_VAR_MY_IP_FIRST_THREE_BLOCKS=$$TF_VAR_MY_IP_FIRST_THREE_BLOCKS" >> ../.env
 
-
-enter_temp_vars: set_config_variables
+enter_temp_vars: set_ip_address
 	echo "IS_LOCAL=False" >> ../.env
 
 # Make the backend config file for terraform
