@@ -7,13 +7,14 @@ from typing import Any, Union
 import awswrangler as wr
 import boto3
 import pandas as pd
-from config import CONFIGS
 
 from utils.file_handler import FileHandler
 
-S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+S3_SCRAPER_BUCKET = f'{os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")}-{os.environ.get("TF_VAR_RESOURCE_ENV")}'
 REGION_NAME = os.environ.get("TF_VAR_REGION", "us-west-2")
-TERRAFORM_STATE_BUCKET = CONFIGS["terraform_state_bucket"]
+TERRAFORM_STATE_BUCKET = (
+    f'{os.environ.get("TF_VAR_STATE_BUCKET")}-{os.environ.get("TF_VAR_RESOURCE_ENV")}'
+)
 
 
 class S3FileHandler(FileHandler):
