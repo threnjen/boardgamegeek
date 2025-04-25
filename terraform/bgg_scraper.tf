@@ -64,7 +64,6 @@ module "bgg_scraper_fargate_trigger" {
   role          = module.bgg_scraper_fargate_trigger_role.arn
   handler       = "${var.bgg_scraper}_fargate_trigger.lambda_handler"
   layers        = ["arn:aws:lambda:${var.REGION}:336392948345:layer:AWSSDKPandas-Python312:13"]
-
   description   = "Lambda function to trigger the boardgamegeek scraper fargate task"
   RESOURCE_ENV = var.RESOURCE_ENV
 }

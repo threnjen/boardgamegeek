@@ -1,6 +1,6 @@
 resource "aws_lambda_function" "lambda" {
   filename         = "lambda_function.zip"
-  function_name    = "${var.function_name}_${var.RESOURCE_ENV}"
+  function_name    = var.function_name
   timeout          = var.timeout
   memory_size      = var.memory_size
   role             = var.role
@@ -30,7 +30,7 @@ output "function_name" {
 }
 
 resource "aws_cloudwatch_log_group" "cloudwatch_log_group" {
-  name = "/aws/lambda/${var.function_name}_${var.RESOURCE_ENV}"
+  name = "/aws/lambda/${var.function_name}"
 
   retention_in_days = 3
 }

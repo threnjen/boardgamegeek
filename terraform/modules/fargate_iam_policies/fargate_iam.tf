@@ -30,8 +30,8 @@ resource "aws_iam_policy" "ecs_run_permissions" {
         Effect = "Allow",
         Action = "ecs:DescribeTasks",
         Resource = [
-          "arn:aws:ecs:${var.region}:${var.account_id}:task/*/${var.task_definition_name}_${var.RESOURCE_ENV}",
-          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}_${var.RESOURCE_ENV}:*",
+          "arn:aws:ecs:${var.region}:${var.account_id}:task/*/${var.task_definition_name}",
+          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}:*",
         ]
       },
       {
@@ -45,7 +45,7 @@ resource "aws_iam_policy" "ecs_run_permissions" {
         Effect = "Allow",
         Action = "ecs:RunTask",
         Resource = [
-          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}_${var.RESOURCE_ENV}:*",
+          "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${var.task_definition_name}:*",
         ]
       },
       {
