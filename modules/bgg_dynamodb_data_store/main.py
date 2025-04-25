@@ -10,7 +10,7 @@ from pydantic import BaseModel, ConfigDict
 from config import CONFIGS
 from utils.processing_functions import load_file_local_first
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["games"]
 RATINGS_CONFIGS = CONFIGS["ratings"]
@@ -113,11 +113,7 @@ class DynamoDBDataWriter(BaseModel):
 
         self.calculate_individual_stats()
 
-        table_name = (
-            CONFIGS["dynamodb"]["game_stats_table"]
-            if ENVIRONMENT == "prod"
-            else f'dev_{CONFIGS["dynamodb"]["game_stats_table"]}'
-        )
+        table_name = CONFIGS["dynamodb"]["game_stats_table"]
 
         print(f"Writing to DynamoDB table {table_name}")
 
@@ -166,11 +162,7 @@ class DynamoDBDataWriter(BaseModel):
 
     def fill_ratings_table(self):
 
-        table_name = (
-            CONFIGS["dynamodb"]["game_individual_ratings_table"]
-            if ENVIRONMENT == "prod"
-            else f'dev_{CONFIGS["dynamodb"]["game_individual_ratings_table"]}'
-        )
+        table_name = CONFIGS["dynamodb"]["game_individual_ratings_table"]
 
         dynamodb = boto3.resource("dynamodb")
         table = dynamodb.Table(table_name)

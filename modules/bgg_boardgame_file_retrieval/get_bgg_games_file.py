@@ -14,8 +14,8 @@ from config import CONFIGS
 
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
@@ -26,8 +26,8 @@ def initialize_driver(default_directory: str) -> webdriver.Chrome:
     options for the scraper to work. The function will return the
     initialized driver."""
 
-    if not os.environ.get("ENVIRONMENT", "dev") == "prod":
-        return webdriver.Chrome()
+    # if not ENVIRONMENT == "prod":
+    #     return webdriver.Chrome()
 
     chrome_options = ChromeOptions()
     chrome_options.add_argument("--headless=new")

@@ -34,7 +34,8 @@ defs = Definitions(
         "lambda_resource": LambdaHandlerResource(region_name=REGION),
         "ecs_resource": ECSResource(region_name=REGION),
         "config_resource": ConfigResource(
-            region_name=REGION, bucket=os.environ.get("S3_SCRAPER_BUCKET")
+            region_name=REGION,
+            bucket=f'{os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")}-{os.environ.get("TF_VAR_RESOURCE_ENV")}',
         ),
     },
     jobs=[bgg_job, user_job],

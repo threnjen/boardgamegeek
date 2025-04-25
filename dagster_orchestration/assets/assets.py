@@ -5,9 +5,9 @@ from dagster import ConfigurableResource, asset, get_dagster_logger, op
 
 logger = get_dagster_logger()
 
-ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
-WORKING_ENV_DIR = "data/prod/" if ENVIRONMENT == "prod" else "data/test/"
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
+WORKING_ENV_DIR = f"data/{ENVIRONMENT}/"
+S3_SCRAPER_BUCKET = f'{os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")}-{os.environ.get("TF_VAR_RESOURCE_ENV")}'
 REFRESH = 300 if ENVIRONMENT == "prod" else 30
 
 
@@ -36,7 +36,9 @@ def boardgame_ranks_csv(
 
     logger.info("Invoking lambda to refresh file...")
 
-    lambda_resource.invoke_lambda(function=configs["file_retrieval_lambda"])
+    lambda_resource.invoke_lambda(
+        function=f'{configs["bgg_boardgame_csv_lambda"]}_{ENVIRONMENT}'
+    )
 
     logger.info("Lambda invoked. Beginning timestamp checks...")
 
@@ -91,7 +93,7 @@ def games_scraper_urls_raw(
         s3_resource,
         s3_scraper_bucket,
         game_scraper_url_filenames,
-        lambda_function_name="bgg_generate_game_urls",
+        lambda_function_name=f"bgg_generate_game_urls_{ENVIRONMENT}",
     )
 
     return True
@@ -126,9 +128,7 @@ def games_combined_xml(
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
-    task_definition = (
-        "bgg_xml_cleanup" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleanup"
-    )
+    task_definition = f"bgg_xml_cleanup_{ENVIRONMENT}"
 
     overrides = {
         "containerOverrides": [
@@ -191,11 +191,7 @@ def game_dfs_clean(
 
     data_sets = games_configs["data_sets"]
 
-    task_definition = (
-        "bgg_data_cleaner_game"
-        if ENVIRONMENT == "prod"
-        else "dev_bgg_data_cleaner_game"
-    )
+    task_definition = f"bgg_data_cleaner_game_{ENVIRONMENT}"
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 
@@ -264,7 +260,7 @@ def ratings_scraper_urls_raw(
         s3_resource,
         s3_scraper_bucket,
         ratings_scraper_url_filenames,
-        lambda_function_name="bgg_generate_ratings_urls",
+        lambda_function_name=f"bgg_generate_ratings_urls_{ENVIRONMENT}",
     )
 
     return True
@@ -299,9 +295,7 @@ def ratings_combined_xml(
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
-    task_definition = (
-        "bgg_xml_cleanup" if ENVIRONMENT == "prod" else "dev_bgg_xml_cleanup"
-    )
+    task_definition = f"bgg_xml_cleanup_{ENVIRONMENT}"
 
     overrides = {
         "containerOverrides": [
@@ -367,11 +361,7 @@ def ratings_dfs_dirty(
 
     assert len(raw_ratings_files) == 29 if ENVIRONMENT == "prod" else 1
 
-    task_definition = (
-        "bgg_data_cleaner_ratings"
-        if ENVIRONMENT == "prod"
-        else "dev_bgg_data_cleaner_ratings"
-    )
+    task_definition = f"bgg_data_cleaner_ratings_{ENVIRONMENT}"
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 
@@ -405,11 +395,7 @@ def dynamodb_store(
     # config_resource: ConfigurableResource,
 ) -> bool:
 
-    task_definition = (
-        "bgg_dynamodb_data_store"
-        if ENVIRONMENT == "prod"
-        else "dev_bgg_dynamodb_data_store"
-    )
+    task_definition = f"bgg_dynamodb_data_store_{ENVIRONMENT}"
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)
     return True
@@ -455,7 +441,7 @@ def users_scraper_urls_raw(
         s3_resource,
         s3_scraper_bucket,
         game_scraper_url_filenames,
-        lambda_function_name="bgg_generate_user_urls",
+        lambda_function_name=f"bgg_generate_user_urls_{ENVIRONMENT}",
     )
 
     return True
@@ -492,11 +478,7 @@ def user_dfs_dirty(
 
     s3_scraper_bucket = S3_SCRAPER_BUCKET
 
-    task_definition = (
-        "bgg_data_cleaner_users"
-        if ENVIRONMENT == "prod"
-        else "dev_bgg_data_cleaner_users"
-    )
+    task_definition = f"bgg_data_cleaner_users_{ENVIRONMENT}"
 
     ecs_resource.launch_ecs_task(task_definition=task_definition)
 
@@ -583,10 +565,6 @@ def create_new_urls(
     }
     logger.info(f"Original timestamps: {original_timestamps}")
 
-    lambda_function_name = (
-        lambda_function_name if ENVIRONMENT == "prod" else f"dev_{lambda_function_name}"
-    )
-
     lambda_resource.invoke_lambda(function=lambda_function_name)
 
     compare_timestamps_for_refresh(
@@ -617,10 +595,8 @@ def scrape_data(
         bucket=s3_scraper_bucket, key=input_urls_key
     )
 
-    task_definition = configs["scraper_task_definition"]
-    task_definition = (
-        task_definition if ENVIRONMENT == "prod" else f"dev_{task_definition}"
-    )
+    task_definition = f'{configs["scraper_task_definition"]}_{ENVIRONMENT}'
+
     logger.info(task_definition)
     logger.info(len(game_scraper_url_filenames))
     logger.info(game_scraper_url_filenames)

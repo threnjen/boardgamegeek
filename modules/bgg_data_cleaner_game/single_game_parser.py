@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 from config import CONFIGS
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 GAME_ATTRIBUTES = json.load(open(CONFIGS["games"]["game_attributes_file"]))[
     "GAME_ATTRIBUTES"
 ]

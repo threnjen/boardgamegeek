@@ -15,7 +15,7 @@ from utils.processing_functions import (
     save_dfs_to_disk_or_s3,
 )
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["games"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
@@ -161,8 +161,8 @@ class DirtyDataExtractor:
         return dirty_game_data_frames
 
     def _save_dirty_dfs(self, dirty_game_data_frames: dict[pd.DataFrame]):
-        """Save all files as pkl files. Save to local drive in ENVIRONMENT==dev, or
-        copy pkl to s3 if ENVIRONMENT==prod"""
+        """Save all files as pkl files. Save to local drive in in dev, or
+        copy pkl to s3 if in prod"""
 
         for table_name, table in dirty_game_data_frames.items():
 

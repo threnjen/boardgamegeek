@@ -13,7 +13,7 @@ from utils.processing_functions import (
 )
 
 GAME_CONFIGS = CONFIGS["games"]
-ENVIRONMENT = os.getenv("ENVIRONMENT", "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 
 
 class GameDataCleaner:

@@ -5,10 +5,9 @@ import boto3
 from config import CONFIGS
 from utils.s3_file_handler import S3FileHandler
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-TASK_DEFINITION = CONFIGS["xml_cleanup_task_definition"]
-TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+TERRAFORM_STATE_BUCKET = CONFIGS["terraform_state_bucket"]
 
 
 def lambda_handler(event, context=None):
@@ -21,9 +20,8 @@ def lambda_handler(event, context=None):
         file_path=CONFIGS["terraform_state_file"]
     )
 
-    task_definition = (
-        f"dev_{TASK_DEFINITION}" if ENVIRONMENT != "prod" else TASK_DEFINITION
-    )
+    task_definition = f'{CONFIGS["xml_cleanup_task_definition"]}_{ENVIRONMENT}'
+
     print(task_definition)
 
     ecs_client = boto3.client("ecs")

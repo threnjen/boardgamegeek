@@ -7,16 +7,10 @@ from config import CONFIGS
 from utils.processing_functions import get_s3_keys_based_on_env
 from utils.s3_file_handler import S3FileHandler
 
-ENVIRONMENT = os.environ.get("ENVIRONMENT", "dev")
-S3_SCRAPER_BUCKET = os.environ.get("S3_SCRAPER_BUCKET")
-SCRAPER_TASK_DEFINITION = CONFIGS["scraper_task_definition"]
-TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
-
-WORKING_DIR = (
-    CONFIGS["dev_directory"] if ENVIRONMENT == "dev" else CONFIGS["prod_directory"]
-)
-
-print(SCRAPER_TASK_DEFINITION)
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
+TERRAFORM_STATE_BUCKET = CONFIGS["terraform_state_bucket"]
+WORKING_DIR = f"data/{ENVIRONMENT}/"
 
 
 def lambda_handler(event, context):
@@ -43,11 +37,8 @@ def lambda_handler(event, context):
             f"{WORKING_DIR}{CONFIGS[data_type]['raw_urls_directory']}/{file_name}"
         ]
 
-    task_definition = (
-        f"dev_{SCRAPER_TASK_DEFINITION}"
-        if ENVIRONMENT != "prod"
-        else SCRAPER_TASK_DEFINITION
-    )
+    task_definition = f'{CONFIGS["scraper_task_definition"]}_{ENVIRONMENT}'
+
     print(task_definition)
 
     ecs_client = boto3.client("ecs")

@@ -1,4 +1,4 @@
-name: PROD deployment to bgg file retrieval
+name: DEV deployment to bgg file retrieval
 
 on:
   push:
