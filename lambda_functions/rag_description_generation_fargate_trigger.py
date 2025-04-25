@@ -9,9 +9,7 @@ from utils.s3_file_handler import S3FileHandler
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 TASK_DEFINITION = CONFIGS["desc_task_definition"]
-TERRAFORM_STATE_BUCKET = (
-    f'{os.environ.get("TF_VAR_STATE_BUCKET")}-{os.environ.get("TF_VAR_RESOURCE_ENV")}'
-)
+TERRAFORM_STATE_BUCKET = CONFIGS["terraform_state_bucket"]
 
 WORKING_DIR = (
     CONFIGS["dev_directory"] if ENVIRONMENT == "dev" else CONFIGS["prod_directory"]
