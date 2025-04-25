@@ -91,7 +91,7 @@ install_state_file_bucket:
 
 # setup main project
 setup_boardgamegeek: 
-	pipenv run terraform init -backend-config backend.conf && \
+	pipenv run terraform init -backend-config backend.conf -reconfigure && \
 	pipenv run terraform apply
 
 # Clean up garbage files
