@@ -14,9 +14,10 @@ from config import CONFIGS
 
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
-ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
+ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV", "dev")
 S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
+WORKING_DIR = f"data/{ENVIRONMENT}" if not IS_LOCAL else "/tmp"
 
 
 # Get this file manually from https://boardgamegeek.com/data_dumps/bg_ranks
@@ -129,12 +130,7 @@ def lambda_handler(event: dict = None, context: dict = None) -> None:
 
     wr.s3.upload(
         local_file=output_file,
-        path=f"s3://{S3_SCRAPER_BUCKET}/data/prod/{CONFIGS['boardgamegeek_csv_filename']}",
-    )
-
-    wr.s3.upload(
-        local_file=output_file,
-        path=f"s3://{S3_SCRAPER_BUCKET}/data/test/{CONFIGS['boardgamegeek_csv_filename']}",
+        path=f"s3://{S3_SCRAPER_BUCKET}/{WORKING_DIR}/{CONFIGS['boardgamegeek_csv_filename']}",
     )
 
 
