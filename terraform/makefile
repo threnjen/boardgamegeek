@@ -84,7 +84,7 @@ terraform: backend_config
 install_state_file_bucket:
 	cd s3_state_bucket && \
 	\[ -f .terraform.lock.hcl \] && rm .terraform.lock.hcl && \
-	pipenv run terraform init -backend-config ../backend.conf && \
+	pipenv run terraform init -backend-config="path=${TF_VAR_RESOURCE_ENV}/terraform.tfstate" -reconfigure && \
 	pipenv run terraform apply && \
 	cd .. && \
 	cd ..

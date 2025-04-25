@@ -8,16 +8,14 @@ terraform {
       source = "hashicorp/aws"
     }
   }
-  backend "local" {}
-  # backend "s3" {
-  #   bucket  = ""
-  #   key     = ""
-  #   region  = ""
-  #   profile = ""
-  # }
+  backend "local" {
+    path = "terraform.tfstate"
+  }
 }
 
 provider "aws" {
   region  = var.REGION
   profile = var.AWS_PROFILE
 }
+
+data "aws_caller_identity" "current" {}
