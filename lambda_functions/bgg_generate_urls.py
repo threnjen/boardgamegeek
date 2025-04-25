@@ -10,7 +10,7 @@ from config import CONFIGS
 from utils.processing_functions import load_file_local_first, save_file_local_first
 
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
-S3_SCRAPER_BUCKET = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 GAME_CONFIGS = CONFIGS["games"]
 RATING_CONFIGS = CONFIGS["ratings"]
 USER_CONFIGS = CONFIGS["users"]

@@ -6,9 +6,11 @@ from config import CONFIGS
 from utils.s3_file_handler import S3FileHandler
 
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
-S3_SCRAPER_BUCKET = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 TASK_DEFINITION = CONFIGS["xml_cleanup_task_definition"]
-TERRAFORM_STATE_BUCKET = os.environ.get("TF_VAR_BUCKET")
+TERRAFORM_STATE_BUCKET = (
+    f'{os.environ.get("TF_VAR_STATE_BUCKET")}-{os.environ.get("TF_VAR_RESOURCE_ENV")}'
+)
 
 
 def lambda_handler(event, context=None):

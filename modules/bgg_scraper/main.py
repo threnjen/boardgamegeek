@@ -14,7 +14,7 @@ from utils.local_file_handler import LocalFileHandler
 from utils.processing_functions import load_file_local_first, save_file_local_first
 from utils.s3_file_handler import S3FileHandler
 
-S3_SCRAPER_BUCKET = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
 WORKING_DIR = (

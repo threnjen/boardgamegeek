@@ -15,7 +15,7 @@ from config import CONFIGS
 BGG_USERNAME = os.environ.get("BGG_USERNAME")
 BGG_PASSWORD = os.environ.get("BGG_PASSWORD")
 ENVIRONMENT = os.environ.get("TF_VAR_RESOURCE_ENV" "dev")
-S3_SCRAPER_BUCKET = os.environ.get("TF_VAR_S3_SCRAPER_BUCKET")
+S3_SCRAPER_BUCKET = CONFIGS["s3_scraper_bucket"]
 IS_LOCAL = True if os.environ.get("IS_LOCAL", "False").lower() == "true" else False
 
 
@@ -129,12 +129,12 @@ def lambda_handler(event: dict = None, context: dict = None) -> None:
 
     wr.s3.upload(
         local_file=output_file,
-        path=f"s3://{S3_SCRAPER_BUCKET}-{ENVIRONMENT}/data/prod/{CONFIGS['boardgamegeek_csv_filename']}",
+        path=f"s3://{S3_SCRAPER_BUCKET}/data/prod/{CONFIGS['boardgamegeek_csv_filename']}",
     )
 
     wr.s3.upload(
         local_file=output_file,
-        path=f"s3://{S3_SCRAPER_BUCKET}-{ENVIRONMENT}/data/test/{CONFIGS['boardgamegeek_csv_filename']}",
+        path=f"s3://{S3_SCRAPER_BUCKET}/data/test/{CONFIGS['boardgamegeek_csv_filename']}",
     )
 
 
