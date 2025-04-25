@@ -47,7 +47,7 @@ resource "aws_iam_role_policy_attachment" "dynamodb_rag_description_generation_F
 
 module "rag_description_generation" {
   source        = "./modules/lambda_function_direct"
-  function_name = "rag_description_generation_fargate_trigger"
+  function_name = "${var.rag_description_generation}_fargate_trigger_${var.RESOURCE_ENV}"
   timeout       = 900
   memory_size   = 256
   role          = module.rag_description_generation_role.arn
