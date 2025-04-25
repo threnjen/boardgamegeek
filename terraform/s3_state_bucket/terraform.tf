@@ -8,13 +8,13 @@ terraform {
       source = "hashicorp/aws"
     }
   }
-  # backend "local" {}
-  backend "s3" {
-    bucket  = ""
-    key     = ""
-    region  = ""
-    profile = ""
-  }
+  backend "local" {}
+  # backend "s3" {
+  #   bucket  = ""
+  #   key     = ""
+  #   region  = ""
+  #   profile = ""
+  # }
 }
 
 provider "aws" {

@@ -3,7 +3,7 @@
 
 module "aws_s3_bucket" {
   source = "terraform-aws-modules/s3-bucket/aws"
-  bucket = "${var.TF_VAR_BUCKET}_${var.ENVIRONMENT}"
+  bucket = "${var.BUCKET}-${var.ENVIRONMENT}"
   acl    = "private"
 
   control_object_ownership = true

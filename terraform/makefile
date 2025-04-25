@@ -38,9 +38,8 @@ set_config_variables: cleanup_env_files
 	\
 	echo "\nType the name of the S3 bucket you want to use for Terraform files and press Enter. EXAMPLE my-terraform-bucket"; \
 	read -p "Enter bucket name: " bucket_response; \
-	bucket_env="$${bucket_response}_$${env_response}"; \
-	echo "TF_VAR_BUCKET=$$bucket_env" >> ../.env; \
-	echo "\nValues captured: TF_VAR_ENVIRONMENT=$$env_response, TF_VAR_BUCKET=$$bucket_env"; \
+	bucket_env="$${bucket_response}-$${env_response}"; \
+	echo "TF_VAR_BUCKET=$$bucket_response" >> ../.env; \
 	echo "bucket=\"$$bucket_env\"" > backend.conf; \
 	\
 	echo "\nType the region you want to deploy to in format us-region-#. EXAMPLE us-west-2" ; \
