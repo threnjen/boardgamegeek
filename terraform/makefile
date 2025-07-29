@@ -29,29 +29,33 @@ require_confirmation_env: create_env
 cleanup_env_files: require_confirmation_env
 	@output=$$(pipenv run python scripts/clean_env.py); \
 
-set_config_variables: cleanup_env_files
+start_backend_config: cleanup_env_files
+# clear backend.conf file
+# touch the file and remake it
+	@echo "\nStarting backend configuration"; 
+	@echo "Creating backend.conf file"; 
+	@rm -f backend.conf; 
+	@touch backend.conf; 
+	echo "profile=\"234559571171_Infrastructure_Admin\"" >> backend.conf; \
+	echo "bucket=\"meeplemastery-tfstate\"" >> backend.conf; \
+
+set_config_variables: start_backend_config
 	@echo "\nSetting up configuration variables for Terraform"; \
-	\
-	echo "\nType the environment you want to use for Terraform (dev or prod) and press Enter."; \
+	
+	@echo "\nType the environment you want to use for Terraform (dev or prod) and press Enter."; \
 	read -p "Enter environment name: " env_response; \
 	echo "TF_VAR_RESOURCE_ENV=$$env_response" >> ../.env; \
 	echo "ENVIRONMENT=$$env_response" >> ../.env; \
-	\
-	echo "\nType the name of the S3 bucket you want to use for Terraform files and press Enter. EXAMPLE my-terraform-bucket"; \
-	read -p "Enter bucket name: " bucket_response; \
-	bucket_env="$${bucket_response}-$${env_response}"; \
-	echo "TF_VAR_BUCKET=$$bucket_response" >> ../.env; \
-	echo "bucket=\"$$bucket_env\"" > backend.conf; \
-	\
-	echo "\nType the region you want to deploy to in format us-region-#. EXAMPLE us-west-2" ; \
+	echo "key=\"boardgamegeek-$$env_response.tfstate\"" >> backend.conf
+	
+	@echo "\nType the region you want to deploy to in format us-region-#. EXAMPLE us-west-2" ; \
 	read -p "Enter region: " region_response; \
 	echo "\nTF_VAR_REGION=$$region_response" >> ../.env && \
-	echo "region=\"$$region_response\"" >> backend.conf && \
-	\
-	echo "\nType the AWS profile you want to use for Terraform EXACTLY, without brackets, and Enter. Example: 123456789_ProfileName" ; \
+	echo "region=\"$$region_response\"" >> backend.conf
+	
+	@echo "\nType the AWS profile you want to use for Terraform EXACTLY, without brackets, and Enter. Example: 123456789_ProfileName" ; \
 	read -p "Enter profile: " profile_response; \
-	echo "TF_VAR_AWS_PROFILE=$$profile_response" >> ../.env && \
-	echo "profile=\"$$profile_response\"" >> backend.conf
+	echo "TF_VAR_AWS_PROFILE=$$profile_response" >> ../.env
 
 set_ip_address: set_config_variables
 	@echo "\n"
@@ -64,12 +68,9 @@ set_ip_address: set_config_variables
 enter_temp_vars: set_ip_address
 	echo "IS_LOCAL=False" >> ../.env
 
-# Make the backend config file for terraform
-backend_config: enter_temp_vars
-	echo 'key="boardgamegeek.tfstate"' >> backend.conf
 
 # A target that runs the Python script and checks the output
-terraform: backend_config
+terraform: set_ip_address
 	@echo "\nRunning Python script to validate entries"
 	@output=$$(pipenv run python scripts/validate.py $(TF_VAR_BUCKET) $(TF_VAR_REGION)) || { echo "Script execution failed"; exit 1; }; \
 	echo "\nOutput from script: $$output"; \
@@ -81,13 +82,13 @@ terraform: backend_config
 		make failure-action; \
 	fi
 
-install_state_file_bucket:
-	cd s3_state_bucket && \
-	\[ -f .terraform.lock.hcl \] && rm .terraform.lock.hcl && \
-	pipenv run terraform init -backend-config="path=${TF_VAR_RESOURCE_ENV}/terraform.tfstate" -reconfigure && \
-	pipenv run terraform apply && \
-	cd .. && \
-	cd ..
+#install_state_file_bucket:
+# 	cd s3_state_bucket && \
+# 	\[ -f .terraform.lock.hcl \] && rm .terraform.lock.hcl && \
+# 	pipenv run terraform init -backend-config="path=${TF_VAR_RESOURCE_ENV}/terraform.tfstate" -reconfigure && \
+# 	pipenv run terraform apply && \
+# 	cd .. && \
+# 	cd ..
 
 # setup main project
 setup_boardgamegeek: 

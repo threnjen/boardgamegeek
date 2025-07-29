@@ -9,10 +9,10 @@ terraform {
     }
   }
   backend "s3" {
-    key     = "boardgamegeek.tfstate"
-    bucket  = ""
-    region  = ""
-    profile = ""
+    key     = "boardgamegeek-${var.environment}.tfstate"
+    bucket  = "meeplemastery-tfstate"
+    region  = "us-west-2"
+    profile = "234559571171_Infrastructure_Admin"
   }
 }
 

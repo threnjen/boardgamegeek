@@ -12,6 +12,7 @@ if __name__ == "__main__":
                 or "IS_LOCAL" in line
                 or "TF_VAR_RESOURCE_ENV" in line
                 or "TF_VAR_AWS_PROFILE" in line
+                or "ENVIRONMENT" in line
             ):
                 continue
             if line == "\n":
